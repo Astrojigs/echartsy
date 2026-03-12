@@ -18,7 +18,7 @@
 <p align="center">
   Build interactive, publication-quality charts with a familiar<br/>
   <code>fig = figure()</code> → <code>fig.bar()</code> → <code>fig.show()</code> workflow.<br/>
-  Works in <b>Jupyter Notebooks</b>, <b>Streamlit</b> apps, and <b>standalone Python scripts</b>.
+  Works in <b>Jupyter Notebooks</b>, <b>Streamlit</b>, and <b>standalone Python scripts</b>.
 </p>
 
 ---
@@ -28,18 +28,18 @@
 <table>
 <tr>
 <td width="50%">
-<p align="center"><strong>Gradient Bar Chart</strong></p>
-<p align="center"><img src="assets/demo_bar.png" alt="Bar Chart" width="100%" /></p>
+<p align="center"><strong>Bar + Pie Overlay</strong></p>
+<p align="center"><img src="assets/demo_bar_pie.png" alt="Bar + Pie Overlay" width="100%" /></p>
 </td>
 <td width="50%">
-<p align="center"><strong>Multi-Line with Area</strong></p>
+<p align="center"><strong>Smooth Line</strong></p>
 <p align="center"><img src="assets/demo_line.png" alt="Line Chart" width="100%" /></p>
 </td>
 </tr>
 <tr>
 <td width="50%">
 <p align="center"><strong>Donut Chart</strong></p>
-<p align="center"><img src="assets/demo_pie.png" alt="Pie Chart" width="100%" /></p>
+<p align="center"><img src="assets/demo_pie.png" alt="Donut Chart" width="100%" /></p>
 </td>
 <td width="50%">
 <p align="center"><strong>Scatter Plot</strong></p>
@@ -48,37 +48,63 @@
 </tr>
 <tr>
 <td width="50%">
-<p align="center"><strong>Composite: Bar + Pie Overlay</strong></p>
-<p align="center"><img src="assets/demo_composite.png" alt="Composite Chart" width="100%" /></p>
+<p align="center"><strong>Stacked Bar</strong></p>
+<p align="center"><img src="assets/demo_stacked.png" alt="Stacked Bar" width="100%" /></p>
 </td>
 <td width="50%">
-<p align="center"><strong>Dual-Axis: Bar + Line</strong></p>
+<p align="center"><strong>Area Chart</strong></p>
+<p align="center"><img src="assets/demo_area.png" alt="Area Chart" width="100%" /></p>
+</td>
+</tr>
+<tr>
+<td width="50%">
+<p align="center"><strong>Horizontal Bar</strong></p>
+<p align="center"><img src="assets/demo_horizontal.png" alt="Horizontal Bar" width="100%" /></p>
+</td>
+<td width="50%">
+<p align="center"><strong>Dual Axis: Bar + Line</strong></p>
 <p align="center"><img src="assets/demo_dual.png" alt="Dual Axis" width="100%" /></p>
 </td>
 </tr>
 <tr>
 <td width="50%">
-<p align="center"><strong>Dark Theme</strong></p>
-<p align="center"><img src="assets/demo_dark.png" alt="Dark Theme" width="100%" /></p>
-</td>
-<td width="50%">
 <p align="center"><strong>Radar Chart</strong></p>
 <p align="center"><img src="assets/demo_radar.png" alt="Radar Chart" width="100%" /></p>
+</td>
+<td width="50%">
+<p align="center"><strong>Dark Theme</strong></p>
+<p align="center"><img src="assets/demo_dark.png" alt="Dark Theme" width="100%" /></p>
 </td>
 </tr>
 <tr>
 <td width="50%">
-<p align="center"><strong>Stacked Bar</strong></p>
-<p align="center"><img src="assets/demo_stacked.png" alt="Stacked Bar" width="100%" /></p>
+<p align="center"><strong>Gradient Bars</strong></p>
+<p align="center"><img src="assets/demo_gradient.png" alt="Gradient Bars" width="100%" /></p>
 </td>
 <td width="50%">
-<p align="center"><strong>Horizontal Bar</strong></p>
-<p align="center"><img src="assets/demo_horizontal.png" alt="Horizontal Bar" width="100%" /></p>
+<p align="center"><strong>Multi-Line with Area</strong></p>
+<p align="center"><img src="assets/demo_multiline.png" alt="Multi-Line" width="100%" /></p>
+</td>
+</tr>
+<tr>
+<td width="50%">
+<p align="center"><strong>KPI Dashboard</strong></p>
+<p align="center"><img src="assets/demo_dashboard.png" alt="KPI Dashboard" width="100%" /></p>
+</td>
+<td width="50%">
+<p align="center"><strong>Triple Composite</strong></p>
+<p align="center"><img src="assets/demo_composite.png" alt="Triple Composite" width="100%" /></p>
+</td>
+</tr>
+<tr>
+<td colspan="2">
+<p align="center"><strong>Full Dashboard: Stacked + Trend Line + Pie Breakdown</strong></p>
+<p align="center"><img src="assets/demo_full_dashboard.png" alt="Full Dashboard" width="70%" /></p>
 </td>
 </tr>
 </table>
 
-> All charts are fully interactive — hover, zoom, and download built in. See the [live HTML demos](assets/) or run `python generate_demos.py` to generate them yourself.
+> Every chart is fully interactive — hover for tooltips, click legend items to toggle series, use the toolbox to save as PNG/SVG. See the [interactive HTML demos](assets/) or run `python generate_demos.py` yourself.
 
 ---
 
@@ -88,7 +114,7 @@
 pip install echartslib
 ```
 
-With optional extras:
+Optional extras:
 
 ```bash
 pip install echartslib[jupyter]     # Jupyter Notebook support
@@ -108,18 +134,17 @@ import echartslib as ec
 ec.config(engine="jupyter")  # or "python" or "streamlit"
 
 df = pd.DataFrame({
-    "Month": ["Jan", "Feb", "Mar", "Apr", "May"],
-    "Revenue": [120, 200, 150, 300, 250],
+    "Fruit": ["Apples", "Bananas", "Cherries", "Dates", "Elderberries"],
+    "Sales": [120, 95, 78, 42, 63],
 })
 
-fig = ec.figure(height="400px")
-fig.bar(df, x="Month", y="Revenue", border_radius=6, gradient=True)
-fig.title("Monthly Revenue")
-fig.ylabel("Revenue ($K)")
+fig = ec.figure()
+fig.bar(df, x="Fruit", y="Sales")
+fig.title("Fruit Sales")
 fig.show()
 ```
 
-That's it. Three lines to go from DataFrame to interactive chart.
+Three lines to go from DataFrame to interactive chart.
 
 ---
 
@@ -170,7 +195,7 @@ fig.kde(df, column="Score", hue="Class")
 fig.pie(df, names="Browser", values="Share", inner_radius="40%")
 
 # Radar
-fig.radar(indicators, data)
+fig.radar(indicators, data, series_names=["Warrior", "Mage", "Rogue"])
 
 # Heatmap
 fig.heatmap(df, x="Day", y="Hour", value="Count")
@@ -189,7 +214,7 @@ fig.funnel(df, names="Stage", values="Count")
 
 ## Composite Charts
 
-Overlay a pie chart on a bar/line figure — no raw JSON needed:
+Overlay a pie on any cartesian chart — just pass `center` and `radius`:
 
 ```python
 fig = ec.figure(height="500px")
@@ -197,6 +222,21 @@ fig.bar(df, x="Dept", y="Budget", gradient=True)
 fig.pie(df, names="Dept", values="Budget",
         center=["82%", "25%"], radius=["18%", "28%"],
         label_font_size=9)
+fig.margins(right=120)
+fig.show()
+```
+
+Triple composite (bar + line + pie):
+
+```python
+fig = ec.figure(height="550px")
+fig.bar(df, x="Month", y="Revenue", labels=True)
+fig.plot(df, x="Month", y="Growth", smooth=True, axis=1)
+fig.pie(df_mix, names="Plan", values="Share",
+        center=["85%", "22%"], radius=["15%", "25%"])
+fig.ylabel("Revenue ($K)")
+fig.ylabel_right("Growth %")
+fig.margins(right=120)
 fig.show()
 ```
 
@@ -221,8 +261,9 @@ Animate any chart across a time dimension:
 
 ```python
 fig = ec.TimelineFigure(height="500px", interval=1.5)
-fig.bar(df, x="Country", y="GDP", time_col="Year")
-fig.title("GDP by Year")
+fig.bar(df, x="Country", y="GDP", time_col="Year", labels=True)
+fig.title("GDP by Country")
+fig.ylabel("GDP (Trillion USD)")
 fig.show()
 ```
 
@@ -231,17 +272,18 @@ fig.show()
 ## Style Presets
 
 ```python
-fig = ec.figure(style=ec.StylePreset.CLINICAL)         # Clean clinical palette (default)
+fig = ec.figure(style=ec.StylePreset.CLINICAL)         # Clean clinical palette
 fig = ec.figure(style=ec.StylePreset.DASHBOARD_DARK)    # Dark background
 fig = ec.figure(style=ec.StylePreset.KPI_REPORT)        # Warm tones
-fig = ec.figure(style=ec.StylePreset.MINIMAL)            # Minimal & simple
+fig = ec.figure(style=ec.StylePreset.MINIMAL)           # Minimal & simple
 ```
 
 Custom palettes:
 
 ```python
-fig = ec.figure()
 fig.palette(["#e74c3c", "#3498db", "#2ecc71", "#f39c12"])
+fig.palette(ec.PALETTE_RUSTY)
+fig.palette(ec.PALETTE_DARK)
 ```
 
 ---
@@ -252,10 +294,12 @@ fig.palette(["#e74c3c", "#3498db", "#2ecc71", "#f39c12"])
 fig.title("Chart Title", subtitle="Optional subtitle")
 fig.xlabel("X Label", rotate=30)
 fig.ylabel("Y Label")
-fig.legend(orient="vertical", left="right")
-fig.margins(left=100, right=120)
+fig.ylabel_right("Secondary Y")
+fig.legend(orient="vertical", left="right", top=40)
+fig.margins(left=100, right=120, top=40)
 fig.datazoom(start=0, end=80)
 fig.toolbox(download=True, zoom=True)
+fig.grid(show=True)
 fig.save(name="my_chart", fmt="png", dpi=3)
 ```
 
@@ -264,7 +308,7 @@ fig.save(name="my_chart", fmt="png", dpi=3)
 ## Exporting
 
 ```python
-# Standalone HTML file
+# Standalone HTML file (fully interactive, no server needed)
 fig.to_html("my_chart.html")
 
 # Raw ECharts option dict (for debugging or custom renderers)
@@ -287,7 +331,7 @@ ec.config(engine="jupyter", adaptive="light")   # Force light
 
 ## Generating Showcase Images
 
-Want to regenerate the screenshots shown above?
+To regenerate the screenshots shown above:
 
 ```bash
 # 1. Generate the demo HTML charts

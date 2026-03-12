@@ -82,7 +82,7 @@
   // ---------- apply ----------
   var option  = {
   "title": {
-    "text": "Stacked Revenue by Region",
+    "text": "Fruit Sales (Gradient)",
     "left": "center",
     "textStyle": {
       "fontSize": 16,
@@ -90,12 +90,11 @@
     }
   },
   "color": [
-    "#893448",
-    "#d95850",
-    "#eb8146",
-    "#ffb248",
-    "#f2d643",
-    "#ebdba4"
+    "#667eea",
+    "#764ba2",
+    "#f093fb",
+    "#f5576c",
+    "#4facfe"
   ],
   "tooltip": {
     "trigger": "axis",
@@ -106,13 +105,8 @@
     "appendTo": "body"
   },
   "legend": {
-    "show": true,
-    "orient": "horizontal",
-    "top": 40,
     "data": [
-      "North",
-      "South",
-      "West"
+      "Sales"
     ]
   },
   "grid": {
@@ -125,10 +119,11 @@
   "xAxis": {
     "type": "category",
     "data": [
-      "Q1",
-      "Q2",
-      "Q3",
-      "Q4"
+      "Apples",
+      "Bananas",
+      "Cherries",
+      "Dates",
+      "Elderberries"
     ],
     "axisLabel": {
       "rotate": 0,
@@ -144,14 +139,15 @@
     "splitLine": {
       "show": true,
       "lineStyle": {
-        "color": "#eee"
+        "color": "#eee",
+        "type": "solid"
       }
     },
     "axisLabel": {
       "fontSize": 12,
       "color": "#666"
     },
-    "name": "Revenue ($K)"
+    "name": "Units Sold"
   },
   "series": [
     {
@@ -164,60 +160,33 @@
         "color": "#333"
       },
       "itemStyle": {
-        "borderRadius": 4
+        "borderRadius": 8,
+        "color": {
+          "type": "linear",
+          "x": 0,
+          "y": 0,
+          "x2": 0,
+          "y2": 1,
+          "colorStops": [
+            {
+              "offset": 0,
+              "color": "#667eea"
+            },
+            {
+              "offset": 1,
+              "color": "#764ba2"
+            }
+          ]
+        }
       },
       "yAxisIndex": 0,
-      "stack": "total",
-      "name": "North",
+      "name": "Sales",
       "data": [
         120.0,
-        145.0,
-        160.0,
-        180.0
-      ]
-    },
-    {
-      "type": "bar",
-      "label": {
-        "show": true,
-        "position": "top",
-        "formatter": "{c}",
-        "fontSize": 12,
-        "color": "#333"
-      },
-      "itemStyle": {
-        "borderRadius": 4
-      },
-      "yAxisIndex": 0,
-      "stack": "total",
-      "name": "South",
-      "data": [
-        90.0,
-        110.0,
-        130.0,
-        155.0
-      ]
-    },
-    {
-      "type": "bar",
-      "label": {
-        "show": true,
-        "position": "top",
-        "formatter": "{c}",
-        "fontSize": 12,
-        "color": "#333"
-      },
-      "itemStyle": {
-        "borderRadius": 4
-      },
-      "yAxisIndex": 0,
-      "stack": "total",
-      "name": "West",
-      "data": [
-        60.0,
-        80.0,
         95.0,
-        110.0
+        78.0,
+        42.0,
+        63.0
       ]
     }
   ]

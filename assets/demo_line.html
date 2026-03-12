@@ -18,7 +18,7 @@
   body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
          display: flex; justify-content: center;
          align-items: center; min-height: 100vh; padding: 20px; }
-  #ec_chart { width: 100%; height: 420px; border-radius: 8px; }
+  #ec_chart { width: 100%; height: 400px; border-radius: 8px; }
 </style>
 </head>
 <body>
@@ -82,7 +82,7 @@
   // ---------- apply ----------
   var option  = {
   "title": {
-    "text": "Regional Sales Trends",
+    "text": "Average Monthly Temperature",
     "left": "center",
     "textStyle": {
       "fontSize": 16,
@@ -109,16 +109,17 @@
     "appendTo": "body"
   },
   "legend": {
+    "show": true,
+    "orient": "horizontal",
+    "top": 40,
     "data": [
-      "North",
-      "South",
-      "West"
+      "Temperature"
     ]
   },
   "grid": {
     "left": 70,
     "right": 70,
-    "top": 60,
+    "top": 40,
     "bottom": 50,
     "containLabel": true
   },
@@ -130,10 +131,16 @@
       "Mar",
       "Apr",
       "May",
-      "Jun"
+      "Jun",
+      "Jul",
+      "Aug",
+      "Sep",
+      "Oct",
+      "Nov",
+      "Dec"
     ],
     "axisLabel": {
-      "rotate": 0,
+      "rotate": 30,
       "fontSize": 12,
       "color": "#666"
     },
@@ -153,7 +160,7 @@
       "fontSize": 12,
       "color": "#666"
     },
-    "name": "Sales ($K)"
+    "name": "Temp (\u00b0C)"
   },
   "series": [
     {
@@ -167,82 +174,23 @@
         "width": 2
       },
       "yAxisIndex": 0,
-      "areaStyle": {
-        "opacity": 0.15
-      },
-      "name": "North",
+      "name": "Temperature",
       "data": [
-        152.0,
-        229.0,
-        142.0,
-        64.0,
-        156.0,
-        121.0
-      ]
-    },
-    {
-      "type": "line",
-      "smooth": true,
-      "connectNulls": false,
-      "showSymbol": true,
-      "symbol": "circle",
-      "symbolSize": 6,
-      "lineStyle": {
-        "width": 2
-      },
-      "yAxisIndex": 0,
-      "areaStyle": {
-        "opacity": 0.15
-      },
-      "name": "South",
-      "data": [
-        238.0,
-        70.0,
-        152.0,
-        171.0,
-        260.0,
-        264.0
-      ]
-    },
-    {
-      "type": "line",
-      "smooth": true,
-      "connectNulls": false,
-      "showSymbol": true,
-      "symbol": "circle",
-      "symbolSize": 6,
-      "lineStyle": {
-        "width": 2
-      },
-      "yAxisIndex": 0,
-      "areaStyle": {
-        "opacity": 0.15
-      },
-      "name": "West",
-      "data": [
-        124.0,
-        252.0,
-        137.0,
-        166.0,
-        149.0,
-        153.0
+        5.0,
+        7.0,
+        12.0,
+        18.0,
+        23.0,
+        28.0,
+        31.0,
+        30.0,
+        25.0,
+        18.0,
+        11.0,
+        6.0
       ]
     }
-  ],
-  "toolbox": {
-    "show": true,
-    "right": 10,
-    "top": 10,
-    "feature": {
-      "saveAsImage": {
-        "show": true,
-        "pixelRatio": 3
-      },
-      "restore": {
-        "show": true
-      }
-    }
-  }
+  ]
 };
   var themeToUse = null;   // null or "dark" etc
 

@@ -18,7 +18,7 @@
   body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
          display: flex; justify-content: center;
          align-items: center; min-height: 100vh; padding: 20px; }
-  #ec_chart { width: 100%; height: 460px; border-radius: 8px; }
+  #ec_chart { width: 100%; height: 500px; border-radius: 8px; }
 </style>
 </head>
 <body>
@@ -82,7 +82,7 @@
   // ---------- apply ----------
   var option  = {
   "title": {
-    "text": "Player Comparison",
+    "text": "Character Class Comparison",
     "left": "center",
     "textStyle": {
       "fontSize": 16,
@@ -99,8 +99,9 @@
     "show": true,
     "padding": 40,
     "data": [
-      "Player A",
-      "Player B"
+      "Warrior",
+      "Mage",
+      "Rogue"
     ]
   },
   "radar": {
@@ -118,15 +119,15 @@
         "max": 100
       },
       {
-        "name": "Power",
+        "name": "Stamina",
         "max": 100
       },
       {
-        "name": "Endurance",
+        "name": "Magic",
         "max": 100
       },
       {
-        "name": "Technique",
+        "name": "Intelligence",
         "max": 100
       }
     ],
@@ -155,12 +156,26 @@
           "value": [
             90,
             60,
-            85,
-            70,
             80,
-            95
+            70,
+            40,
+            55
           ],
-          "name": "Player A",
+          "name": "Warrior",
+          "label": {
+            "show": true
+          }
+        },
+        {
+          "value": [
+            30,
+            40,
+            50,
+            60,
+            95,
+            90
+          ],
+          "name": "Mage",
           "label": {
             "show": true
           }
@@ -168,13 +183,13 @@
         {
           "value": [
             70,
-            85,
-            60,
-            90,
-            75,
+            50,
+            95,
+            80,
+            20,
             65
           ],
-          "name": "Player B",
+          "name": "Rogue",
           "label": {
             "show": true
           }

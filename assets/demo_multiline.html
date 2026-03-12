@@ -18,7 +18,7 @@
   body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
          display: flex; justify-content: center;
          align-items: center; min-height: 100vh; padding: 20px; }
-  #ec_chart { width: 100%; height: 420px; border-radius: 8px; }
+  #ec_chart { width: 100%; height: 450px; border-radius: 8px; }
 </style>
 </head>
 <body>
@@ -82,15 +82,11 @@
   // ---------- apply ----------
   var option  = {
   "title": {
-    "text": "Monthly Revenue",
+    "text": "Traffic by Source",
     "left": "center",
     "textStyle": {
       "fontSize": 16,
       "fontFamily": "sans-serif"
-    },
-    "subtext": "2025 H1 \u00b7 echartslib",
-    "subtextStyle": {
-      "fontSize": 12
     }
   },
   "color": [
@@ -113,14 +109,19 @@
     "appendTo": "body"
   },
   "legend": {
+    "show": true,
+    "orient": "horizontal",
+    "top": 40,
     "data": [
-      "Revenue"
+      "Organic",
+      "Paid",
+      "Social"
     ]
   },
   "grid": {
     "left": 70,
     "right": 70,
-    "top": 60,
+    "top": 40,
     "bottom": 50,
     "containLabel": true
   },
@@ -155,64 +156,82 @@
       "fontSize": 12,
       "color": "#666"
     },
-    "name": "Revenue ($K)"
+    "name": "Visitors (K)"
   },
   "series": [
     {
-      "type": "bar",
-      "label": {
-        "show": false,
-        "position": "top",
-        "formatter": "{c}",
-        "fontSize": 12,
-        "color": "#333"
-      },
-      "itemStyle": {
-        "borderRadius": 6,
-        "color": {
-          "type": "linear",
-          "x": 0,
-          "y": 0,
-          "x2": 0,
-          "y2": 1,
-          "colorStops": [
-            {
-              "offset": 0,
-              "color": "#83bff6"
-            },
-            {
-              "offset": 1,
-              "color": "#188df0"
-            }
-          ]
-        }
+      "type": "line",
+      "smooth": true,
+      "connectNulls": false,
+      "showSymbol": true,
+      "symbol": "circle",
+      "symbolSize": 6,
+      "lineStyle": {
+        "width": 2
       },
       "yAxisIndex": 0,
-      "name": "Revenue",
+      "areaStyle": {
+        "opacity": 0.15
+      },
+      "name": "Organic",
       "data": [
+        100.0,
         120.0,
-        200.0,
         150.0,
-        300.0,
-        250.0,
-        280.0
+        200.0,
+        180.0,
+        210.0
+      ]
+    },
+    {
+      "type": "line",
+      "smooth": true,
+      "connectNulls": false,
+      "showSymbol": true,
+      "symbol": "circle",
+      "symbolSize": 6,
+      "lineStyle": {
+        "width": 2
+      },
+      "yAxisIndex": 0,
+      "areaStyle": {
+        "opacity": 0.15
+      },
+      "name": "Paid",
+      "data": [
+        80.0,
+        95.0,
+        120.0,
+        160.0,
+        140.0,
+        170.0
+      ]
+    },
+    {
+      "type": "line",
+      "smooth": true,
+      "connectNulls": false,
+      "showSymbol": true,
+      "symbol": "circle",
+      "symbolSize": 6,
+      "lineStyle": {
+        "width": 2
+      },
+      "yAxisIndex": 0,
+      "areaStyle": {
+        "opacity": 0.15
+      },
+      "name": "Social",
+      "data": [
+        60.0,
+        70.0,
+        90.0,
+        110.0,
+        100.0,
+        130.0
       ]
     }
-  ],
-  "toolbox": {
-    "show": true,
-    "right": 10,
-    "top": 10,
-    "feature": {
-      "saveAsImage": {
-        "show": true,
-        "pixelRatio": 3
-      },
-      "restore": {
-        "show": true
-      }
-    }
-  }
+  ]
 };
   var themeToUse = null;   // null or "dark" etc
 

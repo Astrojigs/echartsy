@@ -18,7 +18,7 @@
   body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
          display: flex; justify-content: center;
          align-items: center; min-height: 100vh; padding: 20px; }
-  #ec_chart { width: 100%; height: 420px; border-radius: 8px; }
+  #ec_chart { width: 100%; height: 500px; border-radius: 8px; }
 </style>
 </head>
 <body>
@@ -82,7 +82,7 @@
   // ---------- apply ----------
   var option  = {
   "title": {
-    "text": "Revenue & Growth",
+    "text": "Revenue & Growth Rate",
     "left": "center",
     "textStyle": {
       "fontSize": 16,
@@ -109,15 +109,18 @@
     "appendTo": "body"
   },
   "legend": {
+    "show": true,
+    "orient": "horizontal",
+    "top": 40,
     "data": [
       "Revenue",
-      "Growth"
+      "GrowthRate"
     ]
   },
   "grid": {
     "left": 70,
-    "right": 100,
-    "top": 60,
+    "right": 86,
+    "top": 40,
     "bottom": 50,
     "containLabel": true
   },
@@ -164,48 +167,31 @@
         "fontSize": 12,
         "color": "#666"
       },
-      "name": "Growth (%)"
+      "name": "Growth %"
     }
   ],
   "series": [
     {
       "type": "bar",
       "label": {
-        "show": false,
+        "show": true,
         "position": "top",
         "formatter": "{c}",
         "fontSize": 12,
         "color": "#333"
       },
       "itemStyle": {
-        "borderRadius": 4,
-        "color": {
-          "type": "linear",
-          "x": 0,
-          "y": 0,
-          "x2": 0,
-          "y2": 1,
-          "colorStops": [
-            {
-              "offset": 0,
-              "color": "#83bff6"
-            },
-            {
-              "offset": 1,
-              "color": "#188df0"
-            }
-          ]
-        }
+        "borderRadius": 4
       },
       "yAxisIndex": 0,
       "name": "Revenue",
       "data": [
-        120.0,
-        200.0,
-        150.0,
-        300.0,
         250.0,
-        280.0
+        310.0,
+        280.0,
+        400.0,
+        520.0,
+        480.0
       ]
     },
     {
@@ -219,31 +205,17 @@
         "width": 2
       },
       "yAxisIndex": 1,
-      "name": "Growth",
+      "name": "GrowthRate",
       "data": [
         5.2,
         8.1,
-        3.0,
-        12.4,
-        9.6,
-        10.2
+        6.5,
+        12.3,
+        18.7,
+        15.0
       ]
     }
-  ],
-  "toolbox": {
-    "show": true,
-    "right": 10,
-    "top": 10,
-    "feature": {
-      "saveAsImage": {
-        "show": true,
-        "pixelRatio": 3
-      },
-      "restore": {
-        "show": true
-      }
-    }
-  }
+  ]
 };
   var themeToUse = null;   // null or "dark" etc
 

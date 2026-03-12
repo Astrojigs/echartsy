@@ -18,7 +18,7 @@
   body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
          display: flex; justify-content: center;
          align-items: center; min-height: 100vh; padding: 20px; }
-  #ec_chart { width: 100%; height: 450px; border-radius: 8px; }
+  #ec_chart { width: 100%; height: 550px; border-radius: 8px; }
 </style>
 </head>
 <body>
@@ -82,11 +82,15 @@
   // ---------- apply ----------
   var option  = {
   "title": {
-    "text": "Stacked Revenue by Region",
+    "text": "KPI Dashboard: Revenue & Margin",
     "left": "center",
     "textStyle": {
-      "fontSize": 16,
+      "fontSize": 18,
       "fontFamily": "sans-serif"
+    },
+    "subtext": "Jan 2024 \u2013 Dec 2025",
+    "subtextStyle": {
+      "fontSize": 12
     }
   },
   "color": [
@@ -108,30 +112,49 @@
   "legend": {
     "show": true,
     "orient": "horizontal",
-    "top": 40,
+    "top": 50,
     "data": [
-      "North",
-      "South",
-      "West"
+      "Revenue",
+      "Margin"
     ]
   },
   "grid": {
     "left": 70,
-    "right": 70,
-    "top": 40,
-    "bottom": 50,
+    "right": 86,
+    "top": 50,
+    "bottom": 60,
     "containLabel": true
   },
   "xAxis": {
     "type": "category",
     "data": [
-      "Q1",
-      "Q2",
-      "Q3",
-      "Q4"
+      "Jan 2024",
+      "Feb 2024",
+      "Mar 2024",
+      "Apr 2024",
+      "May 2024",
+      "Jun 2024",
+      "Jul 2024",
+      "Aug 2024",
+      "Sep 2024",
+      "Oct 2024",
+      "Nov 2024",
+      "Dec 2024",
+      "Jan 2025",
+      "Feb 2025",
+      "Mar 2025",
+      "Apr 2025",
+      "May 2025",
+      "Jun 2025",
+      "Jul 2025",
+      "Aug 2025",
+      "Sep 2025",
+      "Oct 2025",
+      "Nov 2025",
+      "Dec 2025"
     ],
     "axisLabel": {
-      "rotate": 0,
+      "rotate": 45,
       "fontSize": 12,
       "color": "#666"
     },
@@ -139,25 +162,38 @@
       "show": false
     }
   },
-  "yAxis": {
-    "type": "value",
-    "splitLine": {
-      "show": true,
-      "lineStyle": {
-        "color": "#eee"
-      }
+  "yAxis": [
+    {
+      "type": "value",
+      "splitLine": {
+        "show": true,
+        "lineStyle": {
+          "color": "#f0f0f0"
+        }
+      },
+      "axisLabel": {
+        "fontSize": 12,
+        "color": "#666"
+      },
+      "name": "Cumulative Revenue ($K)"
     },
-    "axisLabel": {
-      "fontSize": 12,
-      "color": "#666"
-    },
-    "name": "Revenue ($K)"
-  },
+    {
+      "type": "value",
+      "splitLine": {
+        "show": false
+      },
+      "axisLabel": {
+        "fontSize": 12,
+        "color": "#666"
+      },
+      "name": "Margin %"
+    }
+  ],
   "series": [
     {
       "type": "bar",
       "label": {
-        "show": true,
+        "show": false,
         "position": "top",
         "formatter": "{c}",
         "fontSize": 12,
@@ -167,58 +203,103 @@
         "borderRadius": 4
       },
       "yAxisIndex": 0,
-      "stack": "total",
-      "name": "North",
+      "name": "Revenue",
       "data": [
-        120.0,
-        145.0,
-        160.0,
-        180.0
+        100.0,
+        100.0,
+        127.3047,
+        177.1061,
+        248.8518,
+        303.3241,
+        340.8756,
+        366.9332,
+        426.1348,
+        471.3708,
+        520.2609,
+        561.1314,
+        581.1333,
+        644.757,
+        702.0016,
+        755.3298,
+        815.2903,
+        846.6032,
+        926.1363,
+        971.3566,
+        1026.7531,
+        1087.9457,
+        1097.0728,
+        1172.2035
       ]
     },
     {
-      "type": "bar",
-      "label": {
-        "show": true,
-        "position": "top",
-        "formatter": "{c}",
-        "fontSize": 12,
-        "color": "#333"
+      "type": "line",
+      "smooth": true,
+      "connectNulls": false,
+      "showSymbol": true,
+      "symbol": "circle",
+      "symbolSize": 8,
+      "lineStyle": {
+        "width": 3
       },
-      "itemStyle": {
-        "borderRadius": 4
-      },
-      "yAxisIndex": 0,
-      "stack": "total",
-      "name": "South",
+      "yAxisIndex": 1,
+      "name": "Margin",
       "data": [
-        90.0,
-        110.0,
-        130.0,
-        155.0
+        20.148,
+        25.1606,
+        26.4894,
+        24.8028,
+        19.1436,
+        24.0177,
+        33.7986,
+        21.2351,
+        15.4601,
+        19.9819,
+        19.2197,
+        19.0525,
+        28.4199,
+        29.8449,
+        32.091,
+        16.687,
+        18.3992,
+        34.5182,
+        15.0479,
+        24.1534,
+        16.0085,
+        28.0364,
+        34.926,
+        24.2637
       ]
+    }
+  ],
+  "toolbox": {
+    "show": true,
+    "right": 10,
+    "top": 10,
+    "feature": {
+      "saveAsImage": {
+        "show": true,
+        "type": "png",
+        "name": "kpi_dashboard",
+        "pixelRatio": 3,
+        "backgroundColor": "#ffffff"
+      },
+      "restore": {
+        "show": true
+      }
+    }
+  },
+  "dataZoom": [
+    {
+      "type": "inside",
+      "start": 0,
+      "end": 100,
+      "orient": "horizontal"
     },
     {
-      "type": "bar",
-      "label": {
-        "show": true,
-        "position": "top",
-        "formatter": "{c}",
-        "fontSize": 12,
-        "color": "#333"
-      },
-      "itemStyle": {
-        "borderRadius": 4
-      },
-      "yAxisIndex": 0,
-      "stack": "total",
-      "name": "West",
-      "data": [
-        60.0,
-        80.0,
-        95.0,
-        110.0
-      ]
+      "type": "slider",
+      "start": 0,
+      "end": 100,
+      "orient": "horizontal"
     }
   ]
 };

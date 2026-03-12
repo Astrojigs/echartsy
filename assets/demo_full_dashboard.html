@@ -18,7 +18,7 @@
   body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
          display: flex; justify-content: center;
          align-items: center; min-height: 100vh; padding: 20px; }
-  #ec_chart { width: 100%; height: 450px; border-radius: 8px; }
+  #ec_chart { width: 100%; height: 550px; border-radius: 8px; }
 </style>
 </head>
 <body>
@@ -82,7 +82,7 @@
   // ---------- apply ----------
   var option  = {
   "title": {
-    "text": "Stacked Revenue by Region",
+    "text": "Quarterly Revenue: Stacked + Trend + Breakdown",
     "left": "center",
     "textStyle": {
       "fontSize": 16,
@@ -90,12 +90,15 @@
     }
   },
   "color": [
-    "#893448",
-    "#d95850",
-    "#eb8146",
-    "#ffb248",
-    "#f2d643",
-    "#ebdba4"
+    "#5470C6",
+    "#91CC75",
+    "#FAC858",
+    "#EE6666",
+    "#73C0DE",
+    "#3BA272",
+    "#FC8452",
+    "#9A60B4",
+    "#EA7CCC"
   ],
   "tooltip": {
     "trigger": "axis",
@@ -108,17 +111,18 @@
   "legend": {
     "show": true,
     "orient": "horizontal",
-    "top": 40,
+    "top": 45,
     "data": [
       "North",
       "South",
-      "West"
+      "West",
+      "Total"
     ]
   },
   "grid": {
     "left": 70,
-    "right": 70,
-    "top": 40,
+    "right": 120,
+    "top": 50,
     "bottom": 50,
     "containLabel": true
   },
@@ -139,25 +143,38 @@
       "show": false
     }
   },
-  "yAxis": {
-    "type": "value",
-    "splitLine": {
-      "show": true,
-      "lineStyle": {
-        "color": "#eee"
-      }
+  "yAxis": [
+    {
+      "type": "value",
+      "splitLine": {
+        "show": true,
+        "lineStyle": {
+          "color": "#eee"
+        }
+      },
+      "axisLabel": {
+        "fontSize": 12,
+        "color": "#666"
+      },
+      "name": "Revenue ($K)"
     },
-    "axisLabel": {
-      "fontSize": 12,
-      "color": "#666"
-    },
-    "name": "Revenue ($K)"
-  },
+    {
+      "type": "value",
+      "splitLine": {
+        "show": false
+      },
+      "axisLabel": {
+        "fontSize": 12,
+        "color": "#666"
+      },
+      "name": "Total ($K)"
+    }
+  ],
   "series": [
     {
       "type": "bar",
       "label": {
-        "show": true,
+        "show": false,
         "position": "top",
         "formatter": "{c}",
         "fontSize": 12,
@@ -179,7 +196,7 @@
     {
       "type": "bar",
       "label": {
-        "show": true,
+        "show": false,
         "position": "top",
         "formatter": "{c}",
         "fontSize": 12,
@@ -201,7 +218,7 @@
     {
       "type": "bar",
       "label": {
-        "show": true,
+        "show": false,
         "position": "top",
         "formatter": "{c}",
         "fontSize": 12,
@@ -219,6 +236,81 @@
         95.0,
         110.0
       ]
+    },
+    {
+      "type": "line",
+      "smooth": true,
+      "connectNulls": false,
+      "showSymbol": true,
+      "symbol": "circle",
+      "symbolSize": 10,
+      "lineStyle": {
+        "width": 3
+      },
+      "yAxisIndex": 1,
+      "label": {
+        "show": true,
+        "position": "top",
+        "formatter": "{c}"
+      },
+      "name": "Total",
+      "data": [
+        270.0,
+        335.0,
+        385.0,
+        445.0
+      ]
+    },
+    {
+      "type": "pie",
+      "radius": [
+        "12%",
+        "22%"
+      ],
+      "startAngle": 45,
+      "data": [
+        {
+          "name": "North",
+          "value": 605.0
+        },
+        {
+          "name": "South",
+          "value": 485.0
+        },
+        {
+          "name": "West",
+          "value": 345.0
+        }
+      ],
+      "avoidLabelOverlap": true,
+      "label": {
+        "show": true,
+        "position": "outside",
+        "formatter": "{b}: {c} ({d}%)",
+        "fontSize": 9
+      },
+      "labelLine": {
+        "show": true,
+        "length": 15,
+        "length2": 10
+      },
+      "emphasis": {
+        "itemStyle": {
+          "shadowBlur": 10,
+          "shadowOffsetX": 0,
+          "shadowColor": "rgba(0, 0, 0, 0.5)"
+        },
+        "focus": "self"
+      },
+      "center": [
+        "86%",
+        "20%"
+      ],
+      "itemStyle": {
+        "borderRadius": 4,
+        "borderColor": "#fff",
+        "borderWidth": 2
+      }
     }
   ]
 };

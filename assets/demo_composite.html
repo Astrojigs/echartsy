@@ -18,7 +18,7 @@
   body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
          display: flex; justify-content: center;
          align-items: center; min-height: 100vh; padding: 20px; }
-  #ec_chart { width: 100%; height: 480px; border-radius: 8px; }
+  #ec_chart { width: 100%; height: 550px; border-radius: 8px; }
 </style>
 </head>
 <body>
@@ -82,15 +82,11 @@
   // ---------- apply ----------
   var option  = {
   "title": {
-    "text": "Department Budgets",
+    "text": "Monthly KPIs: Revenue, Growth & Product Mix",
     "left": "center",
     "textStyle": {
       "fontSize": 16,
       "fontFamily": "sans-serif"
-    },
-    "subtext": "with pie breakdown",
-    "subtextStyle": {
-      "fontSize": 12
     }
   },
   "color": [
@@ -113,30 +109,34 @@
     "appendTo": "body"
   },
   "legend": {
+    "show": true,
+    "orient": "horizontal",
+    "top": 40,
     "data": [
-      "Budget",
-      "Engineering",
-      "Marketing",
-      "Sales",
-      "HR",
-      "Finance"
+      "Revenue",
+      "Growth",
+      "Enterprise",
+      "Pro",
+      "Starter",
+      "Free-trial"
     ]
   },
   "grid": {
     "left": 70,
-    "right": 70,
-    "top": 60,
+    "right": 120,
+    "top": 40,
     "bottom": 50,
     "containLabel": true
   },
   "xAxis": {
     "type": "category",
     "data": [
-      "Engineering",
-      "Marketing",
-      "Sales",
-      "HR",
-      "Finance"
+      "Jan",
+      "Feb",
+      "Mar",
+      "Apr",
+      "May",
+      "Jun"
     ],
     "axisLabel": {
       "rotate": 0,
@@ -147,99 +147,110 @@
       "show": false
     }
   },
-  "yAxis": {
-    "type": "value",
-    "splitLine": {
-      "show": true,
-      "lineStyle": {
-        "color": "#eee"
-      }
+  "yAxis": [
+    {
+      "type": "value",
+      "splitLine": {
+        "show": true,
+        "lineStyle": {
+          "color": "#eee"
+        }
+      },
+      "axisLabel": {
+        "fontSize": 12,
+        "color": "#666"
+      },
+      "name": "Revenue ($K)"
     },
-    "axisLabel": {
-      "fontSize": 12,
-      "color": "#666"
-    },
-    "name": "Budget ($K)"
-  },
+    {
+      "type": "value",
+      "splitLine": {
+        "show": false
+      },
+      "axisLabel": {
+        "fontSize": 12,
+        "color": "#666"
+      },
+      "name": "Growth %"
+    }
+  ],
   "series": [
     {
       "type": "bar",
       "label": {
-        "show": false,
+        "show": true,
         "position": "top",
         "formatter": "{c}",
         "fontSize": 12,
         "color": "#333"
       },
       "itemStyle": {
-        "borderRadius": 6,
-        "color": {
-          "type": "linear",
-          "x": 0,
-          "y": 0,
-          "x2": 0,
-          "y2": 1,
-          "colorStops": [
-            {
-              "offset": 0,
-              "color": "#83bff6"
-            },
-            {
-              "offset": 1,
-              "color": "#188df0"
-            }
-          ]
-        }
+        "borderRadius": 4
       },
       "yAxisIndex": 0,
-      "name": "Budget",
+      "name": "Revenue",
       "data": [
-        450.0,
-        200.0,
-        350.0,
-        120.0,
-        180.0
+        250.0,
+        310.0,
+        280.0,
+        400.0,
+        520.0,
+        480.0
+      ]
+    },
+    {
+      "type": "line",
+      "smooth": true,
+      "connectNulls": false,
+      "showSymbol": true,
+      "symbol": "circle",
+      "symbolSize": 8,
+      "lineStyle": {
+        "width": 3
+      },
+      "yAxisIndex": 1,
+      "name": "Growth",
+      "data": [
+        5.2,
+        8.1,
+        6.5,
+        12.3,
+        18.7,
+        15.0
       ]
     },
     {
       "type": "pie",
       "radius": [
         "15%",
-        "28%"
+        "25%"
       ],
       "startAngle": 45,
       "data": [
         {
-          "name": "Engineering",
-          "value": 450.0,
-          "itemStyle": {
-            "color": "#91CC75"
-          }
-        },
-        {
-          "name": "Marketing",
-          "value": 200.0,
+          "name": "Enterprise",
+          "value": 45.0,
           "itemStyle": {
             "color": "#FAC858"
           }
         },
         {
-          "name": "Sales",
-          "value": 350.0,
+          "name": "Pro",
+          "value": 30.0,
           "itemStyle": {
             "color": "#EE6666"
           }
         },
         {
-          "name": "HR",
-          "value": 120.0,
+          "name": "Starter",
+          "value": 15.0,
           "itemStyle": {
             "color": "#73C0DE"
           }
         },
         {
-          "name": "Finance",
-          "value": 180.0,
+          "name": "Free-trial",
+          "value": 10.0,
           "itemStyle": {
             "color": "#3BA272"
           }
@@ -266,9 +277,14 @@
         "focus": "self"
       },
       "center": [
-        "82%",
-        "25%"
-      ]
+        "85%",
+        "22%"
+      ],
+      "itemStyle": {
+        "borderRadius": 4,
+        "borderColor": "#fff",
+        "borderWidth": 2
+      }
     }
   ]
 };

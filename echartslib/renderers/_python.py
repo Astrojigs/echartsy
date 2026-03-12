@@ -18,7 +18,8 @@ def render_python(
     width: str = "100%",
     theme: Optional[str] = None,
     renderer: str = "canvas",
-) -> dict:
+    adaptive: str = "auto",
+) -> None:
     """Write an HTML file to a temp location and open it in the browser.
 
     Parameters
@@ -31,14 +32,13 @@ def render_python(
         ECharts theme.
     renderer : str
         ``"canvas"`` or ``"svg"``.
+    adaptive : str
+        ``"auto"`` | ``"light"`` | ``"dark"`` — dark-mode adaptation.
 
-    Returns
-    -------
-    dict
-        The original option dict (pass-through).
     """
     html = build_html(
-        option, height=height, width=width, theme=theme, renderer=renderer,
+        option, height=height, width=width, theme=theme,
+        renderer=renderer, adaptive=adaptive,
     )
 
     with tempfile.NamedTemporaryFile(
@@ -48,4 +48,3 @@ def render_python(
         filepath = f.name
 
     webbrowser.open(f"file://{filepath}")
-    return option

@@ -131,7 +131,7 @@ _PX_PER_CHAR = 7
 _PX_PER_ROTATED_CHAR = 5
 
 
-def _resolve_layout(option: dict, series_meta: List[dict]) -> dict:
+def _resolve_layout(option: dict, series_meta: List[Any]) -> dict:
     """Run the anti-overlap engine over a fully assembled ECharts option dict.
 
     Mutates a deep copy and returns it. Auto-adjusts:

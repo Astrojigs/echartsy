@@ -3,7 +3,7 @@ from __future__ import annotations
 
 from typing import Any, Optional
 
-from echartslib._config import get_engine
+from echartslib._config import get_adaptive, get_engine
 
 
 def render(
@@ -14,7 +14,7 @@ def render(
     renderer: str = "canvas",
     key: Optional[str] = None,
     **render_kw: Any,
-) -> dict:
+) -> None:
     """Dispatch to the currently configured rendering backend.
 
     Parameters
@@ -33,31 +33,29 @@ def render(
         Widget key (Streamlit only).
     **render_kw
         Extra renderer-specific keyword arguments.
-
-    Returns
-    -------
-    dict
-        The option dict (pass-through from the renderer).
     """
     engine = get_engine()
+    adaptive = get_adaptive()
 
     if engine == "jupyter":
         from echartslib.renderers._jupyter import render_jupyter
-        return render_jupyter(
+        render_jupyter(
             option, height=height, width=width or "100%",
-            theme=theme, renderer=renderer,
+            theme=theme, renderer=renderer, adaptive=adaptive,
         )
+        return
 
     if engine == "streamlit":
         from echartslib.renderers._streamlit import render_streamlit
-        return render_streamlit(
+        render_streamlit(
             option, height=height, width=width, theme=theme,
             renderer=renderer, key=key, **render_kw,
         )
+        return
 
     # Default: "python" — open in browser
     from echartslib.renderers._python import render_python
-    return render_python(
+    render_python(
         option, height=height, width=width or "100%",
-        theme=theme, renderer=renderer,
+        theme=theme, renderer=renderer, adaptive=adaptive,
     )

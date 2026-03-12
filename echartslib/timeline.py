@@ -695,10 +695,10 @@ class TimelineFigure:
 
         return {"baseOption": base, "options": frame_options}
 
-    def show(self, **render_kw: Any) -> Optional[dict]:
+    def show(self, **render_kw: Any) -> None:
         """Render the animated chart using the currently configured engine."""
         option = self.to_option()
-        return render(
+        render(
             option, height=self._height, width=self._width,
             theme=self._theme, renderer=self._renderer,
             key=self._key or self._auto_key(), **render_kw,
@@ -706,15 +706,29 @@ class TimelineFigure:
 
     def to_html(self, filepath: str = "timeline_chart.html") -> str:
         """Export the timeline chart to a standalone HTML file."""
+        import os
+        from echartslib._config import get_adaptive
         from echartslib.renderers._html_template import build_html
+
+        # Validate parent directory exists
+        parent = os.path.dirname(os.path.abspath(filepath))
+        if not os.path.isdir(parent):
+            raise FileNotFoundError(
+                f"to_html(): directory '{parent}' does not exist. "
+                "Please create it first or use a different path."
+            )
+
         option = self.to_option()
         html = build_html(
             option, height=self._height,
             width=self._width or "100%",
             theme=self._theme, renderer=self._renderer,
+            adaptive=get_adaptive(),
         )
         with open(filepath, "w", encoding="utf-8") as f:
             f.write(html)
+        abs_path = os.path.abspath(filepath)
+        print(f"Chart saved to {abs_path}")
         return filepath
 
 

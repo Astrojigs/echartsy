@@ -447,6 +447,50 @@ class Figure:
         self._extra.update(kwargs)
         return self
 
+    def raw_series(self, config: dict) -> "Figure":
+        """Inject a raw ECharts series dict (escape hatch for composite charts).
+
+        Use this to overlay chart types that would normally conflict —
+        for example, a small pie chart on top of a bar chart.
+
+        The ``config`` dict is appended directly to the series list with
+        no mode-locking or validation.
+
+        Parameters
+        ----------
+        config : dict
+            A raw ECharts series configuration, e.g.
+            ``{"type": "pie", "radius": "30%", "center": ["75%", "25%"],
+            "data": [{"name": "A", "value": 10}, ...]}``
+
+        Returns
+        -------
+        Figure
+            Self, for chaining.
+
+        Example
+        -------
+        >>> (ec.Figure()
+        ...  .bar(df, x="Month", y="Revenue")
+        ...  .raw_series({
+        ...      "type": "pie", "radius": "25%",
+        ...      "center": ["80%", "25%"],
+        ...      "data": [{"name": "A", "value": 40}, {"name": "B", "value": 60}],
+        ...      "label": {"fontSize": 10},
+        ...  })
+        ...  .show())
+        """
+        self._series.append(config)
+        self._series_meta.append(_SeriesMeta(
+            chart_type=config.get("type", "custom"),
+            name=config.get("name", ""),
+            raw_config=config,
+        ))
+        # Extend legend if the raw series has named data items
+        if "name" in config and config["name"]:
+            self._legend_items.append(config["name"])
+        return self
+
     # ═══════════════════════════════════════════════════════════════════════
     # Series methods
     # ═══════════════════════════════════════════════════════════════════════
@@ -520,7 +564,8 @@ class Figure:
             entry = {**base, "name": name_str, "data": values}
             self._series.append(entry)
             self._series_meta.append(_SeriesMeta("line", name_str, axis))
-            self._legend_items.append(name_str)
+            if name_str not in self._legend_items:
+                self._legend_items.append(name_str)
 
         return self
 
@@ -613,7 +658,8 @@ class Figure:
             entry = {**base, "name": name_str, "data": values}
             self._series.append(entry)
             self._series_meta.append(_SeriesMeta("bar", name_str, axis))
-            self._legend_items.append(name_str)
+            if name_str not in self._legend_items:
+                self._legend_items.append(name_str)
 
         if orient == "h":
             self._extra["_bar_orient_h"] = True
@@ -673,7 +719,7 @@ class Figure:
             entry.update(series_kw)
             self._series.append(entry)
             self._series_meta.append(_SeriesMeta("scatter", name_str))
-            if color:
+            if color and name_str not in self._legend_items:
                 self._legend_items.append(name_str)
 
         return self
@@ -683,17 +729,55 @@ class Figure:
     def pie(
         self, df: pd.DataFrame, names: str, values: str, *,
         inner_radius: Optional[str] = None, outer_radius: str = "60%",
+        center: Optional[List[str]] = None,
+        radius: Optional[Union[str, List[str]]] = None,
         border_radius: int = 0, start_angle: int = 45,
         label_inside: bool = False, label_outside: bool = True,
         label_formatter: str = "{b}: {c} ({d}%)",
+        label_font_size: Optional[int] = None,
         center_on_hover: bool = False,
         center_formatter: str = "{b}\n{c}",
         center_font_size: int = 18,
         rose_type: Optional[Literal["radius", "area"]] = None,
         **series_kw: Any,
     ) -> "Figure":
-        """Add a pie (or donut) chart — equivalent to ``plt.pie()``."""
-        self._ensure_mode("pie", "pie")
+        """Add a pie (or donut) chart — equivalent to ``plt.pie()``.
+
+        When called on a figure that already has cartesian series (bar, line,
+        etc.), the pie is rendered as an **overlay** positioned via *center*
+        and *radius*.  This lets you place a small pie on top of a bar chart
+        without needing ``raw_series()``.
+
+        Parameters
+        ----------
+        center : list[str], optional
+            ``["x%", "y%"]`` position of the pie centre inside the chart
+            area (e.g. ``["80%", "25%"]``).  When provided on a non-pie
+            figure the pie becomes an overlay and skips the mode lock.
+        radius : str | list[str], optional
+            Shorthand for ``[inner_radius, outer_radius]``.  Accepts a
+            single string (``"30%"``) or a two-element list
+            (``["15%", "25%"]``).  Overrides *inner_radius* / *outer_radius*
+            when provided.
+        label_font_size : int, optional
+            Override the label font size (handy for small overlay pies).
+        """
+        # ── Overlay mode: allow pie on top of cartesian charts ─────────
+        _OVERLAY_COMPATIBLE = ("cartesian",)
+        is_overlay = (
+            center is not None
+            and self._chart_mode is not None
+            and self._chart_mode != "pie"
+        )
+        if is_overlay and self._chart_mode not in _OVERLAY_COMPATIBLE:
+            raise BuilderConfigError(
+                f"pie() overlay (center={center!r}) is only supported on cartesian "
+                f"figures (bar/line/scatter), but the current mode is "
+                f"'{self._chart_mode}'. Use a separate Figure for this pie chart."
+            )
+        if not is_overlay:
+            self._ensure_mode("pie", "pie")
+
         df = _validate_df(df, "pie")
         _validate_columns(df, [names, values], "pie")
 
@@ -705,7 +789,14 @@ class Figure:
             {"name": str(n), "value": round(float(v), 4)}
             for n, v in zip(dff[names], dff[values])
         ]
-        radius = [inner_radius, outer_radius] if inner_radius else outer_radius
+
+        # Resolve radius: explicit `radius` param > inner/outer pair > default
+        if radius is not None:
+            resolved_radius = radius
+        elif inner_radius:
+            resolved_radius = [inner_radius, outer_radius]
+        else:
+            resolved_radius = outer_radius
 
         if label_inside:
             lbl = {"show": True, "position": "inside", "formatter": label_formatter}
@@ -716,6 +807,9 @@ class Figure:
         else:
             lbl = {"show": False}
             lbl_line = {"show": False}
+
+        if label_font_size is not None:
+            lbl["fontSize"] = label_font_size
 
         emphasis: dict = {
             "itemStyle": {
@@ -730,20 +824,52 @@ class Figure:
                 "fontSize": center_font_size, "fontWeight": "bold",
             }
 
+        # For overlays, also add "focus self" so hovering the pie doesn't
+        # dim the underlying cartesian series.
+        if is_overlay:
+            emphasis["focus"] = "self"
+
         entry: dict = {
-            "type": "pie", "radius": radius, "startAngle": start_angle,
+            "type": "pie", "radius": resolved_radius, "startAngle": start_angle,
             "data": data, "avoidLabelOverlap": True,
             "label": lbl, "labelLine": lbl_line, "emphasis": emphasis,
         }
+        if center is not None:
+            entry["center"] = center
         if border_radius:
             entry.setdefault("itemStyle", {})["borderRadius"] = border_radius
+            entry["itemStyle"].setdefault("borderColor", "#fff")
+            entry["itemStyle"].setdefault("borderWidth", 2)
         if rose_type:
             entry["roseType"] = rose_type
         entry.update(series_kw)
 
+        # ── Overlay color offset ──────────────────────────────────────────
+        # When the pie's categories differ from the existing legend items,
+        # offset slice colours so they don't collide with the bar/line palette.
+        if is_overlay:
+            pie_names_set = {str(n) for n in dff[names]}
+            existing_names_set = set(self._legend_items)
+            if not pie_names_set & existing_names_set:
+                # Categories are disjoint → offset colours
+                pal = list(self._palette or (
+                    "#5470C6", "#91CC75", "#FAC858", "#EE6666",
+                    "#73C0DE", "#3BA272", "#FC8452", "#9A60B4", "#EA7CCC",
+                ))
+                offset = len(existing_names_set)
+                for i, item in enumerate(data):
+                    item["itemStyle"] = item.get("itemStyle", {})
+                    item["itemStyle"]["color"] = pal[(offset + i) % len(pal)]
+
         self._series.append(entry)
         self._series_meta.append(_SeriesMeta("pie", names))
-        self._legend_items = [str(n) for n in dff[names]]
+
+        # For standalone pies, overwrite the legend; for overlays, extend it.
+        pie_names = [str(n) for n in dff[names]]
+        if is_overlay:
+            self._legend_items.extend(pie_names)
+        else:
+            self._legend_items = pie_names
 
         return self
 
@@ -880,7 +1006,8 @@ class Figure:
             entry.update(series_kw)
             self._series.append(entry)
             self._series_meta.append(_SeriesMeta("line", name))
-            self._legend_items.append(name)
+            if name not in self._legend_items:
+                self._legend_items.append(name)
 
         self._y_axes[0].setdefault("name", "Density")
         return self
@@ -1139,62 +1266,62 @@ class Figure:
         if mode == "pie":
             option: dict = {}
             if self._title_cfg:
-                option["title"] = self._title_cfg
+                option["title"] = copy.deepcopy(self._title_cfg)
             option["tooltip"] = {"trigger": "item", "formatter": "{b}: {c} ({d}%)", "confine": True}
-            legend_cfg = self._legend_cfg or {"orient": self._style.legend_orient, "left": "left"}
-            legend_cfg["data"] = self._legend_items
+            legend_cfg = copy.deepcopy(self._legend_cfg) or {"orient": self._style.legend_orient, "left": "left"}
+            legend_cfg["data"] = list(self._legend_items)
             option["legend"] = legend_cfg
             if self._palette:
                 option["color"] = list(self._palette)
-            option["series"] = self._series
+            option["series"] = copy.deepcopy(self._series)
             if self._toolbox_cfg:
-                option["toolbox"] = self._toolbox_cfg
-            option.update({k: v for k, v in self._extra.items() if not k.startswith("_")})
+                option["toolbox"] = copy.deepcopy(self._toolbox_cfg)
+            option.update({k: copy.deepcopy(v) for k, v in self._extra.items() if not k.startswith("_")})
             return option
 
         if mode == "radar":
             option = {}
             if self._title_cfg:
-                option["title"] = self._title_cfg
+                option["title"] = copy.deepcopy(self._title_cfg)
             option["tooltip"] = {"trigger": "item", "confine": True, "appendTo": "body"}
-            legend_cfg = self._legend_cfg or {"left": "center", "show": True, "padding": 40}
-            legend_cfg["data"] = self._legend_items
+            legend_cfg = copy.deepcopy(self._legend_cfg) or {"left": "center", "show": True, "padding": 40}
+            legend_cfg["data"] = list(self._legend_items)
             option["legend"] = legend_cfg
-            radar_cfg = self._extra.pop("_radar_cfg", {"indicator": [], "radius": 150, "center": ["50%", "55%"]})
+            radar_cfg = copy.deepcopy(self._extra.get("_radar_cfg", {"indicator": [], "radius": 150, "center": ["50%", "55%"]}))
             option["radar"] = radar_cfg
             if self._palette:
                 option["color"] = list(self._palette)
-            option["series"] = self._series
+            option["series"] = copy.deepcopy(self._series)
             if self._toolbox_cfg:
-                option["toolbox"] = self._toolbox_cfg
-            option.update({k: v for k, v in self._extra.items() if not k.startswith("_")})
+                option["toolbox"] = copy.deepcopy(self._toolbox_cfg)
+            option.update({k: copy.deepcopy(v) for k, v in self._extra.items() if not k.startswith("_")})
             return option
 
         if mode in ("sankey", "treemap", "funnel", "heatmap"):
             option = {}
             if self._title_cfg:
-                option["title"] = self._title_cfg
-            option["tooltip"] = self._tooltip_cfg
+                option["title"] = copy.deepcopy(self._title_cfg)
+            option["tooltip"] = copy.deepcopy(self._tooltip_cfg)
             if self._palette:
                 option["color"] = list(self._palette)
             if mode == "heatmap":
-                option["xAxis"] = self._x_axis
-                option["yAxis"] = self._y_axes[0] if len(self._y_axes) == 1 else self._y_axes
-                option["grid"] = self._grid_cfg
+                option["xAxis"] = copy.deepcopy(self._x_axis)
+                option["yAxis"] = copy.deepcopy(self._y_axes[0] if len(self._y_axes) == 1 else self._y_axes)
+                option["grid"] = copy.deepcopy(self._grid_cfg)
             if self._legend_items and mode == "funnel":
-                legend_cfg = self._legend_cfg or {"orient": "vertical", "left": "left"}
-                legend_cfg["data"] = self._legend_items
+                legend_cfg = copy.deepcopy(self._legend_cfg) or {"orient": "vertical", "left": "left"}
+                legend_cfg["data"] = list(self._legend_items)
                 option["legend"] = legend_cfg
-            option["series"] = self._series
+            option["series"] = copy.deepcopy(self._series)
             if self._toolbox_cfg:
-                option["toolbox"] = self._toolbox_cfg
+                option["toolbox"] = copy.deepcopy(self._toolbox_cfg)
             if "visualMap" in self._extra:
-                option["visualMap"] = self._extra.pop("visualMap")
-            option.update({k: v for k, v in self._extra.items() if not k.startswith("_")})
+                option["visualMap"] = copy.deepcopy(self._extra["visualMap"])
+            option.update({k: copy.deepcopy(v) for k, v in self._extra.items() if not k.startswith("_")})
             return option
 
         # ── Cartesian mode ────────────────────────────────────────────────
-        is_h_bar = self._extra.pop("_bar_orient_h", False)
+        is_h_bar = self._extra.get("_bar_orient_h", False)
 
         x_axis_cfg = copy.deepcopy(self._x_axis)
         y_axis_cfg = copy.deepcopy(self._y_axes)
@@ -1208,23 +1335,23 @@ class Figure:
 
         option = {}
         if self._title_cfg:
-            option["title"] = self._title_cfg
+            option["title"] = copy.deepcopy(self._title_cfg)
         if self._palette:
             option["color"] = list(self._palette)
-        option["tooltip"] = self._tooltip_cfg
+        option["tooltip"] = copy.deepcopy(self._tooltip_cfg)
 
         if self._legend_items:
-            legend_cfg = self._legend_cfg or {}
+            legend_cfg = copy.deepcopy(self._legend_cfg) or {}
             legend_cfg["data"] = list(dict.fromkeys(self._legend_items))
             option["legend"] = legend_cfg
 
-        option["grid"] = self._grid_cfg
+        option["grid"] = copy.deepcopy(self._grid_cfg)
         option["xAxis"] = x_axis_cfg
         option["yAxis"] = y_axis_cfg if len(y_axis_cfg) > 1 else y_axis_cfg[0]
-        option["series"] = self._series
+        option["series"] = copy.deepcopy(self._series)
 
         if self._toolbox_cfg:
-            option["toolbox"] = self._toolbox_cfg
+            option["toolbox"] = copy.deepcopy(self._toolbox_cfg)
         if self._datazoom_cfg:
             option["dataZoom"] = self._datazoom_cfg
 
@@ -1237,20 +1364,19 @@ class Figure:
 
         return option
 
-    def show(self, **render_kw: Any) -> Optional[dict]:
+    def show(self, **render_kw: Any) -> None:
         """Render the chart using the currently configured engine.
 
         Calls :meth:`to_option` to assemble the full config, runs the
         anti-overlap engine, and dispatches to the active renderer.
 
-        Returns
-        -------
-        dict or None
-            The final ECharts option dict.
+        Returns ``None`` so that Jupyter does not auto-display the option
+        dict below the chart.  Use :meth:`to_option` if you need the raw
+        dict.
         """
         option = self.to_option()
 
-        return render(
+        render(
             option,
             height=self._height,
             width=self._width,
@@ -1273,16 +1399,29 @@ class Figure:
         str
             The filepath written to.
         """
+        import os
+        from echartslib._config import get_adaptive
         from echartslib.renderers._html_template import build_html
+
+        # Validate parent directory exists
+        parent = os.path.dirname(os.path.abspath(filepath))
+        if not os.path.isdir(parent):
+            raise FileNotFoundError(
+                f"to_html(): directory '{parent}' does not exist. "
+                "Please create it first or use a different path."
+            )
 
         option = self.to_option()
         html = build_html(
             option, height=self._height,
             width=self._width or "100%",
             theme=self._theme, renderer=self._renderer,
+            adaptive=get_adaptive(),
         )
         with open(filepath, "w", encoding="utf-8") as f:
             f.write(html)
+        abs_path = os.path.abspath(filepath)
+        print(f"Chart saved to {abs_path}")
         return filepath
 
 

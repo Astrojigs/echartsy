@@ -28,3 +28,7 @@ Thumbs.db
 .pytest_cache/
 htmlcov/
 .coverage
+
+# Temp chart exports
+echartslib_*.html
+*.ipynb_checkpoints/

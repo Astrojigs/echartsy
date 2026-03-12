@@ -16,7 +16,7 @@ Quick-start
 ...     .show()
 ... )
 """
-from echartslib._config import config, get_engine
+from echartslib._config import config, get_adaptive, get_engine
 from echartslib.exceptions import (
     BuilderConfigError,
     BuilderError,
@@ -43,6 +43,7 @@ __all__ = [
     # Config
     "config",
     "get_engine",
+    "get_adaptive",
     # Figure
     "Figure",
     "figure",

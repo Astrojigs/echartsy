@@ -1,12 +1,13 @@
 """Jupyter Notebook rendering backend.
 
-Renders the chart inline as an interactive HTML widget using
-``IPython.display.HTML`` with an embedded IFrame.
+Renders the chart inline as an interactive HTML widget using a
+base64-encoded data-URI inside an ``<iframe>``.
 """
 from __future__ import annotations
 
 import base64
 import uuid
+import warnings
 from typing import Optional
 
 from echartslib.renderers._html_template import build_jupyter_html
@@ -18,11 +19,12 @@ def render_jupyter(
     width: str = "100%",
     theme: Optional[str] = None,
     renderer: str = "canvas",
-) -> dict:
+    adaptive: str = "auto",
+) -> None:
     """Render an ECharts chart inline in a Jupyter notebook cell.
 
-    Uses an IFrame with a ``srcdoc`` data-URI so no temp files or
-    external server are needed.
+    Uses a base64 data-URI ``<iframe>`` so no temp files or external
+    server are needed.
 
     Parameters
     ----------
@@ -34,11 +36,8 @@ def render_jupyter(
         ECharts theme.
     renderer : str
         ``"canvas"`` or ``"svg"``.
-
-    Returns
-    -------
-    dict
-        The original option dict (pass-through).
+    adaptive : str
+        ``"auto"`` | ``"light"`` | ``"dark"`` — dark-mode adaptation.
     """
     try:
         from IPython.display import HTML, display
@@ -52,13 +51,12 @@ def render_jupyter(
     html_content = build_jupyter_html(
         option, height=height, width=width,
         theme=theme, renderer=renderer, chart_id=chart_id,
+        adaptive=adaptive,
     )
 
-    # Parse the numeric portion of height for the iframe
     h_px = _parse_css_px(height, default=400)
     w_css = width if width != "100%" else "100%"
 
-    # Encode the HTML as a base64 data-URI so it works without a server
     encoded = base64.b64encode(html_content.encode("utf-8")).decode("ascii")
 
     iframe_html = (
@@ -69,8 +67,16 @@ def render_jupyter(
         f'</iframe>'
     )
 
-    display(HTML(iframe_html))
-    return option
+    # Suppress the "Consider using IPython.display.IFrame" warning —
+    # IFrame cannot serve data-URIs or temp files reliably across all
+    # Jupyter environments, so the HTML approach is intentional.
+    with warnings.catch_warnings():
+        warnings.filterwarnings(
+            "ignore",
+            message=".*Consider using IPython.display.IFrame.*",
+            category=UserWarning,
+        )
+        display(HTML(iframe_html))
 
 
 def _parse_css_px(value: str, default: int = 400) -> int:

@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EChartsLib Chart</title>
+<script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  @media (prefers-color-scheme: dark) {
+    body { background: #1e1e1e; }
+    #ec_chart { background: #2a2a2a; box-shadow: 0 2px 12px rgba(0,0,0,0.3); }
+  }
+  @media (prefers-color-scheme: light) {
+    body { background: #fafafa; }
+    #ec_chart { background: #fff; box-shadow: 0 2px 12px rgba(0,0,0,0.08); }
+  }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+         display: flex; justify-content: center;
+         align-items: center; min-height: 100vh; padding: 20px; }
+  #ec_chart { width: 100%; height: 420px; border-radius: 8px; }
+</style>
+</head>
+<body>
+<div id="ec_chart"></div>
+<script>
+
+(function() {
+  // ---------- detect dark mode ----------
+  var FORCE = "auto";          // "auto" | "light" | "dark"
+  var isDark;
+  if (FORCE === "dark")       isDark = true;
+  else if (FORCE === "light") isDark = false;
+  else                        isDark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+
+  // ---------- colour maps ----------
+  var LIGHT_TEXT = {"#666":1, "#333":1, "#666666":1, "#333333":1};
+  var LIGHT_GRID = {"#eee":1, "#eeeeee":1, "#f0f0f0":1};
+  var DARK_TEXT  = "#ccc";
+  var DARK_GRID  = "#555";
+  var DARK_TITLE = "#eee";
+  var DARK_SUBTITLE = "#bbb";
+
+  // ---------- recursive patcher ----------
+  function patchColors(obj) {
+    if (!obj || typeof obj !== "object") return;
+    if (Array.isArray(obj)) { obj.forEach(patchColors); return; }
+    for (var k in obj) {
+      if (!obj.hasOwnProperty(k)) continue;
+      var v = obj[k];
+      if (typeof v === "string") {
+        var lv = v.toLowerCase();
+        if (k === "color" && LIGHT_TEXT[lv])         obj[k] = DARK_TEXT;
+        else if (k === "color" && LIGHT_GRID[lv])    obj[k] = DARK_GRID;
+        else if (k === "borderColor" && LIGHT_GRID[lv]) obj[k] = DARK_GRID;
+      } else if (typeof v === "object") {
+        patchColors(v);
+      }
+    }
+  }
+
+  // ---------- patch title specifically ----------
+  function patchTitle(t) {
+    if (!t) return;
+    if (t.textStyle)    t.textStyle.color    = t.textStyle.color    || DARK_TITLE;
+    else                t.textStyle = {color: DARK_TITLE};
+    if (t.subtextStyle) t.subtextStyle.color = t.subtextStyle.color || DARK_SUBTITLE;
+  }
+
+  // ---------- patch splitLine / grid line colours ----------
+  function patchGridLines(axes) {
+    if (!axes) return;
+    var arr = Array.isArray(axes) ? axes : [axes];
+    arr.forEach(function(ax) {
+      if (ax.splitLine && ax.splitLine.lineStyle) {
+        var c = (ax.splitLine.lineStyle.color || "").toLowerCase();
+        if (LIGHT_GRID[c]) ax.splitLine.lineStyle.color = DARK_GRID;
+      }
+    });
+  }
+
+  // ---------- apply ----------
+  var option  = {
+  "title": {
+    "text": "Regional Sales Trends",
+    "left": "center",
+    "textStyle": {
+      "fontSize": 16,
+      "fontFamily": "sans-serif"
+    }
+  },
+  "color": [
+    "#5470C6",
+    "#91CC75",
+    "#FAC858",
+    "#EE6666",
+    "#73C0DE",
+    "#3BA272",
+    "#FC8452",
+    "#9A60B4",
+    "#EA7CCC"
+  ],
+  "tooltip": {
+    "trigger": "axis",
+    "axisPointer": {
+      "type": "cross"
+    },
+    "confine": true,
+    "appendTo": "body"
+  },
+  "legend": {
+    "data": [
+      "North",
+      "South",
+      "West"
+    ]
+  },
+  "grid": {
+    "left": 70,
+    "right": 70,
+    "top": 60,
+    "bottom": 50,
+    "containLabel": true
+  },
+  "xAxis": {
+    "type": "category",
+    "data": [
+      "Jan",
+      "Feb",
+      "Mar",
+      "Apr",
+      "May",
+      "Jun"
+    ],
+    "axisLabel": {
+      "rotate": 0,
+      "fontSize": 12,
+      "color": "#666"
+    },
+    "axisTick": {
+      "show": false
+    }
+  },
+  "yAxis": {
+    "type": "value",
+    "splitLine": {
+      "show": true,
+      "lineStyle": {
+        "color": "#eee"
+      }
+    },
+    "axisLabel": {
+      "fontSize": 12,
+      "color": "#666"
+    },
+    "name": "Sales ($K)"
+  },
+  "series": [
+    {
+      "type": "line",
+      "smooth": true,
+      "connectNulls": false,
+      "showSymbol": true,
+      "symbol": "circle",
+      "symbolSize": 6,
+      "lineStyle": {
+        "width": 2
+      },
+      "yAxisIndex": 0,
+      "areaStyle": {
+        "opacity": 0.15
+      },
+      "name": "North",
+      "data": [
+        152.0,
+        229.0,
+        142.0,
+        64.0,
+        156.0,
+        121.0
+      ]
+    },
+    {
+      "type": "line",
+      "smooth": true,
+      "connectNulls": false,
+      "showSymbol": true,
+      "symbol": "circle",
+      "symbolSize": 6,
+      "lineStyle": {
+        "width": 2
+      },
+      "yAxisIndex": 0,
+      "areaStyle": {
+        "opacity": 0.15
+      },
+      "name": "South",
+      "data": [
+        238.0,
+        70.0,
+        152.0,
+        171.0,
+        260.0,
+        264.0
+      ]
+    },
+    {
+      "type": "line",
+      "smooth": true,
+      "connectNulls": false,
+      "showSymbol": true,
+      "symbol": "circle",
+      "symbolSize": 6,
+      "lineStyle": {
+        "width": 2
+      },
+      "yAxisIndex": 0,
+      "areaStyle": {
+        "opacity": 0.15
+      },
+      "name": "West",
+      "data": [
+        124.0,
+        252.0,
+        137.0,
+        166.0,
+        149.0,
+        153.0
+      ]
+    }
+  ],
+  "toolbox": {
+    "show": true,
+    "right": 10,
+    "top": 10,
+    "feature": {
+      "saveAsImage": {
+        "show": true,
+        "pixelRatio": 3
+      },
+      "restore": {
+        "show": true
+      }
+    }
+  }
+};
+  var themeToUse = null;   // null or "dark" etc
+
+  if (isDark && !themeToUse) {
+    themeToUse = "dark";
+    patchColors(option);
+
+    // Patch title
+    if (option.title) patchTitle(option.title);
+    // Patch axes
+    patchGridLines(option.xAxis);
+    patchGridLines(option.yAxis);
+
+    // Remove hardcoded light backgrounds so the dark theme shines through
+    if (option.backgroundColor) {
+      var bg = option.backgroundColor.toLowerCase();
+      if (bg === "#fff" || bg === "#ffffff" || bg === "#fafafa" || bg === "white")
+        delete option.backgroundColor;
+    }
+
+    // Timeline: patch baseOption if present
+    if (option.baseOption) {
+      patchColors(option.baseOption);
+      if (option.baseOption.title) patchTitle(option.baseOption.title);
+      if (option.baseOption.backgroundColor) {
+        var bbg = option.baseOption.backgroundColor.toLowerCase();
+        if (bbg === "#fff" || bbg === "#ffffff" || bbg === "#fafafa" || bbg === "white")
+          delete option.baseOption.backgroundColor;
+      }
+    }
+    if (option.options) {
+      option.options.forEach(function(fo) {
+        patchColors(fo);
+        patchGridLines(fo.xAxis);
+        patchGridLines(fo.yAxis);
+      });
+    }
+  }
+
+  // ---------- init chart ----------
+  var chart = echarts.init(
+    document.getElementById("ec_chart"),
+    themeToUse,
+    { renderer: "canvas" }
+  );
+  chart.setOption(option);
+  window.addEventListener("resize", function() { chart.resize(); });
+
+  // ---------- live theme switch (OS toggle) ----------
+  if (FORCE === "auto" && window.matchMedia) {
+    window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", function() {
+      location.reload();
+    });
+  }
+})();
+
+</script>
+</body>
+</html>

@@ -17,6 +17,21 @@ Quick-start
 ... )
 """
 from echartsy._config import config, get_adaptive, get_engine
+from echartsy.emphasis import (
+    AreaStyle,
+    Emphasis,
+    FunnelEmphasis,
+    ItemStyle,
+    LabelLineStyle,
+    LabelStyle,
+    LineEmphasis,
+    LineStyle,
+    PieEmphasis,
+    RadarEmphasis,
+    SankeyEmphasis,
+    ScatterEmphasis,
+    TreemapEmphasis,
+)
 from echartsy.exceptions import (
     BuilderConfigError,
     BuilderError,
@@ -56,6 +71,20 @@ __all__ = [
     "PALETTE_CLINICAL",
     "PALETTE_DARK",
     "PALETTE_RUSTY",
+    # Emphasis
+    "Emphasis",
+    "LineEmphasis",
+    "ScatterEmphasis",
+    "PieEmphasis",
+    "RadarEmphasis",
+    "SankeyEmphasis",
+    "FunnelEmphasis",
+    "TreemapEmphasis",
+    "ItemStyle",
+    "LabelStyle",
+    "LineStyle",
+    "AreaStyle",
+    "LabelLineStyle",
     # Exceptions
     "BuilderError",
     "BuilderConfigError",

@@ -82,12 +82,26 @@
   // ---------- apply ----------
   var option  = {
   "title": {
-    "text": "Traffic by Source",
+    "text": "Product Mix: Q1 vs Q2",
     "left": "center",
     "textStyle": {
       "fontSize": 16,
       "fontFamily": "sans-serif"
     }
+  },
+  "tooltip": {
+    "trigger": "item",
+    "formatter": "{b}: {c} ({d}%)",
+    "confine": true
+  },
+  "legend": {
+    "data": [
+      "Product A",
+      "Product B",
+      "Product C"
+    ],
+    "top": 40,
+    "left": "center"
   },
   "color": [
     "#5470C6",
@@ -100,136 +114,130 @@
     "#9A60B4",
     "#EA7CCC"
   ],
-  "tooltip": {
-    "trigger": "axis",
-    "axisPointer": {
-      "type": "cross"
-    },
-    "confine": true,
-    "appendTo": "body"
-  },
-  "legend": {
-    "show": true,
-    "orient": "horizontal",
-    "top": 30,
-    "data": [
-      "Organic",
-      "Paid",
-      "Social"
-    ]
-  },
-  "grid": {
-    "left": 70,
-    "right": 70,
-    "top": 60,
-    "bottom": 50,
-    "containLabel": true
-  },
-  "xAxis": {
-    "type": "category",
-    "data": [
-      "Jan",
-      "Feb",
-      "Mar",
-      "Apr",
-      "May",
-      "Jun"
-    ],
-    "axisLabel": {
-      "rotate": 0,
-      "fontSize": 12,
-      "color": "#666"
-    },
-    "axisTick": {
-      "show": false
-    }
-  },
-  "yAxis": {
-    "type": "value",
-    "splitLine": {
-      "show": true,
-      "lineStyle": {
-        "color": "#eee"
-      }
-    },
-    "axisLabel": {
-      "fontSize": 12,
-      "color": "#666"
-    },
-    "name": "Visitors (K)"
-  },
   "series": [
     {
-      "type": "line",
-      "smooth": true,
-      "connectNulls": false,
-      "showSymbol": true,
-      "symbol": "circle",
-      "symbolSize": 6,
-      "lineStyle": {
-        "width": 2
-      },
-      "yAxisIndex": 0,
-      "areaStyle": {
-        "opacity": 0.15
-      },
-      "name": "Organic",
+      "type": "pie",
+      "radius": [
+        "25%",
+        "40%"
+      ],
+      "startAngle": 45,
       "data": [
-        100.0,
-        120.0,
-        150.0,
-        200.0,
-        180.0,
-        210.0
-      ]
+        {
+          "name": "Product A",
+          "value": 40.0
+        },
+        {
+          "name": "Product B",
+          "value": 35.0
+        },
+        {
+          "name": "Product C",
+          "value": 25.0
+        }
+      ],
+      "avoidLabelOverlap": true,
+      "label": {
+        "show": true,
+        "position": "outside",
+        "formatter": "{b}: {c} ({d}%)",
+        "fontSize": 10
+      },
+      "labelLine": {
+        "show": true,
+        "length": 15,
+        "length2": 10
+      },
+      "emphasis": {
+        "itemStyle": {
+          "shadowBlur": 10,
+          "shadowOffsetX": 0,
+          "shadowColor": "rgba(0, 0, 0, 0.5)"
+        }
+      },
+      "center": [
+        "28%",
+        "55%"
+      ],
+      "itemStyle": {
+        "borderRadius": 6,
+        "borderColor": "#fff",
+        "borderWidth": 2
+      }
     },
     {
-      "type": "line",
-      "smooth": true,
-      "connectNulls": false,
-      "showSymbol": true,
-      "symbol": "circle",
-      "symbolSize": 6,
-      "lineStyle": {
-        "width": 2
-      },
-      "yAxisIndex": 0,
-      "areaStyle": {
-        "opacity": 0.15
-      },
-      "name": "Paid",
+      "type": "pie",
+      "radius": [
+        "25%",
+        "40%"
+      ],
+      "startAngle": 45,
       "data": [
-        80.0,
-        95.0,
-        120.0,
-        160.0,
-        140.0,
-        170.0
-      ]
+        {
+          "name": "Product A",
+          "value": 30.0
+        },
+        {
+          "name": "Product B",
+          "value": 42.0
+        },
+        {
+          "name": "Product C",
+          "value": 28.0
+        }
+      ],
+      "avoidLabelOverlap": true,
+      "label": {
+        "show": true,
+        "position": "outside",
+        "formatter": "{b}: {c} ({d}%)",
+        "fontSize": 10
+      },
+      "labelLine": {
+        "show": true,
+        "length": 15,
+        "length2": 10
+      },
+      "emphasis": {
+        "itemStyle": {
+          "shadowBlur": 10,
+          "shadowOffsetX": 0,
+          "shadowColor": "rgba(0, 0, 0, 0.5)"
+        }
+      },
+      "center": [
+        "72%",
+        "55%"
+      ],
+      "itemStyle": {
+        "borderRadius": 6,
+        "borderColor": "#fff",
+        "borderWidth": 2
+      }
+    }
+  ],
+  "graphic": [
+    {
+      "type": "text",
+      "left": "18%",
+      "top": "88%",
+      "style": {
+        "text": "Q1 2025",
+        "fontSize": 14,
+        "fontWeight": "bold",
+        "fill": "#888"
+      }
     },
     {
-      "type": "line",
-      "smooth": true,
-      "connectNulls": false,
-      "showSymbol": true,
-      "symbol": "circle",
-      "symbolSize": 6,
-      "lineStyle": {
-        "width": 2
-      },
-      "yAxisIndex": 0,
-      "areaStyle": {
-        "opacity": 0.15
-      },
-      "name": "Social",
-      "data": [
-        60.0,
-        70.0,
-        90.0,
-        110.0,
-        100.0,
-        130.0
-      ]
+      "type": "text",
+      "left": "62%",
+      "top": "88%",
+      "style": {
+        "text": "Q2 2025",
+        "fontSize": 14,
+        "fontWeight": "bold",
+        "fill": "#888"
+      }
     }
   ]
 };

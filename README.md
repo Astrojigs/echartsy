@@ -25,6 +25,8 @@
 
 ## Showcase
 
+### Cartesian Charts
+
 <table>
 <tr>
 <td width="50%">
@@ -38,12 +40,12 @@
 </tr>
 <tr>
 <td width="50%">
-<p align="center"><strong>Donut Chart</strong></p>
-<p align="center"><img src="assets/demo_pie.png" alt="Donut Chart" width="100%" /></p>
-</td>
-<td width="50%">
 <p align="center"><strong>Scatter Plot</strong></p>
 <p align="center"><img src="assets/demo_scatter.png" alt="Scatter Plot" width="100%" /></p>
+</td>
+<td width="50%">
+<p align="center"><strong>Grouped Bar</strong></p>
+<p align="center"><img src="assets/demo_grouped.png" alt="Grouped Bar" width="100%" /></p>
 </td>
 </tr>
 <tr>
@@ -52,38 +54,98 @@
 <p align="center"><img src="assets/demo_stacked.png" alt="Stacked Bar" width="100%" /></p>
 </td>
 <td width="50%">
-<p align="center"><strong>Area Chart</strong></p>
-<p align="center"><img src="assets/demo_area.png" alt="Area Chart" width="100%" /></p>
+<p align="center"><strong>Histogram</strong></p>
+<p align="center"><img src="assets/demo_histogram.png" alt="Histogram" width="100%" /></p>
 </td>
 </tr>
 <tr>
+<td width="50%">
+<p align="center"><strong>Area Chart</strong></p>
+<p align="center"><img src="assets/demo_area.png" alt="Area Chart" width="100%" /></p>
+</td>
 <td width="50%">
 <p align="center"><strong>Horizontal Bar</strong></p>
 <p align="center"><img src="assets/demo_horizontal.png" alt="Horizontal Bar" width="100%" /></p>
 </td>
+</tr>
+<tr>
 <td width="50%">
 <p align="center"><strong>Dual Axis: Bar + Line</strong></p>
 <p align="center"><img src="assets/demo_dual.png" alt="Dual Axis" width="100%" /></p>
 </td>
+<td width="50%">
+<p align="center"><strong>Gradient Bars</strong></p>
+<p align="center"><img src="assets/demo_gradient.png" alt="Gradient Bars" width="100%" /></p>
+</td>
 </tr>
 <tr>
 <td width="50%">
+<p align="center"><strong>Multi-Line with Area</strong></p>
+<p align="center"><img src="assets/demo_multiline.png" alt="Multi-Line" width="100%" /></p>
+</td>
+<td width="50%">
+<p align="center"><strong>Boxplot</strong></p>
+<p align="center"><img src="assets/demo_boxplot.png" alt="Boxplot" width="100%" /></p>
+</td>
+</tr>
+</table>
+
+### Standalone Charts
+
+<table>
+<tr>
+<td width="50%">
+<p align="center"><strong>Donut Chart</strong></p>
+<p align="center"><img src="assets/demo_pie.png" alt="Donut Chart" width="100%" /></p>
+</td>
+<td width="50%">
 <p align="center"><strong>Radar Chart</strong></p>
 <p align="center"><img src="assets/demo_radar.png" alt="Radar Chart" width="100%" /></p>
+</td>
+</tr>
+<tr>
+<td width="50%">
+<p align="center"><strong>Heatmap</strong></p>
+<p align="center"><img src="assets/demo_heatmap.png" alt="Heatmap" width="100%" /></p>
+</td>
+<td width="50%">
+<p align="center"><strong>Funnel</strong></p>
+<p align="center"><img src="assets/demo_funnel.png" alt="Funnel" width="100%" /></p>
+</td>
+</tr>
+<tr>
+<td width="50%">
+<p align="center"><strong>Treemap</strong></p>
+<p align="center"><img src="assets/demo_treemap.png" alt="Treemap" width="100%" /></p>
+</td>
+<td width="50%">
+<p align="center"><strong>Sankey Diagram</strong></p>
+<p align="center"><img src="assets/demo_sankey.png" alt="Sankey" width="100%" /></p>
+</td>
+</tr>
+<tr>
+<td width="50%">
+<p align="center"><strong>Side-by-Side Pies</strong></p>
+<p align="center"><img src="assets/demo_sidebyside_pies.png" alt="Side-by-Side Pies" width="100%" /></p>
 </td>
 <td width="50%">
 <p align="center"><strong>Dark Theme</strong></p>
 <p align="center"><img src="assets/demo_dark.png" alt="Dark Theme" width="100%" /></p>
 </td>
 </tr>
+</table>
+
+### Composite & Dashboard Charts
+
+<table>
 <tr>
 <td width="50%">
-<p align="center"><strong>Gradient Bars</strong></p>
-<p align="center"><img src="assets/demo_gradient.png" alt="Gradient Bars" width="100%" /></p>
+<p align="center"><strong>Bar + Pie (Dark Style)</strong></p>
+<p align="center"><img src="assets/demo_composite_dark.png" alt="Composite Dark" width="100%" /></p>
 </td>
 <td width="50%">
-<p align="center"><strong>Multi-Line with Area</strong></p>
-<p align="center"><img src="assets/demo_multiline.png" alt="Multi-Line" width="100%" /></p>
+<p align="center"><strong>Triple Composite</strong></p>
+<p align="center"><img src="assets/demo_composite.png" alt="Triple Composite" width="100%" /></p>
 </td>
 </tr>
 <tr>
@@ -92,19 +154,13 @@
 <p align="center"><img src="assets/demo_dashboard.png" alt="KPI Dashboard" width="100%" /></p>
 </td>
 <td width="50%">
-<p align="center"><strong>Triple Composite</strong></p>
-<p align="center"><img src="assets/demo_composite.png" alt="Triple Composite" width="100%" /></p>
-</td>
-</tr>
-<tr>
-<td colspan="2">
-<p align="center"><strong>Full Dashboard: Stacked + Trend Line + Pie Breakdown</strong></p>
-<p align="center"><img src="assets/demo_full_dashboard.png" alt="Full Dashboard" width="70%" /></p>
+<p align="center"><strong>Stacked + Trend + Pie</strong></p>
+<p align="center"><img src="assets/demo_full_dashboard.png" alt="Full Dashboard" width="100%" /></p>
 </td>
 </tr>
 </table>
 
-> Every chart is fully interactive — hover for tooltips, click legend items to toggle series, use the toolbox to save as PNG/SVG. See the [interactive HTML demos](assets/) or run `python generate_demos.py` yourself.
+> Every chart is fully interactive — hover for tooltips, click legend items to toggle, use the toolbox to export. Open the [HTML files in assets/](assets/) for the live experience, or run `python generate_demos.py` yourself.
 
 ---
 
@@ -201,10 +257,10 @@ fig.radar(indicators, data, series_names=["Warrior", "Mage", "Rogue"])
 fig.heatmap(df, x="Day", y="Hour", value="Count")
 
 # Sankey
-fig.sankey(df, levels=["Source", "Target"], value="Flow")
+fig.sankey(df, levels=["Source", "Channel", "Outcome"], value="Users")
 
 # Treemap
-fig.treemap(df, path=["Group", "Item"], value="Count")
+fig.treemap(df, path=["Category", "SubCategory"], value="Sales", roam=False)
 
 # Funnel
 fig.funnel(df, names="Stage", values="Count")
@@ -217,11 +273,12 @@ fig.funnel(df, names="Stage", values="Count")
 Overlay a pie on any cartesian chart — just pass `center` and `radius`:
 
 ```python
-fig = ec.figure(height="500px")
-fig.bar(df, x="Dept", y="Budget", gradient=True)
-fig.pie(df, names="Dept", values="Budget",
-        center=["82%", "25%"], radius=["18%", "28%"],
-        label_font_size=9)
+fig = ec.figure(height="500px", style=ec.StylePreset.DASHBOARD_DARK)
+fig.bar(df, x="Department", y="Budget", gradient=True,
+        gradient_colors=["#f4f1de", "#e07a5f"], labels=True, label_color="orange")
+fig.pie(df, names="Department", values="Budget",
+        center=["82%", "25%"], radius=["18%", "28%"])
+fig.legend(top=40, left=200)
 fig.margins(right=120)
 fig.show()
 ```
@@ -230,13 +287,13 @@ Triple composite (bar + line + pie):
 
 ```python
 fig = ec.figure(height="550px")
-fig.bar(df, x="Month", y="Revenue", labels=True)
-fig.plot(df, x="Month", y="Growth", smooth=True, axis=1)
+fig.bar(df, x="Month", y="Revenue", labels=True, border_radius=4)
+fig.plot(df, x="Month", y="Growth", smooth=True, axis=1, line_width=3)
 fig.pie(df_mix, names="Plan", values="Share",
-        center=["85%", "22%"], radius=["15%", "25%"])
+        center=["25%", "32%"], radius=["15%", "25%"])
 fig.ylabel("Revenue ($K)")
 fig.ylabel_right("Growth %")
-fig.margins(right=120)
+fig.legend(top=40, left=350)
 fig.show()
 ```
 
@@ -246,10 +303,11 @@ fig.show()
 
 ```python
 fig = ec.figure()
-fig.bar(df, x="Month", y="Revenue")
-fig.plot(df, x="Month", y="Growth", axis=1, smooth=True)
+fig.bar(df, x="Month", y="Revenue", labels=True)
+fig.plot(df, x="Month", y="GrowthRate", smooth=True, axis=1)
 fig.ylabel("Revenue ($K)")
-fig.ylabel_right("Growth (%)")
+fig.ylabel_right("Growth %")
+fig.legend(top=40)
 fig.show()
 ```
 
@@ -264,6 +322,7 @@ fig = ec.TimelineFigure(height="500px", interval=1.5)
 fig.bar(df, x="Country", y="GDP", time_col="Year", labels=True)
 fig.title("GDP by Country")
 fig.ylabel("GDP (Trillion USD)")
+fig.legend(top=30)
 fig.show()
 ```
 
@@ -281,9 +340,9 @@ fig = ec.figure(style=ec.StylePreset.MINIMAL)           # Minimal & simple
 Custom palettes:
 
 ```python
-fig.palette(["#e74c3c", "#3498db", "#2ecc71", "#f39c12"])
+fig.palette(["#667eea", "#764ba2", "#f093fb", "#f5576c", "#4facfe"])
 fig.palette(ec.PALETTE_RUSTY)
-fig.palette(ec.PALETTE_DARK)
+fig.palette(ec.PALETTE_CLINICAL)
 ```
 
 ---

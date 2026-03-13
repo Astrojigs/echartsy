@@ -82,12 +82,20 @@
   // ---------- apply ----------
   var option  = {
   "title": {
-    "text": "Traffic by Source",
+    "text": "Emails Received per Hour",
     "left": "center",
     "textStyle": {
       "fontSize": 16,
       "fontFamily": "sans-serif"
     }
+  },
+  "tooltip": {
+    "trigger": "item",
+    "axisPointer": {
+      "type": "cross"
+    },
+    "confine": true,
+    "appendTo": "body"
   },
   "color": [
     "#5470C6",
@@ -100,23 +108,34 @@
     "#9A60B4",
     "#EA7CCC"
   ],
-  "tooltip": {
-    "trigger": "axis",
-    "axisPointer": {
-      "type": "cross"
-    },
-    "confine": true,
-    "appendTo": "body"
-  },
-  "legend": {
-    "show": true,
-    "orient": "horizontal",
-    "top": 30,
+  "xAxis": {
+    "type": "category",
     "data": [
-      "Organic",
-      "Paid",
-      "Social"
-    ]
+      "9am",
+      "10am",
+      "11am",
+      "12pm",
+      "1pm",
+      "2pm",
+      "3pm",
+      "4pm"
+    ],
+    "splitArea": {
+      "show": true
+    }
+  },
+  "yAxis": {
+    "type": "category",
+    "data": [
+      "Mon",
+      "Tue",
+      "Wed",
+      "Thu",
+      "Fri"
+    ],
+    "splitArea": {
+      "show": true
+    }
   },
   "grid": {
     "left": 70,
@@ -125,113 +144,246 @@
     "bottom": 50,
     "containLabel": true
   },
-  "xAxis": {
-    "type": "category",
-    "data": [
-      "Jan",
-      "Feb",
-      "Mar",
-      "Apr",
-      "May",
-      "Jun"
-    ],
-    "axisLabel": {
-      "rotate": 0,
-      "fontSize": 12,
-      "color": "#666"
-    },
-    "axisTick": {
-      "show": false
-    }
-  },
-  "yAxis": {
-    "type": "value",
-    "splitLine": {
-      "show": true,
-      "lineStyle": {
-        "color": "#eee"
-      }
-    },
-    "axisLabel": {
-      "fontSize": 12,
-      "color": "#666"
-    },
-    "name": "Visitors (K)"
-  },
   "series": [
     {
-      "type": "line",
-      "smooth": true,
-      "connectNulls": false,
-      "showSymbol": true,
-      "symbol": "circle",
-      "symbolSize": 6,
-      "lineStyle": {
-        "width": 2
-      },
-      "yAxisIndex": 0,
-      "areaStyle": {
-        "opacity": 0.15
-      },
-      "name": "Organic",
+      "type": "heatmap",
       "data": [
-        100.0,
-        120.0,
-        150.0,
-        200.0,
-        180.0,
-        210.0
-      ]
-    },
-    {
-      "type": "line",
-      "smooth": true,
-      "connectNulls": false,
-      "showSymbol": true,
-      "symbol": "circle",
-      "symbolSize": 6,
-      "lineStyle": {
-        "width": 2
+        [
+          0,
+          0,
+          47.0
+        ],
+        [
+          1,
+          0,
+          4.0
+        ],
+        [
+          2,
+          0,
+          30.0
+        ],
+        [
+          3,
+          0,
+          36.0
+        ],
+        [
+          4,
+          0,
+          40.0
+        ],
+        [
+          5,
+          0,
+          19.0
+        ],
+        [
+          6,
+          0,
+          21.0
+        ],
+        [
+          7,
+          0,
+          44.0
+        ],
+        [
+          0,
+          1,
+          24.0
+        ],
+        [
+          1,
+          1,
+          35.0
+        ],
+        [
+          2,
+          1,
+          34.0
+        ],
+        [
+          3,
+          1,
+          49.0
+        ],
+        [
+          4,
+          1,
+          11.0
+        ],
+        [
+          5,
+          1,
+          34.0
+        ],
+        [
+          6,
+          1,
+          48.0
+        ],
+        [
+          7,
+          1,
+          34.0
+        ],
+        [
+          0,
+          2,
+          49.0
+        ],
+        [
+          1,
+          2,
+          27.0
+        ],
+        [
+          2,
+          2,
+          21.0
+        ],
+        [
+          3,
+          2,
+          16.0
+        ],
+        [
+          4,
+          2,
+          38.0
+        ],
+        [
+          5,
+          2,
+          34.0
+        ],
+        [
+          6,
+          2,
+          18.0
+        ],
+        [
+          7,
+          2,
+          6.0
+        ],
+        [
+          0,
+          3,
+          5.0
+        ],
+        [
+          1,
+          3,
+          4.0
+        ],
+        [
+          2,
+          3,
+          22.0
+        ],
+        [
+          3,
+          3,
+          41.0
+        ],
+        [
+          4,
+          3,
+          4.0
+        ],
+        [
+          5,
+          3,
+          22.0
+        ],
+        [
+          6,
+          3,
+          49.0
+        ],
+        [
+          7,
+          3,
+          9.0
+        ],
+        [
+          0,
+          4,
+          43.0
+        ],
+        [
+          1,
+          4,
+          37.0
+        ],
+        [
+          2,
+          4,
+          30.0
+        ],
+        [
+          3,
+          4,
+          40.0
+        ],
+        [
+          4,
+          4,
+          35.0
+        ],
+        [
+          5,
+          4,
+          23.0
+        ],
+        [
+          6,
+          4,
+          32.0
+        ],
+        [
+          7,
+          4,
+          29.0
+        ]
+      ],
+      "label": {
+        "show": true,
+        "formatter": "{c}"
       },
-      "yAxisIndex": 0,
-      "areaStyle": {
-        "opacity": 0.15
-      },
-      "name": "Paid",
-      "data": [
-        80.0,
-        95.0,
-        120.0,
-        160.0,
-        140.0,
-        170.0
-      ]
-    },
-    {
-      "type": "line",
-      "smooth": true,
-      "connectNulls": false,
-      "showSymbol": true,
-      "symbol": "circle",
-      "symbolSize": 6,
-      "lineStyle": {
-        "width": 2
-      },
-      "yAxisIndex": 0,
-      "areaStyle": {
-        "opacity": 0.15
-      },
-      "name": "Social",
-      "data": [
-        60.0,
-        70.0,
-        90.0,
-        110.0,
-        100.0,
-        130.0
+      "emphasis": {
+        "itemStyle": {
+          "shadowBlur": 10,
+          "shadowColor": "rgba(0,0,0,0.5)"
+        }
+      }
+    }
+  ],
+  "visualMap": {
+    "min": 4.0,
+    "max": 49.0,
+    "calculable": true,
+    "orient": "horizontal",
+    "left": "center",
+    "bottom": "5%",
+    "inRange": {
+      "color": [
+        "#313695",
+        "#4575b4",
+        "#74add1",
+        "#abd9e9",
+        "#e0f3f8",
+        "#ffffbf",
+        "#fee090",
+        "#fdae61",
+        "#f46d43",
+        "#d73027",
+        "#a50026"
       ]
     }
-  ]
+  }
 };
   var themeToUse = null;   // null or "dark" etc
 

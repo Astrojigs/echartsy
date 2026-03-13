@@ -82,12 +82,16 @@
   // ---------- apply ----------
   var option  = {
   "title": {
-    "text": "Traffic by Source",
+    "text": "Conversion Funnel",
     "left": "center",
     "textStyle": {
       "fontSize": 16,
       "fontFamily": "sans-serif"
     }
+  },
+  "tooltip": {
+    "trigger": "item",
+    "confine": true
   },
   "color": [
     "#5470C6",
@@ -100,136 +104,49 @@
     "#9A60B4",
     "#EA7CCC"
   ],
-  "tooltip": {
-    "trigger": "axis",
-    "axisPointer": {
-      "type": "cross"
-    },
-    "confine": true,
-    "appendTo": "body"
-  },
   "legend": {
-    "show": true,
-    "orient": "horizontal",
-    "top": 30,
+    "orient": "vertical",
+    "left": "left",
     "data": [
-      "Organic",
+      "Visitors",
+      "Sign-ups",
+      "Trial",
       "Paid",
-      "Social"
+      "Enterprise"
     ]
-  },
-  "grid": {
-    "left": 70,
-    "right": 70,
-    "top": 60,
-    "bottom": 50,
-    "containLabel": true
-  },
-  "xAxis": {
-    "type": "category",
-    "data": [
-      "Jan",
-      "Feb",
-      "Mar",
-      "Apr",
-      "May",
-      "Jun"
-    ],
-    "axisLabel": {
-      "rotate": 0,
-      "fontSize": 12,
-      "color": "#666"
-    },
-    "axisTick": {
-      "show": false
-    }
-  },
-  "yAxis": {
-    "type": "value",
-    "splitLine": {
-      "show": true,
-      "lineStyle": {
-        "color": "#eee"
-      }
-    },
-    "axisLabel": {
-      "fontSize": 12,
-      "color": "#666"
-    },
-    "name": "Visitors (K)"
   },
   "series": [
     {
-      "type": "line",
-      "smooth": true,
-      "connectNulls": false,
-      "showSymbol": true,
-      "symbol": "circle",
-      "symbolSize": 6,
-      "lineStyle": {
-        "width": 2
-      },
-      "yAxisIndex": 0,
-      "areaStyle": {
-        "opacity": 0.15
-      },
-      "name": "Organic",
+      "type": "funnel",
       "data": [
-        100.0,
-        120.0,
-        150.0,
-        200.0,
-        180.0,
-        210.0
-      ]
-    },
-    {
-      "type": "line",
-      "smooth": true,
-      "connectNulls": false,
-      "showSymbol": true,
-      "symbol": "circle",
-      "symbolSize": 6,
-      "lineStyle": {
-        "width": 2
-      },
-      "yAxisIndex": 0,
-      "areaStyle": {
-        "opacity": 0.15
-      },
-      "name": "Paid",
-      "data": [
-        80.0,
-        95.0,
-        120.0,
-        160.0,
-        140.0,
-        170.0
-      ]
-    },
-    {
-      "type": "line",
-      "smooth": true,
-      "connectNulls": false,
-      "showSymbol": true,
-      "symbol": "circle",
-      "symbolSize": 6,
-      "lineStyle": {
-        "width": 2
-      },
-      "yAxisIndex": 0,
-      "areaStyle": {
-        "opacity": 0.15
-      },
-      "name": "Social",
-      "data": [
-        60.0,
-        70.0,
-        90.0,
-        110.0,
-        100.0,
-        130.0
-      ]
+        {
+          "name": "Visitors",
+          "value": 10000.0
+        },
+        {
+          "name": "Sign-ups",
+          "value": 3200.0
+        },
+        {
+          "name": "Trial",
+          "value": 1400.0
+        },
+        {
+          "name": "Paid",
+          "value": 600.0
+        },
+        {
+          "name": "Enterprise",
+          "value": 120.0
+        }
+      ],
+      "sort": "descending",
+      "gap": 2,
+      "label": {
+        "show": true,
+        "position": "inside",
+        "formatter": "{b}: {c}"
+      }
     }
   ]
 };

@@ -18,7 +18,7 @@
   body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
          display: flex; justify-content: center;
          align-items: center; min-height: 100vh; padding: 20px; }
-  #ec_chart { width: 100%; height: 450px; border-radius: 8px; }
+  #ec_chart { width: 100%; height: 500px; border-radius: 8px; }
 </style>
 </head>
 <body>
@@ -82,7 +82,7 @@
   // ---------- apply ----------
   var option  = {
   "title": {
-    "text": "Traffic by Source",
+    "text": "Department Budgets ($K)",
     "left": "center",
     "textStyle": {
       "fontSize": 16,
@@ -90,15 +90,16 @@
     }
   },
   "color": [
-    "#5470C6",
-    "#91CC75",
-    "#FAC858",
-    "#EE6666",
-    "#73C0DE",
-    "#3BA272",
-    "#FC8452",
-    "#9A60B4",
-    "#EA7CCC"
+    "#dd6b66",
+    "#759aa0",
+    "#e69d87",
+    "#8dc1a9",
+    "#ea7e53",
+    "#eedd78",
+    "#73a373",
+    "#73b9bc",
+    "#7289ab",
+    "#91ca8c"
   ],
   "tooltip": {
     "trigger": "axis",
@@ -111,16 +112,20 @@
   "legend": {
     "show": true,
     "orient": "horizontal",
-    "top": 30,
+    "left": 200,
+    "top": 40,
     "data": [
-      "Organic",
-      "Paid",
-      "Social"
+      "Budget",
+      "Engineering",
+      "Marketing",
+      "Sales",
+      "Design",
+      "Support"
     ]
   },
   "grid": {
     "left": 70,
-    "right": 70,
+    "right": 120,
     "top": 60,
     "bottom": 50,
     "containLabel": true
@@ -128,17 +133,16 @@
   "xAxis": {
     "type": "category",
     "data": [
-      "Jan",
-      "Feb",
-      "Mar",
-      "Apr",
-      "May",
-      "Jun"
+      "Engineering",
+      "Marketing",
+      "Sales",
+      "Design",
+      "Support"
     ],
     "axisLabel": {
       "rotate": 0,
       "fontSize": 12,
-      "color": "#666"
+      "color": "#ccc"
     },
     "axisTick": {
       "show": false
@@ -149,89 +153,131 @@
     "splitLine": {
       "show": true,
       "lineStyle": {
-        "color": "#eee"
+        "color": "#555"
       }
     },
     "axisLabel": {
       "fontSize": 12,
-      "color": "#666"
+      "color": "#ccc"
     },
-    "name": "Visitors (K)"
+    "name": "Budget ($K)"
   },
   "series": [
     {
-      "type": "line",
-      "smooth": true,
-      "connectNulls": false,
-      "showSymbol": true,
-      "symbol": "circle",
-      "symbolSize": 6,
-      "lineStyle": {
-        "width": 2
+      "type": "bar",
+      "label": {
+        "show": true,
+        "position": "top",
+        "formatter": "{c}",
+        "fontSize": 12,
+        "color": "orange"
+      },
+      "itemStyle": {
+        "borderRadius": 6,
+        "color": {
+          "type": "linear",
+          "x": 0,
+          "y": 0,
+          "x2": 0,
+          "y2": 1,
+          "colorStops": [
+            {
+              "offset": 0,
+              "color": "#f4f1de"
+            },
+            {
+              "offset": 1,
+              "color": "#e07a5f"
+            }
+          ]
+        }
       },
       "yAxisIndex": 0,
-      "areaStyle": {
-        "opacity": 0.15
-      },
-      "name": "Organic",
+      "name": "Budget",
       "data": [
-        100.0,
-        120.0,
-        150.0,
-        200.0,
+        450.0,
+        280.0,
+        320.0,
         180.0,
-        210.0
+        120.0
       ]
     },
     {
-      "type": "line",
-      "smooth": true,
-      "connectNulls": false,
-      "showSymbol": true,
-      "symbol": "circle",
-      "symbolSize": 6,
-      "lineStyle": {
-        "width": 2
-      },
-      "yAxisIndex": 0,
-      "areaStyle": {
-        "opacity": 0.15
-      },
-      "name": "Paid",
+      "type": "pie",
+      "radius": [
+        "18%",
+        "28%"
+      ],
+      "startAngle": 45,
       "data": [
-        80.0,
-        95.0,
-        120.0,
-        160.0,
-        140.0,
-        170.0
-      ]
-    },
-    {
-      "type": "line",
-      "smooth": true,
-      "connectNulls": false,
-      "showSymbol": true,
-      "symbol": "circle",
-      "symbolSize": 6,
-      "lineStyle": {
-        "width": 2
+        {
+          "name": "Engineering",
+          "value": 450.0,
+          "itemStyle": {
+            "color": "#759aa0"
+          }
+        },
+        {
+          "name": "Marketing",
+          "value": 280.0,
+          "itemStyle": {
+            "color": "#e69d87"
+          }
+        },
+        {
+          "name": "Sales",
+          "value": 320.0,
+          "itemStyle": {
+            "color": "#8dc1a9"
+          }
+        },
+        {
+          "name": "Design",
+          "value": 180.0,
+          "itemStyle": {
+            "color": "#ea7e53"
+          }
+        },
+        {
+          "name": "Support",
+          "value": 120.0,
+          "itemStyle": {
+            "color": "#eedd78"
+          }
+        }
+      ],
+      "avoidLabelOverlap": true,
+      "label": {
+        "show": true,
+        "position": "outside",
+        "formatter": "{b}: {c} ({d}%)",
+        "fontSize": 9
       },
-      "yAxisIndex": 0,
-      "areaStyle": {
-        "opacity": 0.15
+      "labelLine": {
+        "show": true,
+        "length": 15,
+        "length2": 10
       },
-      "name": "Social",
-      "data": [
-        60.0,
-        70.0,
-        90.0,
-        110.0,
-        100.0,
-        130.0
-      ]
+      "emphasis": {
+        "itemStyle": {
+          "shadowBlur": 10,
+          "shadowOffsetX": 0,
+          "shadowColor": "rgba(0, 0, 0, 0.5)"
+        },
+        "focus": "self"
+      },
+      "center": [
+        "82%",
+        "25%"
+      ],
+      "itemStyle": {
+        "borderRadius": 4,
+        "borderColor": "#fff",
+        "borderWidth": 2
+      }
     }
-  ]
+  ],
+  "backgroundColor": "#333"
 };
   var themeToUse = null;   // null or "dark" etc
 

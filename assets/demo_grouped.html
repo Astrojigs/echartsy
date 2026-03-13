@@ -82,7 +82,7 @@
   // ---------- apply ----------
   var option  = {
   "title": {
-    "text": "Traffic by Source",
+    "text": "Quarterly Revenue by Region",
     "left": "center",
     "textStyle": {
       "fontSize": 16,
@@ -111,11 +111,11 @@
   "legend": {
     "show": true,
     "orient": "horizontal",
-    "top": 30,
+    "top": 40,
     "data": [
-      "Organic",
-      "Paid",
-      "Social"
+      "North",
+      "South",
+      "West"
     ]
   },
   "grid": {
@@ -128,12 +128,10 @@
   "xAxis": {
     "type": "category",
     "data": [
-      "Jan",
-      "Feb",
-      "Mar",
-      "Apr",
-      "May",
-      "Jun"
+      "Q1",
+      "Q2",
+      "Q3",
+      "Q4"
     ],
     "axisLabel": {
       "rotate": 0,
@@ -156,79 +154,70 @@
       "fontSize": 12,
       "color": "#666"
     },
-    "name": "Visitors (K)"
+    "name": "Revenue ($K)"
   },
   "series": [
     {
-      "type": "line",
-      "smooth": true,
-      "connectNulls": false,
-      "showSymbol": true,
-      "symbol": "circle",
-      "symbolSize": 6,
-      "lineStyle": {
-        "width": 2
+      "type": "bar",
+      "label": {
+        "show": false,
+        "position": "top",
+        "formatter": "{c}",
+        "fontSize": 12,
+        "color": "#333"
+      },
+      "itemStyle": {
+        "borderRadius": 4
       },
       "yAxisIndex": 0,
-      "areaStyle": {
-        "opacity": 0.15
-      },
-      "name": "Organic",
+      "name": "North",
       "data": [
-        100.0,
         120.0,
-        150.0,
-        200.0,
-        180.0,
-        210.0
-      ]
-    },
-    {
-      "type": "line",
-      "smooth": true,
-      "connectNulls": false,
-      "showSymbol": true,
-      "symbol": "circle",
-      "symbolSize": 6,
-      "lineStyle": {
-        "width": 2
-      },
-      "yAxisIndex": 0,
-      "areaStyle": {
-        "opacity": 0.15
-      },
-      "name": "Paid",
-      "data": [
-        80.0,
-        95.0,
-        120.0,
+        145.0,
         160.0,
-        140.0,
-        170.0
+        180.0
       ]
     },
     {
-      "type": "line",
-      "smooth": true,
-      "connectNulls": false,
-      "showSymbol": true,
-      "symbol": "circle",
-      "symbolSize": 6,
-      "lineStyle": {
-        "width": 2
+      "type": "bar",
+      "label": {
+        "show": false,
+        "position": "top",
+        "formatter": "{c}",
+        "fontSize": 12,
+        "color": "#333"
+      },
+      "itemStyle": {
+        "borderRadius": 4
       },
       "yAxisIndex": 0,
-      "areaStyle": {
-        "opacity": 0.15
-      },
-      "name": "Social",
+      "name": "South",
       "data": [
-        60.0,
-        70.0,
         90.0,
         110.0,
-        100.0,
-        130.0
+        130.0,
+        155.0
+      ]
+    },
+    {
+      "type": "bar",
+      "label": {
+        "show": false,
+        "position": "top",
+        "formatter": "{c}",
+        "fontSize": 12,
+        "color": "#333"
+      },
+      "itemStyle": {
+        "borderRadius": 4
+      },
+      "yAxisIndex": 0,
+      "name": "West",
+      "data": [
+        60.0,
+        80.0,
+        95.0,
+        110.0
       ]
     }
   ]

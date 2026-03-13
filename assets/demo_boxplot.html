@@ -82,7 +82,7 @@
   // ---------- apply ----------
   var option  = {
   "title": {
-    "text": "Traffic by Source",
+    "text": "Salary Distribution by Department",
     "left": "center",
     "textStyle": {
       "fontSize": 16,
@@ -101,22 +101,12 @@
     "#EA7CCC"
   ],
   "tooltip": {
-    "trigger": "axis",
+    "trigger": "item",
     "axisPointer": {
       "type": "cross"
     },
     "confine": true,
     "appendTo": "body"
-  },
-  "legend": {
-    "show": true,
-    "orient": "horizontal",
-    "top": 30,
-    "data": [
-      "Organic",
-      "Paid",
-      "Social"
-    ]
   },
   "grid": {
     "left": 70,
@@ -128,12 +118,10 @@
   "xAxis": {
     "type": "category",
     "data": [
-      "Jan",
-      "Feb",
-      "Mar",
-      "Apr",
-      "May",
-      "Jun"
+      "Engineering",
+      "Marketing",
+      "Sales",
+      "Design"
     ],
     "axisLabel": {
       "rotate": 0,
@@ -156,80 +144,42 @@
       "fontSize": 12,
       "color": "#666"
     },
-    "name": "Visitors (K)"
+    "name": "Salary ($K)"
   },
   "series": [
     {
-      "type": "line",
-      "smooth": true,
-      "connectNulls": false,
-      "showSymbol": true,
-      "symbol": "circle",
-      "symbolSize": 6,
-      "lineStyle": {
-        "width": 2
-      },
-      "yAxisIndex": 0,
-      "areaStyle": {
-        "opacity": 0.15
-      },
-      "name": "Organic",
+      "type": "boxplot",
       "data": [
-        100.0,
-        120.0,
-        150.0,
-        200.0,
-        180.0,
-        210.0
-      ]
-    },
-    {
-      "type": "line",
-      "smooth": true,
-      "connectNulls": false,
-      "showSymbol": true,
-      "symbol": "circle",
-      "symbolSize": 6,
-      "lineStyle": {
-        "width": 2
-      },
-      "yAxisIndex": 0,
-      "areaStyle": {
-        "opacity": 0.15
-      },
-      "name": "Paid",
-      "data": [
-        80.0,
-        95.0,
-        120.0,
-        160.0,
-        140.0,
-        170.0
-      ]
-    },
-    {
-      "type": "line",
-      "smooth": true,
-      "connectNulls": false,
-      "showSymbol": true,
-      "symbol": "circle",
-      "symbolSize": 6,
-      "lineStyle": {
-        "width": 2
-      },
-      "yAxisIndex": 0,
-      "areaStyle": {
-        "opacity": 0.15
-      },
-      "name": "Social",
-      "data": [
-        60.0,
-        70.0,
-        90.0,
-        110.0,
-        100.0,
-        130.0
-      ]
+        [
+          72.6432,
+          108.7488,
+          118.8585,
+          131.628,
+          164.1462
+        ],
+        [
+          50.7951,
+          84.4177,
+          92.0755,
+          102.0403,
+          133.1304
+        ],
+        [
+          45.6393,
+          75.5078,
+          94.0283,
+          107.0488,
+          128.9907
+        ],
+        [
+          39.5698,
+          78.6407,
+          91.1449,
+          104.2491,
+          137.6343
+        ]
+      ],
+      "name": "Salary"
     }
   ]
 };

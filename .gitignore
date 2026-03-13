@@ -32,3 +32,6 @@ htmlcov/
 # Temp chart exports
 echartsy_*.html
 *.ipynb_checkpoints/
+
+# Claude Code
+.claude/

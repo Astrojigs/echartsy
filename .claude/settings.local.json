@@ -2,7 +2,8 @@
   "permissions": {
     "allow": [
       "Bash(python -c \"import echartslib; print\\('Import OK'\\)\")",
-      "Bash(python -c \"\nfrom echartslib.renderers._html_template import _sanitize_chart_id\ntry:\n    _sanitize_chart_id\\('x\\\\\"><script>alert\\(1\\)</script>'\\)\n    print\\('SANITIZED:', _sanitize_chart_id\\('x\\\\\"><script>alert\\(1\\)</script>'\\)\\)\nexcept ValueError as e:\n    print\\('Caught:', e\\)\n\")"
+      "Bash(python -c \"\nfrom echartslib.renderers._html_template import _sanitize_chart_id\ntry:\n    _sanitize_chart_id\\('x\\\\\"><script>alert\\(1\\)</script>'\\)\n    print\\('SANITIZED:', _sanitize_chart_id\\('x\\\\\"><script>alert\\(1\\)</script>'\\)\\)\nexcept ValueError as e:\n    print\\('Caught:', e\\)\n\")",
+      "Bash(twine upload:*)"
     ]
   }
 }

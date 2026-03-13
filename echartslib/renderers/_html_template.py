@@ -1,8 +1,31 @@
 """Shared HTML template for rendering ECharts in a browser or Jupyter."""
 from __future__ import annotations
 
+import datetime
 import json
+import re
 from typing import Optional
+
+
+def _sanitize_chart_id(chart_id: str) -> str:
+    """Strip chart_id to alphanumeric, underscore, and hyphen only."""
+    sanitized = re.sub(r"[^a-zA-Z0-9_\-]", "", chart_id)
+    if not sanitized:
+        raise ValueError("chart_id must contain at least one alphanumeric character")
+    return sanitized
+
+
+_VALID_RENDERERS = {"canvas", "svg"}
+_VALID_ADAPTIVE = {"auto", "light", "dark"}
+
+
+def _json_default(obj: object) -> object:
+    """JSON serializer for types not handled by default."""
+    if isinstance(obj, (datetime.date, datetime.datetime)):
+        return obj.isoformat()
+    if hasattr(obj, "item"):  # numpy scalar
+        return obj.item()
+    raise TypeError(f"Object of type {type(obj).__name__} is not JSON serializable")
 
 # CDN URL for Apache ECharts
 ECHARTS_CDN = "https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"
@@ -142,6 +165,11 @@ def _build_adaptive_script(
     adaptive: str,
 ) -> str:
     """Return the <script> body with adaptive dark-mode support."""
+    chart_id = _sanitize_chart_id(chart_id)
+    if renderer not in _VALID_RENDERERS:
+        raise ValueError(f"renderer must be one of {_VALID_RENDERERS}, got '{renderer}'")
+    if adaptive not in _VALID_ADAPTIVE:
+        raise ValueError(f"adaptive must be one of {_VALID_ADAPTIVE}, got '{adaptive}'")
     explicit_theme = f"'{theme}'" if theme else "null"
     return (
         _ADAPTIVE_JS
@@ -186,7 +214,8 @@ def build_html(
     str
         Complete HTML document string.
     """
-    option_json = json.dumps(option, indent=2, default=str)
+    chart_id = _sanitize_chart_id(chart_id)
+    option_json = json.dumps(option, indent=2, default=_json_default)
     script_body = _build_adaptive_script(
         option_json, chart_id, theme, renderer, adaptive,
     )
@@ -237,7 +266,8 @@ def build_jupyter_html(
     Similar to :func:`build_html` but as a minimal fragment without the
     full page chrome, optimised for ``IPython.display.IFrame``.
     """
-    option_json = json.dumps(option, indent=2, default=str)
+    chart_id = _sanitize_chart_id(chart_id)
+    option_json = json.dumps(option, indent=2, default=_json_default)
     script_body = _build_adaptive_script(
         option_json, chart_id, theme, renderer, adaptive,
     )

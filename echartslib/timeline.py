@@ -96,7 +96,7 @@ def _parse_temporal_label(v: str) -> Optional[pd.Timestamp]:
     if not _TL_RE_YEAR.match(v):
         try:
             return pd.to_datetime(v)
-        except Exception:
+        except (ValueError, TypeError, OverflowError):
             pass
     return None
 
@@ -457,6 +457,8 @@ class TimelineFigure:
 
         item_style: dict = {"borderRadius": border_radius}
         if gradient:
+            if len(gradient_colors) != 2:
+                raise ValueError("gradient_colors must be a tuple of exactly 2 color strings")
             item_style["color"] = {
                 "type": "linear", "x": 0, "y": 0, "x2": 0, "y2": 1,
                 "colorStops": [
@@ -725,8 +727,11 @@ class TimelineFigure:
             theme=self._theme, renderer=self._renderer,
             adaptive=get_adaptive(),
         )
-        with open(filepath, "w", encoding="utf-8") as f:
-            f.write(html)
+        try:
+            with open(filepath, "w", encoding="utf-8") as f:
+                f.write(html)
+        except OSError as e:
+            raise OSError(f"Cannot write to '{filepath}': {e}") from e
         abs_path = os.path.abspath(filepath)
         print(f"Chart saved to {abs_path}")
         return filepath

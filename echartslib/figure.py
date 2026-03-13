@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import copy
 import hashlib
+import warnings
 from dataclasses import dataclass, field
 from typing import (
     Any,
@@ -295,6 +296,8 @@ class Figure:
         max_val: Optional[float] = None, axis: int = 0,
     ) -> "Figure":
         """Set y-axis bounds."""
+        if axis < 0:
+            raise ValueError("axis index must be non-negative")
         if axis >= len(self._y_axes):
             raise BuilderConfigError(
                 f"ylim(axis={axis}) — only {len(self._y_axes)} y-axis(es) exist. "
@@ -431,6 +434,8 @@ class Figure:
         show_slider: bool = True,
     ) -> "Figure":
         """Add a data-zoom slider for long time-series or many categories."""
+        if not (0 <= start <= 100) or not (0 <= end <= 100):
+            raise ValueError("datazoom start/end must be between 0 and 100")
         zoom: list = [{"type": "inside", "start": start, "end": end, "orient": orient}]
         if show_slider:
             zoom.append({"type": "slider", "start": start, "end": end, "orient": orient})
@@ -534,7 +539,14 @@ class Figure:
         if hue:
             dff[hue] = dff[hue].astype(str).str.strip()
             dff = dff.dropna(subset=[hue])
+        n_before = len(dff)
         dff = dff.dropna(subset=[x, y])
+        n_dropped = n_before - len(dff)
+        if n_dropped > 0:
+            warnings.warn(f"plot(): {n_dropped} rows dropped due to missing values", stacklevel=2)
+        if dff.empty:
+            warnings.warn("plot(): all rows dropped after removing missing values; chart will be empty", stacklevel=2)
+            return self
 
         cats = _sort_categories(dff[x])
         self._merge_x_categories(cats)
@@ -610,7 +622,14 @@ class Figure:
         if hue:
             dff[hue] = dff[hue].astype(str).str.strip()
             dff = dff.dropna(subset=[hue])
+        n_before = len(dff)
         dff = dff.dropna(subset=[x, y])
+        n_dropped = n_before - len(dff)
+        if n_dropped > 0:
+            warnings.warn(f"bar(): {n_dropped} rows dropped due to missing values", stacklevel=2)
+        if dff.empty:
+            warnings.warn("bar(): all rows dropped after removing missing values; chart will be empty", stacklevel=2)
+            return self
 
         if orient == "h":
             self._x_axis["type"] = "value"
@@ -626,6 +645,8 @@ class Figure:
         label_pos = "top" if orient == "v" else "right"
         item_style: dict = {"borderRadius": border_radius}
         if gradient:
+            if len(gradient_colors) != 2:
+                raise ValueError("gradient_colors must be a tuple of exactly 2 color strings")
             item_style["color"] = {
                 "type": "linear", "x": 0, "y": 0, "x2": 0, "y2": 1,
                 "colorStops": [
@@ -683,7 +704,14 @@ class Figure:
         dff = df.copy()
         dff[x] = _coerce_numeric(dff, x, "scatter")
         dff[y] = _coerce_numeric(dff, y, "scatter")
+        n_before = len(dff)
         dff = dff.dropna(subset=[x, y])
+        n_dropped = n_before - len(dff)
+        if n_dropped > 0:
+            warnings.warn(f"scatter(): {n_dropped} rows dropped due to missing values", stacklevel=2)
+        if dff.empty:
+            warnings.warn("scatter(): all rows dropped after removing missing values; chart will be empty", stacklevel=2)
+            return self
 
         self._x_axis["type"] = "value"
         self._x_axis.pop("data", None)
@@ -887,6 +915,9 @@ class Figure:
         df = _validate_df(df, "hist")
         _validate_columns(df, [column], "hist")
 
+        if bins is not None and bins <= 0:
+            raise ValueError("bins must be a positive integer")
+
         vals = df[column].dropna().astype(float).values
         if len(vals) == 0:
             raise DataValidationError(f"hist(): Column '{column}' has no non-null numeric values.")
@@ -1029,16 +1060,26 @@ class Figure:
 
         dff = df.copy()
         dff[value] = _coerce_numeric(dff, value, "heatmap")
+        n_before = len(dff)
         dff = dff.dropna(subset=[x, y, value])
+        n_dropped = n_before - len(dff)
+        if n_dropped > 0:
+            warnings.warn(f"heatmap(): {n_dropped} rows dropped due to missing values", stacklevel=2)
+        if dff.empty:
+            warnings.warn("heatmap(): all rows dropped after removing missing values; chart will be empty", stacklevel=2)
+            return self
 
         x_cats = list(dict.fromkeys(dff[x].astype(str).tolist()))
         y_cats = list(dict.fromkeys(dff[y].astype(str).tolist()))
 
+        x_lookup = {cat: i for i, cat in enumerate(x_cats)}
+        y_lookup = {cat: i for i, cat in enumerate(y_cats)}
         data = []
         for _, r in dff.iterrows():
-            xi = x_cats.index(str(r[x]))
-            yi = y_cats.index(str(r[y]))
-            data.append([xi, yi, round(float(r[value]), 4)])
+            xk, yk = str(r[x]), str(r[y])
+            if xk not in x_lookup or yk not in y_lookup:
+                continue
+            data.append([x_lookup[xk], y_lookup[yk], round(float(r[value]), 4)])
 
         self._x_axis = {"type": "category", "data": x_cats, "splitArea": {"show": True}}
         self._y_axes = [{"type": "category", "data": y_cats, "splitArea": {"show": True}}]
@@ -1418,8 +1459,11 @@ class Figure:
             theme=self._theme, renderer=self._renderer,
             adaptive=get_adaptive(),
         )
-        with open(filepath, "w", encoding="utf-8") as f:
-            f.write(html)
+        try:
+            with open(filepath, "w", encoding="utf-8") as f:
+                f.write(html)
+        except OSError as e:
+            raise OSError(f"Cannot write to '{filepath}': {e}") from e
         abs_path = os.path.abspath(filepath)
         print(f"Chart saved to {abs_path}")
         return filepath

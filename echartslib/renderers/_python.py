@@ -5,11 +5,26 @@ Opens the chart in the user's default web browser, similar to how
 """
 from __future__ import annotations
 
+import atexit
+import os
 import tempfile
 import webbrowser
 from typing import Optional
 
 from echartslib.renderers._html_template import build_html
+
+_temp_files: list[str] = []
+
+
+def _cleanup_temp_files() -> None:
+    for f in _temp_files:
+        try:
+            os.remove(f)
+        except OSError:
+            pass
+
+
+atexit.register(_cleanup_temp_files)
 
 
 def render_python(
@@ -47,4 +62,5 @@ def render_python(
         f.write(html)
         filepath = f.name
 
+    _temp_files.append(filepath)
     webbrowser.open(f"file://{filepath}")

@@ -1,29 +1,85 @@
 <p align="center">
-  <img src="https://echarts.apache.org/en/images/logo.png" alt="ECharts" width="60" />
+  <img src="https://echarts.apache.org/en/images/logo.png" alt="Apache ECharts" width="70" />
 </p>
 
 <h1 align="center">echartslib</h1>
 
 <p align="center">
-  <strong>A matplotlib-style fluent builder API for <a href="https://echarts.apache.org/">Apache ECharts</a> in Python.</strong>
+  <em>Interactive charts in Python — the matplotlib workflow, the ECharts experience.</em>
 </p>
 
 <p align="center">
-  <a href="https://pypi.org/project/echartslib/"><img src="https://img.shields.io/pypi/v/echartslib?color=%2334d058&label=PyPI" alt="PyPI" /></a>
-  <a href="https://pypi.org/project/echartslib/"><img src="https://img.shields.io/pypi/pyversions/echartslib?color=%2334d058" alt="Python" /></a>
+  <a href="https://pypi.org/project/echartslib/"><img src="https://img.shields.io/pypi/v/echartslib?color=%2334d058&label=PyPI" alt="PyPI version" /></a>
+  <a href="https://pypi.org/project/echartslib/"><img src="https://img.shields.io/pypi/pyversions/echartslib?color=%2334d058" alt="Python versions" /></a>
   <a href="https://github.com/astrojigs/echartslib/blob/main/LICENSE"><img src="https://img.shields.io/github/license/astrojigs/echartslib?color=blue" alt="License" /></a>
   <a href="https://github.com/astrojigs/echartslib/stargazers"><img src="https://img.shields.io/github/stars/astrojigs/echartslib?style=flat&color=yellow" alt="Stars" /></a>
+  <a href="https://github.com/astrojigs/echartslib/issues"><img src="https://img.shields.io/github/issues/astrojigs/echartslib?color=orange" alt="Issues" /></a>
 </p>
 
 <p align="center">
-  Build interactive, publication-quality charts with a familiar<br/>
-  <code>fig = figure()</code> → <code>fig.bar()</code> → <code>fig.show()</code> workflow.<br/>
-  Works in <b>Jupyter Notebooks</b>, <b>Streamlit</b>, and <b>standalone Python scripts</b>.
+  Build publication-quality interactive charts with a familiar<br/>
+  <code>fig = figure()</code> &rarr; <code>fig.bar()</code> &rarr; <code>fig.show()</code> workflow.<br/>
+  Works everywhere: <b>Jupyter</b> &middot; <b>Streamlit</b> &middot; <b>standalone scripts</b>
 </p>
 
 ---
 
-## Showcase
+## Why echartslib?
+
+- **Feels like matplotlib** — If you know `plt.figure()` / `plt.show()`, you already know 90% of the API. No JSON wrangling, no JavaScript.
+- **Interactive out of the box** — Every chart ships with tooltips, legend toggling, zoom, and a built-in export toolbox.  Zero configuration needed.
+- **One library, three engines** — Write once, render in Jupyter notebooks, Streamlit apps, or plain Python scripts that pop open a browser.
+- **Composable & animated** — Layer pies on bar charts, build dual-axis dashboards, or animate any chart across time with `TimelineFigure`.
+
+---
+
+## Installation
+
+```bash
+pip install echartslib
+```
+
+Need extras?
+
+```bash
+pip install echartslib[jupyter]     # Jupyter Notebook / JupyterLab
+pip install echartslib[streamlit]   # Streamlit apps
+pip install echartslib[scipy]       # KDE density plots
+pip install echartslib[all]         # Everything
+```
+
+> **Requirements:** Python 3.9+ &middot; pandas &ge; 1.5 &middot; numpy &ge; 1.23
+
+---
+
+## Quick Start
+
+```python
+import pandas as pd
+import echartslib as ec
+
+ec.config(engine="jupyter")          # or "python" / "streamlit"
+
+df = pd.DataFrame({
+    "Fruit": ["Apples", "Bananas", "Cherries", "Dates", "Elderberries"],
+    "Sales": [120, 95, 78, 42, 63],
+})
+
+fig = ec.figure()
+fig.bar(df, x="Fruit", y="Sales", gradient=True, labels=True)
+fig.title("Fruit Sales")
+fig.show()
+```
+
+Three lines from DataFrame to interactive chart.
+
+<p align="center">
+  <img src="assets/demo_bar.png" alt="Quick Start — Bar Chart" width="600" />
+</p>
+
+---
+
+## Gallery
 
 ### Cartesian Charts
 
@@ -32,60 +88,150 @@
 <td width="50%">
 <p align="center"><strong>Bar + Pie Overlay</strong></p>
 <p align="center"><img src="assets/demo_bar_pie.png" alt="Bar + Pie Overlay" width="100%" /></p>
+
+```python
+fig = ec.figure(height="500px")
+fig.bar(df, x="Dept", y="Budget",
+        gradient=True, labels=True)
+fig.pie(df, names="Dept", values="Budget",
+        center=["82%","25%"],
+        radius=["18%","28%"])
+fig.show()
+```
 </td>
 <td width="50%">
 <p align="center"><strong>Smooth Line</strong></p>
 <p align="center"><img src="assets/demo_line.png" alt="Line Chart" width="100%" /></p>
+
+```python
+fig = ec.figure()
+fig.plot(df, x="Month", y="Sales",
+         smooth=True, area=True)
+fig.show()
+```
 </td>
 </tr>
 <tr>
 <td width="50%">
 <p align="center"><strong>Scatter Plot</strong></p>
 <p align="center"><img src="assets/demo_scatter.png" alt="Scatter Plot" width="100%" /></p>
+
+```python
+fig = ec.figure()
+fig.scatter(df, x="Height", y="Weight",
+            color="Gender", size="Age")
+fig.show()
+```
 </td>
 <td width="50%">
 <p align="center"><strong>Grouped Bar</strong></p>
 <p align="center"><img src="assets/demo_grouped.png" alt="Grouped Bar" width="100%" /></p>
+
+```python
+fig = ec.figure()
+fig.bar(df, x="Quarter", y="Revenue",
+        hue="Region")
+fig.show()
+```
 </td>
 </tr>
 <tr>
 <td width="50%">
 <p align="center"><strong>Stacked Bar</strong></p>
 <p align="center"><img src="assets/demo_stacked.png" alt="Stacked Bar" width="100%" /></p>
+
+```python
+fig = ec.figure()
+fig.bar(df, x="Month", y="Revenue",
+        hue="Product", stack=True)
+fig.show()
+```
 </td>
 <td width="50%">
 <p align="center"><strong>Histogram</strong></p>
 <p align="center"><img src="assets/demo_histogram.png" alt="Histogram" width="100%" /></p>
+
+```python
+fig = ec.figure()
+fig.hist(df, column="Score", bins=20)
+fig.show()
+```
 </td>
 </tr>
 <tr>
 <td width="50%">
 <p align="center"><strong>Area Chart</strong></p>
 <p align="center"><img src="assets/demo_area.png" alt="Area Chart" width="100%" /></p>
+
+```python
+fig = ec.figure()
+fig.plot(df, x="Month", y="Users",
+         area=True, smooth=True)
+fig.show()
+```
 </td>
 <td width="50%">
 <p align="center"><strong>Horizontal Bar</strong></p>
 <p align="center"><img src="assets/demo_horizontal.png" alt="Horizontal Bar" width="100%" /></p>
+
+```python
+fig = ec.figure()
+fig.bar(df, x="Country", y="Population",
+        orient="h")
+fig.show()
+```
 </td>
 </tr>
 <tr>
 <td width="50%">
 <p align="center"><strong>Dual Axis: Bar + Line</strong></p>
 <p align="center"><img src="assets/demo_dual.png" alt="Dual Axis" width="100%" /></p>
+
+```python
+fig = ec.figure()
+fig.bar(df, x="Month", y="Revenue")
+fig.plot(df, x="Month", y="Growth",
+         smooth=True, axis=1)
+fig.ylabel("Revenue ($K)")
+fig.ylabel_right("Growth %")
+fig.show()
+```
 </td>
 <td width="50%">
 <p align="center"><strong>Gradient Bars</strong></p>
 <p align="center"><img src="assets/demo_gradient.png" alt="Gradient Bars" width="100%" /></p>
+
+```python
+fig = ec.figure()
+fig.bar(df, x="City", y="Temp",
+        gradient=True,
+        gradient_colors=["#83bff6","#188df0"])
+fig.show()
+```
 </td>
 </tr>
 <tr>
 <td width="50%">
 <p align="center"><strong>Multi-Line with Area</strong></p>
 <p align="center"><img src="assets/demo_multiline.png" alt="Multi-Line" width="100%" /></p>
+
+```python
+fig = ec.figure()
+fig.plot(df, x="Month", y="Value",
+         hue="Series", smooth=True,
+         area=True)
+fig.show()
+```
 </td>
 <td width="50%">
 <p align="center"><strong>Boxplot</strong></p>
 <p align="center"><img src="assets/demo_boxplot.png" alt="Boxplot" width="100%" /></p>
+
+```python
+fig = ec.figure()
+fig.boxplot(df, x="Department", y="Salary")
+fig.show()
+```
 </td>
 </tr>
 </table>
@@ -95,42 +241,75 @@
 <table>
 <tr>
 <td width="50%">
-<p align="center"><strong>Donut Chart</strong></p>
+<p align="center"><strong>Donut / Pie</strong></p>
 <p align="center"><img src="assets/demo_pie.png" alt="Donut Chart" width="100%" /></p>
+
+```python
+fig = ec.figure()
+fig.pie(df, names="Browser", values="Share",
+        inner_radius="40%")
+fig.show()
+```
 </td>
 <td width="50%">
-<p align="center"><strong>Radar Chart</strong></p>
+<p align="center"><strong>Radar</strong></p>
 <p align="center"><img src="assets/demo_radar.png" alt="Radar Chart" width="100%" /></p>
+
+```python
+fig = ec.figure()
+fig.radar(indicators, data,
+          series_names=["Warrior","Mage"])
+fig.show()
+```
 </td>
 </tr>
 <tr>
 <td width="50%">
 <p align="center"><strong>Heatmap</strong></p>
 <p align="center"><img src="assets/demo_heatmap.png" alt="Heatmap" width="100%" /></p>
+
+```python
+fig = ec.figure()
+fig.heatmap(df, x="Day", y="Hour",
+            value="Count")
+fig.show()
+```
 </td>
 <td width="50%">
 <p align="center"><strong>Funnel</strong></p>
 <p align="center"><img src="assets/demo_funnel.png" alt="Funnel" width="100%" /></p>
+
+```python
+fig = ec.figure()
+fig.funnel(df, names="Stage", values="Count")
+fig.show()
+```
 </td>
 </tr>
 <tr>
 <td width="50%">
 <p align="center"><strong>Treemap</strong></p>
 <p align="center"><img src="assets/demo_treemap.png" alt="Treemap" width="100%" /></p>
+
+```python
+fig = ec.figure()
+fig.treemap(df,
+    path=["Category","SubCat"],
+    value="Sales")
+fig.show()
+```
 </td>
 <td width="50%">
 <p align="center"><strong>Sankey Diagram</strong></p>
-<p align="center"><img src="assets/demo_sankey.png" alt="Sankey" width="100%" /></p>
-</td>
-</tr>
-<tr>
-<td width="50%">
-<p align="center"><strong>Side-by-Side Pies</strong></p>
-<p align="center"><img src="assets/demo_sidebyside_pies.png" alt="Side-by-Side Pies" width="100%" /></p>
-</td>
-<td width="50%">
-<p align="center"><strong>Dark Theme</strong></p>
-<p align="center"><img src="assets/demo_dark.png" alt="Dark Theme" width="100%" /></p>
+<p align="center"><img src="assets/demo_sankey.png" alt="Sankey Diagram" width="100%" /></p>
+
+```python
+fig = ec.figure()
+fig.sankey(df,
+    levels=["Source","Channel","Outcome"],
+    value="Users")
+fig.show()
+```
 </td>
 </tr>
 </table>
@@ -140,7 +319,7 @@
 <table>
 <tr>
 <td width="50%">
-<p align="center"><strong>Bar + Pie (Dark Style)</strong></p>
+<p align="center"><strong>Bar + Pie (Dark)</strong></p>
 <p align="center"><img src="assets/demo_composite_dark.png" alt="Composite Dark" width="100%" /></p>
 </td>
 <td width="50%">
@@ -158,139 +337,120 @@
 <p align="center"><img src="assets/demo_full_dashboard.png" alt="Full Dashboard" width="100%" /></p>
 </td>
 </tr>
+<tr>
+<td width="50%">
+<p align="center"><strong>Side-by-Side Pies</strong></p>
+<p align="center"><img src="assets/demo_sidebyside_pies.png" alt="Side-by-Side Pies" width="100%" /></p>
+</td>
+<td width="50%">
+<p align="center"><strong>Dark Theme</strong></p>
+<p align="center"><img src="assets/demo_dark.png" alt="Dark Theme" width="100%" /></p>
+</td>
+</tr>
 </table>
 
-> Every chart is fully interactive — hover for tooltips, click legend items to toggle, use the toolbox to export. Open the [HTML files in assets/](assets/) for the live experience, or run `python generate_demos.py` yourself.
+> Every chart is fully interactive — hover for tooltips, click legend items to toggle series, use the toolbox to export.
+> Open the [HTML demos in `assets/`](assets/) for the live experience, or run `python generate_demos.py` yourself.
 
 ---
 
-## Installation
+## Supported Chart Types
 
-```bash
-pip install echartslib
-```
-
-Optional extras:
-
-```bash
-pip install echartslib[jupyter]     # Jupyter Notebook support
-pip install echartslib[streamlit]   # Streamlit support
-pip install echartslib[scipy]       # KDE density plots
-pip install echartslib[all]         # Everything
-```
-
----
-
-## Quick Start
-
-```python
-import pandas as pd
-import echartslib as ec
-
-ec.config(engine="jupyter")  # or "python" or "streamlit"
-
-df = pd.DataFrame({
-    "Fruit": ["Apples", "Bananas", "Cherries", "Dates", "Elderberries"],
-    "Sales": [120, 95, 78, 42, 63],
-})
-
-fig = ec.figure()
-fig.bar(df, x="Fruit", y="Sales")
-fig.title("Fruit Sales")
-fig.show()
-```
-
-Three lines to go from DataFrame to interactive chart.
+| Category | Method | Description |
+|:---|:---|:---|
+| **Line** | `fig.plot()` | Smooth/straight lines, multi-series via `hue`, optional filled area |
+| **Bar** | `fig.bar()` | Vertical/horizontal, grouped (`hue`), stacked, gradient fills |
+| **Scatter** | `fig.scatter()` | Color and size encoding, numeric axes |
+| **Histogram** | `fig.hist()` | Auto-binned frequency distribution |
+| **Boxplot** | `fig.boxplot()` | Five-number statistical summary |
+| **KDE** | `fig.kde()` | Kernel density estimation (requires `scipy`) |
+| **Pie / Donut** | `fig.pie()` | Pie, donut (`inner_radius`), rose charts, side-by-side multiples |
+| **Radar** | `fig.radar()` | Multi-indicator polygon charts |
+| **Heatmap** | `fig.heatmap()` | Matrix visualisation with colour mapping |
+| **Sankey** | `fig.sankey()` | Multi-level flow diagrams |
+| **Treemap** | `fig.treemap()` | Hierarchical area charts |
+| **Funnel** | `fig.funnel()` | Stage-based conversion funnels |
 
 ---
 
 ## Rendering Engines
 
-| Engine | Use Case | Setup |
+echartslib writes your chart once; `ec.config()` controls where it renders.
+
+| Engine | Use case | Install |
 |:---|:---|:---|
-| `"jupyter"` | Jupyter Notebook / JupyterLab | `pip install echartslib[jupyter]` |
-| `"python"` | Standalone scripts → opens browser | No extra deps |
+| `"python"` | Standalone scripts — opens the default browser | No extra deps |
+| `"jupyter"` | Jupyter Notebook / JupyterLab inline widgets | `pip install echartslib[jupyter]` |
 | `"streamlit"` | Streamlit applications | `pip install echartslib[streamlit]` |
 
 ```python
 ec.config(engine="jupyter")
-ec.config(engine="jupyter", adaptive="dark")   # Force dark mode
-ec.config(engine="jupyter", adaptive="light")  # Force light mode
 ```
 
 ---
 
-## Chart Types
+## Adaptive Dark Mode
 
-### Cartesian Charts
+Charts automatically respond to the user's OS or browser `prefers-color-scheme` setting.
 
 ```python
-# Bar — stacked, horizontal, gradient fills
-fig.bar(df, x="Month", y="Revenue", hue="Region", stack=True, gradient=True, orient="h")
-
-# Line — smooth curves, filled areas, multi-series via hue
-fig.plot(df, x="Month", y="Sales", hue="Region", smooth=True, area=True)
-
-# Scatter — color & size encoding
-fig.scatter(df, x="Height", y="Weight", color="Gender", size="Age")
-
-# Histogram — auto-binned distribution
-fig.hist(df, column="Score", bins=20)
-
-# Boxplot — statistical summary
-fig.boxplot(df, x="Department", y="Salary")
-
-# KDE — kernel density estimation (requires scipy)
-fig.kde(df, column="Score", hue="Class")
+ec.config(engine="jupyter", adaptive="auto")     # auto-detect (default)
+ec.config(engine="jupyter", adaptive="dark")     # force dark
+ec.config(engine="jupyter", adaptive="light")    # force light
 ```
 
-### Standalone Charts
+---
+
+## Style Presets & Palettes
+
+Apply a pre-built visual theme in one argument:
 
 ```python
-# Pie / Donut
-fig.pie(df, names="Browser", values="Share", inner_radius="40%")
+fig = ec.figure(style=ec.StylePreset.CLINICAL)         # Clean defaults
+fig = ec.figure(style=ec.StylePreset.DASHBOARD_DARK)    # Dark background
+fig = ec.figure(style=ec.StylePreset.KPI_REPORT)        # Warm rusty tones
+fig = ec.figure(style=ec.StylePreset.MINIMAL)            # Minimal & light
+```
 
-# Radar
-fig.radar(indicators, data, series_names=["Warrior", "Mage", "Rogue"])
+Or set a custom palette at any time:
 
-# Heatmap
-fig.heatmap(df, x="Day", y="Hour", value="Count")
+```python
+fig.palette(["#667eea", "#764ba2", "#f093fb", "#f5576c", "#4facfe"])
+fig.palette(ec.PALETTE_RUSTY)
+fig.palette(ec.PALETTE_CLINICAL)
+```
 
-# Sankey
-fig.sankey(df, levels=["Source", "Channel", "Outcome"], value="Users")
+Build your own `StylePreset` for full control over fonts, grid lines, tooltip style, and more:
 
-# Treemap
-fig.treemap(df, path=["Category", "SubCategory"], value="Sales", roam=False)
-
-# Funnel
-fig.funnel(df, names="Stage", values="Count")
+```python
+my_style = ec.StylePreset(
+    palette=("#264653", "#2a9d8f", "#e9c46a", "#f4a261", "#e76f51"),
+    bg="#fefae0",
+    font_family="Georgia",
+    title_font_size=20,
+)
+fig = ec.figure(style=my_style)
 ```
 
 ---
 
 ## Composite Charts
 
-Overlay a pie on any cartesian chart — just pass `center` and `radius`:
-
-```python
-fig = ec.figure(height="500px", style=ec.StylePreset.DASHBOARD_DARK)
-fig.bar(df, x="Department", y="Budget", gradient=True,
-        gradient_colors=["#f4f1de", "#e07a5f"], labels=True, label_color="orange")
-fig.pie(df, names="Department", values="Budget",
-        center=["82%", "25%"], radius=["18%", "28%"])
-fig.legend(top=40, left=200)
-fig.margins(right=120)
-fig.show()
-```
-
-Triple composite (bar + line + pie):
+Overlay pies on cartesian charts, or combine bar + line on dual axes — all on one figure.
 
 ```python
 fig = ec.figure(height="550px")
+
+# Primary axis: bars
 fig.bar(df, x="Month", y="Revenue", labels=True, border_radius=4)
+
+# Secondary axis: trend line
 fig.plot(df, x="Month", y="Growth", smooth=True, axis=1, line_width=3)
+
+# Inset pie
 fig.pie(df_mix, names="Plan", values="Share",
         center=["25%", "32%"], radius=["15%", "25%"])
+
 fig.ylabel("Revenue ($K)")
 fig.ylabel_right("Growth %")
 fig.legend(top=40, left=350)
@@ -299,23 +459,9 @@ fig.show()
 
 ---
 
-## Dual-Axis Charts
-
-```python
-fig = ec.figure()
-fig.bar(df, x="Month", y="Revenue", labels=True)
-fig.plot(df, x="Month", y="GrowthRate", smooth=True, axis=1)
-fig.ylabel("Revenue ($K)")
-fig.ylabel_right("Growth %")
-fig.legend(top=40)
-fig.show()
-```
-
----
-
 ## Timeline Animations
 
-Animate any chart across a time dimension:
+Animate any chart across a time dimension with `TimelineFigure`. It mirrors the `Figure` API; every series method gains one extra parameter: `time_col`.
 
 ```python
 fig = ec.TimelineFigure(height="500px", interval=1.5)
@@ -326,40 +472,53 @@ fig.legend(top=30)
 fig.show()
 ```
 
----
+<p align="center">
+  <img src="assets/demo_timeline.png" alt="Timeline Animation" width="700" />
+</p>
 
-## Style Presets
+**TimelineFigure features:**
 
-```python
-fig = ec.figure(style=ec.StylePreset.CLINICAL)         # Clean clinical palette
-fig = ec.figure(style=ec.StylePreset.DASHBOARD_DARK)    # Dark background
-fig = ec.figure(style=ec.StylePreset.KPI_REPORT)        # Warm tones
-fig = ec.figure(style=ec.StylePreset.MINIMAL)           # Minimal & simple
-```
-
-Custom palettes:
-
-```python
-fig.palette(["#667eea", "#764ba2", "#f093fb", "#f5576c", "#4facfe"])
-fig.palette(ec.PALETTE_RUSTY)
-fig.palette(ec.PALETTE_CLINICAL)
-```
+| Feature | API |
+|:---|:---|
+| Playback control | `TimelineFigure(interval=2.0, autoplay=True, loop=True)` |
+| Adjust after creation | `fig.playback(interval=1.0, rewind=True)` |
+| Smart frame sorting | Parses years, quarters (`Q1 2024`), months (`Jan 2024`), ISO dates, fiscal years |
+| Supported series | `bar()`, `plot()`, `scatter()`, `pie()` |
+| Diagnose format | `ec.detect_time_format(df["Year"])` |
 
 ---
 
-## Chrome Configuration
+## Chart Configuration Reference
+
+Every `Figure` and `TimelineFigure` supports these configuration methods:
 
 ```python
-fig.title("Chart Title", subtitle="Optional subtitle")
+# Titles
+fig.title("Main Title", subtitle="Sub-title")
+
+# Axes
 fig.xlabel("X Label", rotate=30)
 fig.ylabel("Y Label")
 fig.ylabel_right("Secondary Y")
+fig.xlim(0, 100)
+fig.ylim(0, 500)
+
+# Layout
 fig.legend(orient="vertical", left="right", top=40)
 fig.margins(left=100, right=120, top=40)
+fig.grid(show=True)
+
+# Interactivity
 fig.datazoom(start=0, end=80)
 fig.toolbox(download=True, zoom=True)
-fig.grid(show=True)
+fig.tooltip(trigger="axis")
+
+# Export
 fig.save(name="my_chart", fmt="png", dpi=3)
+fig.to_html("my_chart.html")
+
+# Palette
+fig.palette(["#5470C6", "#91CC75", "#FAC858"])
 ```
 
 ---
@@ -368,7 +527,7 @@ fig.save(name="my_chart", fmt="png", dpi=3)
 
 ```python
 # Standalone HTML file (fully interactive, no server needed)
-fig.to_html("my_chart.html")
+fig.to_html("report.html")
 
 # Raw ECharts option dict (for debugging or custom renderers)
 option = fig.to_option()
@@ -376,27 +535,52 @@ option = fig.to_option()
 
 ---
 
-## Adaptive Dark Mode
+## API at a Glance
 
-Charts automatically adapt to the user's OS light/dark preference:
+### `ec.config(engine, adaptive="auto")`
 
-```python
-ec.config(engine="jupyter", adaptive="auto")    # Auto-detect (default)
-ec.config(engine="jupyter", adaptive="dark")    # Force dark
-ec.config(engine="jupyter", adaptive="light")   # Force light
-```
+Set the global rendering engine (`"python"`, `"jupyter"`, `"streamlit"`) and theme adaptation mode (`"auto"`, `"light"`, `"dark"`).
+
+### `ec.figure(**kwargs)` / `ec.Figure(**kwargs)`
+
+Create a chart canvas. Key keyword arguments:
+
+| Parameter | Default | Description |
+|:---|:---|:---|
+| `height` | `"400px"` | CSS height of the chart container |
+| `width` | `None` | CSS width (defaults to full container) |
+| `renderer` | `"canvas"` | `"canvas"` or `"svg"` |
+| `style` | `StylePreset.CLINICAL` | A `StylePreset` instance |
+
+### `ec.TimelineFigure(**kwargs)` / `ec.timeline_figure(**kwargs)`
+
+Same as `Figure` but adds timeline animation. Extra parameters:
+
+| Parameter | Default | Description |
+|:---|:---|:---|
+| `interval` | `2.0` | Seconds between animation frames |
+| `autoplay` | `True` | Start playing automatically |
+| `loop` | `True` | Loop back to the first frame |
+
+### `ec.StylePreset`
+
+Frozen dataclass bundling visual defaults: `palette`, `bg`, `font_family`, `title_font_size`, `axis_label_font_size`, `grid_line_color`, and more.
+
+### `ec.detect_time_format(series)`
+
+Diagnostic helper that inspects a pandas Series and reports how well TimelineFigure will parse its values.
 
 ---
 
 ## Generating Showcase Images
 
-To regenerate the screenshots shown above:
+To regenerate the demo screenshots shown above:
 
 ```bash
-# 1. Generate the demo HTML charts
+# 1. Generate the interactive HTML demos
 python generate_demos.py
 
-# 2. Capture PNG screenshots (requires playwright)
+# 2. Capture PNG screenshots (requires Playwright)
 pip install playwright && playwright install chromium
 python capture_screenshots.py
 ```
@@ -405,8 +589,8 @@ python capture_screenshots.py
 
 ## Contributing
 
-Contributions are welcome! Please open an issue or PR on [GitHub](https://github.com/astrojigs/echartslib).
+Contributions, bug reports, and feature requests are welcome. Please open an [issue](https://github.com/astrojigs/echartslib/issues) or submit a pull request on [GitHub](https://github.com/astrojigs/echartslib).
 
 ## License
 
-[MIT](LICENSE) — Jigar, 2026
+[MIT](LICENSE) &mdash; Jigar, 2026

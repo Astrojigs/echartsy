@@ -37,6 +37,10 @@ from echartsy._helpers import (
 from echartsy.exceptions import BuilderConfigError, DataValidationError
 from echartsy.renderers import render
 from echartsy.styles import StylePreset
+from echartsy.emphasis import (
+    Emphasis, LineEmphasis, ScatterEmphasis, PieEmphasis,
+    RadarEmphasis, SankeyEmphasis, FunnelEmphasis, TreemapEmphasis,
+)
 
 
 # ═══════════════════════════════════════════════════════════════════════════
@@ -510,7 +514,7 @@ class Figure:
         symbol_size: int = 6, symbol: str = "circle",
         labels: bool = False, label_position: str = "top",
         label_prefix: str = "", label_suffix: str = "",
-        agg: str = "mean", axis: int = 0, **series_kw: Any,
+        agg: str = "mean", axis: int = 0, emphasis: Optional[LineEmphasis] = None, **series_kw: Any,
     ) -> "Figure":
         """Add one or more line series — equivalent to ``plt.plot()``.
 
@@ -567,6 +571,8 @@ class Figure:
                 "show": True, "position": label_position,
                 "formatter": f"{label_prefix}{{c}}{label_suffix}",
             }
+        if emphasis is not None:
+            base["emphasis"] = emphasis.to_dict()
         base.update(series_kw)
 
         groups = dff.groupby(hue) if hue else [(y, dff)]
@@ -594,7 +600,7 @@ class Figure:
         label_color: str = "#333",
         gradient: bool = False,
         gradient_colors: Tuple[str, str] = ("#83bff6", "#188df0"),
-        agg: str = "sum", axis: int = 0, **series_kw: Any,
+        agg: str = "sum", axis: int = 0, emphasis: Optional[Emphasis] = None, **series_kw: Any,
     ) -> "Figure":
         """Add one or more bar series — equivalent to ``plt.bar()``.
 
@@ -670,6 +676,8 @@ class Figure:
             base["barMaxWidth"] = bar_width
         if bar_gap is not None:
             base["barGap"] = bar_gap
+        if emphasis is not None:
+            base["emphasis"] = emphasis.to_dict()
         base.update(series_kw)
 
         groups = dff.groupby(hue) if hue else [(y, dff)]
@@ -694,7 +702,7 @@ class Figure:
         color: Optional[str] = None, size: Optional[str] = None,
         size_range: Tuple[int, int] = (5, 30), symbol: str = "circle",
         opacity: float = 0.7, labels: bool = False,
-        **series_kw: Any,
+        emphasis: Optional[ScatterEmphasis] = None, **series_kw: Any,
     ) -> "Figure":
         """Add a scatter series — equivalent to ``plt.scatter()``."""
         self._ensure_cartesian("scatter")
@@ -744,6 +752,8 @@ class Figure:
                 entry["symbolSize"] = 8
             if labels:
                 entry["label"] = {"show": True, "position": "top", "formatter": "{@[1]}"}
+            if emphasis is not None:
+                entry["emphasis"] = emphasis.to_dict()
             entry.update(series_kw)
             self._series.append(entry)
             self._series_meta.append(_SeriesMeta("scatter", name_str))
@@ -767,7 +777,7 @@ class Figure:
         center_formatter: str = "{b}\n{c}",
         center_font_size: int = 18,
         rose_type: Optional[Literal["radius", "area"]] = None,
-        **series_kw: Any,
+        emphasis: Optional[PieEmphasis] = None, **series_kw: Any,
     ) -> "Figure":
         """Add a pie (or donut) chart — equivalent to ``plt.pie()``.
 
@@ -839,28 +849,33 @@ class Figure:
         if label_font_size is not None:
             lbl["fontSize"] = label_font_size
 
-        emphasis: dict = {
+        emphasis_dict: dict = {
             "itemStyle": {
                 "shadowBlur": 10, "shadowOffsetX": 0,
                 "shadowColor": "rgba(0, 0, 0, 0.5)",
             }
         }
         if center_on_hover:
-            emphasis["label"] = {
+            emphasis_dict["label"] = {
                 "show": True, "position": "center",
                 "formatter": center_formatter,
                 "fontSize": center_font_size, "fontWeight": "bold",
             }
 
-        # For overlays, also add "focus self" so hovering the pie doesn't
-        # dim the underlying cartesian series.
-        if is_overlay:
-            emphasis["focus"] = "self"
+        # Allow user-provided emphasis to override the default, but keep overlay focus
+        if emphasis is not None:
+            emphasis_dict = emphasis.to_dict()
+            if is_overlay and "focus" not in emphasis_dict:
+                emphasis_dict["focus"] = "self"
+        elif is_overlay:
+            # For overlays with default emphasis, also add "focus self" so hovering the pie doesn't
+            # dim the underlying cartesian series.
+            emphasis_dict["focus"] = "self"
 
         entry: dict = {
             "type": "pie", "radius": resolved_radius, "startAngle": start_angle,
             "data": data, "avoidLabelOverlap": True,
-            "label": lbl, "labelLine": lbl_line, "emphasis": emphasis,
+            "label": lbl, "labelLine": lbl_line, "emphasis": emphasis_dict,
         }
         if center is not None:
             entry["center"] = center
@@ -908,7 +923,7 @@ class Figure:
         bins: int = 10, density: bool = False,
         bar_color: Optional[str] = None,
         border_radius: int = 2, labels: bool = False,
-        **series_kw: Any,
+        emphasis: Optional[Emphasis] = None, **series_kw: Any,
     ) -> "Figure":
         """Add a histogram — equivalent to ``plt.hist()``."""
         self._ensure_cartesian("hist")
@@ -935,6 +950,8 @@ class Figure:
         }
         if bar_color:
             entry["itemStyle"]["color"] = bar_color
+        if emphasis is not None:
+            entry["emphasis"] = emphasis.to_dict()
         entry.update(series_kw)
 
         self._series.append(entry)
@@ -953,7 +970,7 @@ class Figure:
         show_labels: bool = True, area_opacity: float = 0.15,
         radius: Union[int, str] = 150,
         center: Optional[List[str]] = None,
-        **series_kw: Any,
+        emphasis: Optional[RadarEmphasis] = None, **series_kw: Any,
     ) -> "Figure":
         """Add a radar chart."""
         self._ensure_mode("radar", "radar")
@@ -979,6 +996,8 @@ class Figure:
             "type": "radar", "data": series_data,
             "areaStyle": {"opacity": area_opacity},
         }
+        if emphasis is not None:
+            entry["emphasis"] = emphasis.to_dict()
         entry.update(series_kw)
         self._series.append(entry)
         self._series_meta.append(_SeriesMeta("radar", "radar"))
@@ -996,7 +1015,7 @@ class Figure:
         self, df: pd.DataFrame, column: str, *,
         hue: Optional[str] = None, bandwidth: Optional[float] = None,
         grid_size: int = 200, show_median: bool = True,
-        **series_kw: Any,
+        emphasis: Optional[LineEmphasis] = None, **series_kw: Any,
     ) -> "Figure":
         """Add a KDE (kernel density estimate) curve — like ``sns.kdeplot()``.
 
@@ -1034,6 +1053,8 @@ class Figure:
                 "data": list(zip(xs.tolist(), ys.tolist())),
                 "showSymbol": False,
             }
+            if emphasis is not None:
+                entry["emphasis"] = emphasis.to_dict()
             entry.update(series_kw)
             self._series.append(entry)
             self._series_meta.append(_SeriesMeta("line", name))
@@ -1051,7 +1072,7 @@ class Figure:
         visual_min: Optional[float] = None,
         visual_max: Optional[float] = None,
         in_range_colors: Optional[List[str]] = None,
-        **series_kw: Any,
+        emphasis: Optional[Emphasis] = None, **series_kw: Any,
     ) -> "Figure":
         """Add a heatmap — similar to ``sns.heatmap()``."""
         self._ensure_mode("heatmap", "heatmap")
@@ -1098,10 +1119,14 @@ class Figure:
             "inRange": {"color": colors},
         }
 
+        emphasis_dict = {"itemStyle": {"shadowBlur": 10, "shadowColor": "rgba(0,0,0,0.5)"}}
+        if emphasis is not None:
+            emphasis_dict = emphasis.to_dict()
+
         entry: dict = {
             "type": "heatmap", "data": data,
             "label": {"show": label_show, "formatter": label_formatter},
-            "emphasis": {"itemStyle": {"shadowBlur": 10, "shadowColor": "rgba(0,0,0,0.5)"}},
+            "emphasis": emphasis_dict,
         }
         entry.update(series_kw)
         self._series.append(entry)
@@ -1116,7 +1141,7 @@ class Figure:
         node_width: Union[int, str] = 20, node_gap: int = 8,
         layout: Literal["none", "orthogonal"] = "none",
         orient: Literal["horizontal", "vertical"] = "horizontal",
-        emphasis: Optional[dict] = None, **series_kw: Any,
+        emphasis: Optional[Union[SankeyEmphasis, dict]] = None, **series_kw: Any,
     ) -> "Figure":
         """Add an N-stage Sankey diagram."""
         self._ensure_mode("sankey", "sankey")
@@ -1144,8 +1169,17 @@ class Figure:
             "data": nodes, "links": links,
             "nodeWidth": node_width, "nodeGap": node_gap,
         }
-        if emphasis:
-            entry["emphasis"] = emphasis
+        if emphasis is not None:
+            if isinstance(emphasis, dict):
+                import warnings as _w
+                _w.warn(
+                    "Passing emphasis as a dict is deprecated. "
+                    "Use SankeyEmphasis(...) instead.",
+                    DeprecationWarning, stacklevel=2,
+                )
+                entry["emphasis"] = emphasis
+            else:
+                entry["emphasis"] = emphasis.to_dict()
         entry.update(series_kw)
 
         self._series.append(entry)
@@ -1160,7 +1194,7 @@ class Figure:
         value: Optional[str] = None, *,
         leaf_depth: Optional[int] = 2, roam: bool = True,
         gap_width: int = 2, border_width: int = 1,
-        label_formatter: str = "{b}\n{c}", **series_kw: Any,
+        label_formatter: str = "{b}\n{c}", emphasis: Optional[TreemapEmphasis] = None, **series_kw: Any,
     ) -> "Figure":
         """Add a treemap chart."""
         self._ensure_mode("treemap", "treemap")
@@ -1211,6 +1245,8 @@ class Figure:
             "label": {"show": True, "formatter": label_formatter},
             "breadcrumb": {"show": True}, "levels": default_levels,
         }
+        if emphasis is not None:
+            entry["emphasis"] = emphasis.to_dict()
         entry.update(series_kw)
         self._series.append(entry)
         self._series_meta.append(_SeriesMeta("treemap", "treemap"))
@@ -1223,7 +1259,7 @@ class Figure:
         self, df: pd.DataFrame, names: str, values: str, *,
         sort_order: Literal["descending", "ascending", "none"] = "descending",
         gap: int = 2, label_position: str = "inside",
-        label_formatter: str = "{b}: {c}", **series_kw: Any,
+        label_formatter: str = "{b}: {c}", emphasis: Optional[FunnelEmphasis] = None, **series_kw: Any,
     ) -> "Figure":
         """Add a funnel chart."""
         self._ensure_mode("funnel", "funnel")
@@ -1244,6 +1280,8 @@ class Figure:
             "gap": gap,
             "label": {"show": True, "position": label_position, "formatter": label_formatter},
         }
+        if emphasis is not None:
+            entry["emphasis"] = emphasis.to_dict()
         entry.update(series_kw)
         self._series.append(entry)
         self._series_meta.append(_SeriesMeta("funnel", names))
@@ -1255,7 +1293,7 @@ class Figure:
 
     def boxplot(
         self, df: pd.DataFrame, x: str, y: str, *,
-        orient: Literal["v", "h"] = "v", **series_kw: Any,
+        orient: Literal["v", "h"] = "v", emphasis: Optional[Emphasis] = None, **series_kw: Any,
     ) -> "Figure":
         """Add a box-and-whisker plot — equivalent to ``plt.boxplot()``."""
         self._ensure_cartesian("boxplot")
@@ -1283,6 +1321,8 @@ class Figure:
                 ])
 
         entry: dict = {"type": "boxplot", "data": box_data, "name": y}
+        if emphasis is not None:
+            entry["emphasis"] = emphasis.to_dict()
         entry.update(series_kw)
         self._series.append(entry)
         self._series_meta.append(_SeriesMeta("boxplot", y))

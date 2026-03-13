@@ -74,7 +74,7 @@ fig.show()
 Three lines from DataFrame to interactive chart.
 
 <p align="center">
-  <img src="assets/demo_bar.png" alt="Quick Start — Bar Chart" width="600" />
+  <img src="https://raw.githubusercontent.com/astrojigs/echartsy/main/assets/demo_bar.png" alt="Quick Start — Bar Chart" width="600" />
 </p>
 
 ---
@@ -87,7 +87,7 @@ Three lines from DataFrame to interactive chart.
 <tr>
 <td width="50%">
 <p align="center"><strong>Bar + Pie Overlay</strong></p>
-<p align="center"><img src="assets/demo_bar_pie.png" alt="Bar + Pie Overlay" width="100%" /></p>
+<p align="center"><img src="https://raw.githubusercontent.com/astrojigs/echartsy/main/assets/demo_bar_pie.png" alt="Bar + Pie Overlay" width="100%" /></p>
 
 ```python
 fig = ec.figure(height="500px")
@@ -101,7 +101,7 @@ fig.show()
 </td>
 <td width="50%">
 <p align="center"><strong>Smooth Line</strong></p>
-<p align="center"><img src="assets/demo_line.png" alt="Line Chart" width="100%" /></p>
+<p align="center"><img src="https://raw.githubusercontent.com/astrojigs/echartsy/main/assets/demo_line.png" alt="Line Chart" width="100%" /></p>
 
 ```python
 fig = ec.figure()
@@ -114,7 +114,7 @@ fig.show()
 <tr>
 <td width="50%">
 <p align="center"><strong>Scatter Plot</strong></p>
-<p align="center"><img src="assets/demo_scatter.png" alt="Scatter Plot" width="100%" /></p>
+<p align="center"><img src="https://raw.githubusercontent.com/astrojigs/echartsy/main/assets/demo_scatter.png" alt="Scatter Plot" width="100%" /></p>
 
 ```python
 fig = ec.figure()
@@ -125,7 +125,7 @@ fig.show()
 </td>
 <td width="50%">
 <p align="center"><strong>Grouped Bar</strong></p>
-<p align="center"><img src="assets/demo_grouped.png" alt="Grouped Bar" width="100%" /></p>
+<p align="center"><img src="https://raw.githubusercontent.com/astrojigs/echartsy/main/assets/demo_grouped.png" alt="Grouped Bar" width="100%" /></p>
 
 ```python
 fig = ec.figure()
@@ -138,7 +138,7 @@ fig.show()
 <tr>
 <td width="50%">
 <p align="center"><strong>Stacked Bar</strong></p>
-<p align="center"><img src="assets/demo_stacked.png" alt="Stacked Bar" width="100%" /></p>
+<p align="center"><img src="https://raw.githubusercontent.com/astrojigs/echartsy/main/assets/demo_stacked.png" alt="Stacked Bar" width="100%" /></p>
 
 ```python
 fig = ec.figure()
@@ -149,7 +149,7 @@ fig.show()
 </td>
 <td width="50%">
 <p align="center"><strong>Histogram</strong></p>
-<p align="center"><img src="assets/demo_histogram.png" alt="Histogram" width="100%" /></p>
+<p align="center"><img src="https://raw.githubusercontent.com/astrojigs/echartsy/main/assets/demo_histogram.png" alt="Histogram" width="100%" /></p>
 
 ```python
 fig = ec.figure()
@@ -161,7 +161,7 @@ fig.show()
 <tr>
 <td width="50%">
 <p align="center"><strong>Area Chart</strong></p>
-<p align="center"><img src="assets/demo_area.png" alt="Area Chart" width="100%" /></p>
+<p align="center"><img src="https://raw.githubusercontent.com/astrojigs/echartsy/main/assets/demo_area.png" alt="Area Chart" width="100%" /></p>
 
 ```python
 fig = ec.figure()
@@ -172,7 +172,7 @@ fig.show()
 </td>
 <td width="50%">
 <p align="center"><strong>Horizontal Bar</strong></p>
-<p align="center"><img src="assets/demo_horizontal.png" alt="Horizontal Bar" width="100%" /></p>
+<p align="center"><img src="https://raw.githubusercontent.com/astrojigs/echartsy/main/assets/demo_horizontal.png" alt="Horizontal Bar" width="100%" /></p>
 
 ```python
 fig = ec.figure()
@@ -185,7 +185,7 @@ fig.show()
 <tr>
 <td width="50%">
 <p align="center"><strong>Dual Axis: Bar + Line</strong></p>
-<p align="center"><img src="assets/demo_dual.png" alt="Dual Axis" width="100%" /></p>
+<p align="center"><img src="https://raw.githubusercontent.com/astrojigs/echartsy/main/assets/demo_dual.png" alt="Dual Axis" width="100%" /></p>
 
 ```python
 fig = ec.figure()
@@ -199,7 +199,7 @@ fig.show()
 </td>
 <td width="50%">
 <p align="center"><strong>Gradient Bars</strong></p>
-<p align="center"><img src="assets/demo_gradient.png" alt="Gradient Bars" width="100%" /></p>
+<p align="center"><img src="https://raw.githubusercontent.com/astrojigs/echartsy/main/assets/demo_gradient.png" alt="Gradient Bars" width="100%" /></p>
 
 ```python
 fig = ec.figure()
@@ -213,7 +213,7 @@ fig.show()
 <tr>
 <td width="50%">
 <p align="center"><strong>Multi-Line with Area</strong></p>
-<p align="center"><img src="assets/demo_multiline.png" alt="Multi-Line" width="100%" /></p>
+<p align="center"><img src="https://raw.githubusercontent.com/astrojigs/echartsy/main/assets/demo_multiline.png" alt="Multi-Line" width="100%" /></p>
 
 ```python
 fig = ec.figure()
@@ -225,7 +225,7 @@ fig.show()
 </td>
 <td width="50%">
 <p align="center"><strong>Boxplot</strong></p>
-<p align="center"><img src="assets/demo_boxplot.png" alt="Boxplot" width="100%" /></p>
+<p align="center"><img src="https://raw.githubusercontent.com/astrojigs/echartsy/main/assets/demo_boxplot.png" alt="Boxplot" width="100%" /></p>
 
 ```python
 fig = ec.figure()
@@ -242,7 +242,7 @@ fig.show()
 <tr>
 <td width="50%">
 <p align="center"><strong>Donut / Pie</strong></p>
-<p align="center"><img src="assets/demo_pie.png" alt="Donut Chart" width="100%" /></p>
+<p align="center"><img src="https://raw.githubusercontent.com/astrojigs/echartsy/main/assets/demo_pie.png" alt="Donut Chart" width="100%" /></p>
 
 ```python
 fig = ec.figure()
@@ -253,7 +253,7 @@ fig.show()
 </td>
 <td width="50%">
 <p align="center"><strong>Radar</strong></p>
-<p align="center"><img src="assets/demo_radar.png" alt="Radar Chart" width="100%" /></p>
+<p align="center"><img src="https://raw.githubusercontent.com/astrojigs/echartsy/main/assets/demo_radar.png" alt="Radar Chart" width="100%" /></p>
 
 ```python
 fig = ec.figure()
@@ -266,7 +266,7 @@ fig.show()
 <tr>
 <td width="50%">
 <p align="center"><strong>Heatmap</strong></p>
-<p align="center"><img src="assets/demo_heatmap.png" alt="Heatmap" width="100%" /></p>
+<p align="center"><img src="https://raw.githubusercontent.com/astrojigs/echartsy/main/assets/demo_heatmap.png" alt="Heatmap" width="100%" /></p>
 
 ```python
 fig = ec.figure()
@@ -277,7 +277,7 @@ fig.show()
 </td>
 <td width="50%">
 <p align="center"><strong>Funnel</strong></p>
-<p align="center"><img src="assets/demo_funnel.png" alt="Funnel" width="100%" /></p>
+<p align="center"><img src="https://raw.githubusercontent.com/astrojigs/echartsy/main/assets/demo_funnel.png" alt="Funnel" width="100%" /></p>
 
 ```python
 fig = ec.figure()
@@ -289,7 +289,7 @@ fig.show()
 <tr>
 <td width="50%">
 <p align="center"><strong>Treemap</strong></p>
-<p align="center"><img src="assets/demo_treemap.png" alt="Treemap" width="100%" /></p>
+<p align="center"><img src="https://raw.githubusercontent.com/astrojigs/echartsy/main/assets/demo_treemap.png" alt="Treemap" width="100%" /></p>
 
 ```python
 fig = ec.figure()
@@ -301,7 +301,7 @@ fig.show()
 </td>
 <td width="50%">
 <p align="center"><strong>Sankey Diagram</strong></p>
-<p align="center"><img src="assets/demo_sankey.png" alt="Sankey Diagram" width="100%" /></p>
+<p align="center"><img src="https://raw.githubusercontent.com/astrojigs/echartsy/main/assets/demo_sankey.png" alt="Sankey Diagram" width="100%" /></p>
 
 ```python
 fig = ec.figure()
@@ -320,31 +320,31 @@ fig.show()
 <tr>
 <td width="50%">
 <p align="center"><strong>Bar + Pie (Dark)</strong></p>
-<p align="center"><img src="assets/demo_composite_dark.png" alt="Composite Dark" width="100%" /></p>
+<p align="center"><img src="https://raw.githubusercontent.com/astrojigs/echartsy/main/assets/demo_composite_dark.png" alt="Composite Dark" width="100%" /></p>
 </td>
 <td width="50%">
 <p align="center"><strong>Triple Composite</strong></p>
-<p align="center"><img src="assets/demo_composite.png" alt="Triple Composite" width="100%" /></p>
+<p align="center"><img src="https://raw.githubusercontent.com/astrojigs/echartsy/main/assets/demo_composite.png" alt="Triple Composite" width="100%" /></p>
 </td>
 </tr>
 <tr>
 <td width="50%">
 <p align="center"><strong>KPI Dashboard</strong></p>
-<p align="center"><img src="assets/demo_dashboard.png" alt="KPI Dashboard" width="100%" /></p>
+<p align="center"><img src="https://raw.githubusercontent.com/astrojigs/echartsy/main/assets/demo_dashboard.png" alt="KPI Dashboard" width="100%" /></p>
 </td>
 <td width="50%">
 <p align="center"><strong>Stacked + Trend + Pie</strong></p>
-<p align="center"><img src="assets/demo_full_dashboard.png" alt="Full Dashboard" width="100%" /></p>
+<p align="center"><img src="https://raw.githubusercontent.com/astrojigs/echartsy/main/assets/demo_full_dashboard.png" alt="Full Dashboard" width="100%" /></p>
 </td>
 </tr>
 <tr>
 <td width="50%">
 <p align="center"><strong>Side-by-Side Pies</strong></p>
-<p align="center"><img src="assets/demo_sidebyside_pies.png" alt="Side-by-Side Pies" width="100%" /></p>
+<p align="center"><img src="https://raw.githubusercontent.com/astrojigs/echartsy/main/assets/demo_sidebyside_pies.png" alt="Side-by-Side Pies" width="100%" /></p>
 </td>
 <td width="50%">
 <p align="center"><strong>Dark Theme</strong></p>
-<p align="center"><img src="assets/demo_dark.png" alt="Dark Theme" width="100%" /></p>
+<p align="center"><img src="https://raw.githubusercontent.com/astrojigs/echartsy/main/assets/demo_dark.png" alt="Dark Theme" width="100%" /></p>
 </td>
 </tr>
 </table>
@@ -473,7 +473,7 @@ fig.show()
 ```
 
 <p align="center">
-  <img src="assets/demo_timeline.png" alt="Timeline Animation" width="700" />
+  <img src="https://raw.githubusercontent.com/astrojigs/echartsy/main/assets/demo_timeline.png" alt="Timeline Animation" width="700" />
 </p>
 
 **TimelineFigure features:**

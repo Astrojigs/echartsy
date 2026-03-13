@@ -16,7 +16,7 @@ import pandas as pd
 import numpy as np
 
 sys.path.insert(0, os.path.dirname(__file__))
-import echartslib as ec
+import echartsy as ec
 
 ec.config(engine="python")
 

@@ -1,9 +1,9 @@
 """
-echartslib — A matplotlib-style fluent builder API for Apache ECharts.
+echartsy — A matplotlib-style fluent builder API for Apache ECharts.
 
 Quick-start
 -----------
->>> import echartslib as ec
+>>> import echartsy as ec
 >>> ec.config(engine="jupyter")  # or "python" or "streamlit"
 >>>
 >>> (
@@ -16,22 +16,22 @@ Quick-start
 ...     .show()
 ... )
 """
-from echartslib._config import config, get_adaptive, get_engine
-from echartslib.exceptions import (
+from echartsy._config import config, get_adaptive, get_engine
+from echartsy.exceptions import (
     BuilderConfigError,
     BuilderError,
     DataValidationError,
     OverlapWarning,
     TimelineConfigError,
 )
-from echartslib.figure import Figure, figure
-from echartslib.styles import (
+from echartsy.figure import Figure, figure
+from echartsy.styles import (
     PALETTE_CLINICAL,
     PALETTE_DARK,
     PALETTE_RUSTY,
     StylePreset,
 )
-from echartslib.timeline import (
+from echartsy.timeline import (
     TimelineFigure,
     detect_time_format,
     timeline_figure,

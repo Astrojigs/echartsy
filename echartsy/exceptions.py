@@ -1,4 +1,4 @@
-"""Custom exceptions and warnings for echartslib."""
+"""Custom exceptions and warnings for echartsy."""
 
 
 class BuilderError(Exception):

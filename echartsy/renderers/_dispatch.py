@@ -3,7 +3,7 @@ from __future__ import annotations
 
 from typing import Any, Optional
 
-from echartslib._config import get_adaptive, get_engine
+from echartsy._config import get_adaptive, get_engine
 
 
 def render(
@@ -38,7 +38,7 @@ def render(
     adaptive = get_adaptive()
 
     if engine == "jupyter":
-        from echartslib.renderers._jupyter import render_jupyter
+        from echartsy.renderers._jupyter import render_jupyter
         render_jupyter(
             option, height=height, width=width or "100%",
             theme=theme, renderer=renderer, adaptive=adaptive,
@@ -46,7 +46,7 @@ def render(
         return
 
     if engine == "streamlit":
-        from echartslib.renderers._streamlit import render_streamlit
+        from echartsy.renderers._streamlit import render_streamlit
         render_streamlit(
             option, height=height, width=width, theme=theme,
             renderer=renderer, key=key, **render_kw,
@@ -54,7 +54,7 @@ def render(
         return
 
     # Default: "python" — open in browser
-    from echartslib.renderers._python import render_python
+    from echartsy.renderers._python import render_python
     render_python(
         option, height=height, width=width or "100%",
         theme=theme, renderer=renderer, adaptive=adaptive,

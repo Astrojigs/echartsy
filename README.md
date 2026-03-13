@@ -2,18 +2,18 @@
   <img src="https://echarts.apache.org/en/images/logo.png" alt="Apache ECharts" width="70" />
 </p>
 
-<h1 align="center">echartslib</h1>
+<h1 align="center">echartsy</h1>
 
 <p align="center">
   <em>Interactive charts in Python — the matplotlib workflow, the ECharts experience.</em>
 </p>
 
 <p align="center">
-  <a href="https://pypi.org/project/echartslib/"><img src="https://img.shields.io/pypi/v/echartslib?color=%2334d058&label=PyPI" alt="PyPI version" /></a>
-  <a href="https://pypi.org/project/echartslib/"><img src="https://img.shields.io/pypi/pyversions/echartslib?color=%2334d058" alt="Python versions" /></a>
-  <a href="https://github.com/astrojigs/echartslib/blob/main/LICENSE"><img src="https://img.shields.io/github/license/astrojigs/echartslib?color=blue" alt="License" /></a>
-  <a href="https://github.com/astrojigs/echartslib/stargazers"><img src="https://img.shields.io/github/stars/astrojigs/echartslib?style=flat&color=yellow" alt="Stars" /></a>
-  <a href="https://github.com/astrojigs/echartslib/issues"><img src="https://img.shields.io/github/issues/astrojigs/echartslib?color=orange" alt="Issues" /></a>
+  <a href="https://pypi.org/project/echartsy/"><img src="https://img.shields.io/pypi/v/echartsy?color=%2334d058&label=PyPI" alt="PyPI version" /></a>
+  <a href="https://pypi.org/project/echartsy/"><img src="https://img.shields.io/pypi/pyversions/echartsy?color=%2334d058" alt="Python versions" /></a>
+  <a href="https://github.com/astrojigs/echartsy/blob/main/LICENSE"><img src="https://img.shields.io/github/license/astrojigs/echartsy?color=blue" alt="License" /></a>
+  <a href="https://github.com/astrojigs/echartsy/stargazers"><img src="https://img.shields.io/github/stars/astrojigs/echartsy?style=flat&color=yellow" alt="Stars" /></a>
+  <a href="https://github.com/astrojigs/echartsy/issues"><img src="https://img.shields.io/github/issues/astrojigs/echartsy?color=orange" alt="Issues" /></a>
 </p>
 
 <p align="center">
@@ -24,7 +24,7 @@
 
 ---
 
-## Why echartslib?
+## Why echartsy?
 
 - **Feels like matplotlib** — If you know `plt.figure()` / `plt.show()`, you already know 90% of the API. No JSON wrangling, no JavaScript.
 - **Interactive out of the box** — Every chart ships with tooltips, legend toggling, zoom, and a built-in export toolbox.  Zero configuration needed.
@@ -36,16 +36,16 @@
 ## Installation
 
 ```bash
-pip install echartslib
+pip install echartsy
 ```
 
 Need extras?
 
 ```bash
-pip install echartslib[jupyter]     # Jupyter Notebook / JupyterLab
-pip install echartslib[streamlit]   # Streamlit apps
-pip install echartslib[scipy]       # KDE density plots
-pip install echartslib[all]         # Everything
+pip install echartsy[jupyter]     # Jupyter Notebook / JupyterLab
+pip install echartsy[streamlit]   # Streamlit apps
+pip install echartsy[scipy]       # KDE density plots
+pip install echartsy[all]         # Everything
 ```
 
 > **Requirements:** Python 3.9+ &middot; pandas &ge; 1.5 &middot; numpy &ge; 1.23
@@ -56,7 +56,7 @@ pip install echartslib[all]         # Everything
 
 ```python
 import pandas as pd
-import echartslib as ec
+import echartsy as ec
 
 ec.config(engine="jupyter")          # or "python" / "streamlit"
 
@@ -375,13 +375,13 @@ fig.show()
 
 ## Rendering Engines
 
-echartslib writes your chart once; `ec.config()` controls where it renders.
+echartsy writes your chart once; `ec.config()` controls where it renders.
 
 | Engine | Use case | Install |
 |:---|:---|:---|
 | `"python"` | Standalone scripts — opens the default browser | No extra deps |
-| `"jupyter"` | Jupyter Notebook / JupyterLab inline widgets | `pip install echartslib[jupyter]` |
-| `"streamlit"` | Streamlit applications | `pip install echartslib[streamlit]` |
+| `"jupyter"` | Jupyter Notebook / JupyterLab inline widgets | `pip install echartsy[jupyter]` |
+| `"streamlit"` | Streamlit applications | `pip install echartsy[streamlit]` |
 
 ```python
 ec.config(engine="jupyter")
@@ -589,7 +589,7 @@ python capture_screenshots.py
 
 ## Contributing
 
-Contributions, bug reports, and feature requests are welcome. Please open an [issue](https://github.com/astrojigs/echartslib/issues) or submit a pull request on [GitHub](https://github.com/astrojigs/echartslib).
+Contributions, bug reports, and feature requests are welcome. Please open an [issue](https://github.com/astrojigs/echartsy/issues) or submit a pull request on [GitHub](https://github.com/astrojigs/echartsy).
 
 ## License
 

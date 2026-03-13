@@ -30,5 +30,5 @@ htmlcov/
 .coverage
 
 # Temp chart exports
-echartslib_*.html
+echartsy_*.html
 *.ipynb_checkpoints/

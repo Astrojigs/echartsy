@@ -10,7 +10,7 @@ import uuid
 import warnings
 from typing import Optional
 
-from echartslib.renderers._html_template import build_jupyter_html
+from echartsy.renderers._html_template import build_jupyter_html
 
 
 def render_jupyter(
@@ -44,7 +44,7 @@ def render_jupyter(
     except ImportError:
         raise ImportError(
             "IPython is required for the 'jupyter' engine. "
-            "Install it with:  pip install echartslib[jupyter]"
+            "Install it with:  pip install echartsy[jupyter]"
         )
 
     chart_id = f"ec_{uuid.uuid4().hex[:10]}"

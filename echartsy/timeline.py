@@ -18,16 +18,16 @@ from typing import (
 import numpy as np
 import pandas as pd
 
-from echartslib._helpers import (
+from echartsy._helpers import (
     _coerce_numeric, _resolve_agg, _resolve_layout,
     _sort_categories, _validate_columns, _validate_df,
 )
-from echartslib.exceptions import (
+from echartsy.exceptions import (
     BuilderConfigError, DataValidationError, TimelineConfigError,
 )
-from echartslib.figure import _SeriesMeta
-from echartslib.renderers import render
-from echartslib.styles import StylePreset
+from echartsy.figure import _SeriesMeta
+from echartsy.renderers import render
+from echartsy.styles import StylePreset
 
 # ═══════════════════════════════════════════════════════════════════════════
 # Temporal-parser patterns (for auto-sorting timeline frames)
@@ -130,7 +130,7 @@ class TimelineFigure:
 
     Example
     -------
-    >>> import echartslib as ec
+    >>> import echartsy as ec
     >>> ec.config(engine="jupyter")
     >>> (
     ...     ec.TimelineFigure(height="500px", interval=1.5)
@@ -709,8 +709,8 @@ class TimelineFigure:
     def to_html(self, filepath: str = "timeline_chart.html") -> str:
         """Export the timeline chart to a standalone HTML file."""
         import os
-        from echartslib._config import get_adaptive
-        from echartslib.renderers._html_template import build_html
+        from echartsy._config import get_adaptive
+        from echartsy.renderers._html_template import build_html
 
         # Validate parent directory exists
         parent = os.path.dirname(os.path.abspath(filepath))

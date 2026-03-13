@@ -1,13 +1,13 @@
 [build-system]
-requires = ["setuptools>=68.0", "wheel"]
+requires = ["setuptools>=68.0,<77", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "echartslib"
+name = "echartsy"
 version = "0.1.0"
 description = "A matplotlib-style fluent builder API for Apache ECharts in Python, Jupyter Notebooks, and Streamlit."
 readme = "README.md"
-license = "MIT"
+license = {text = "MIT"}
 requires-python = ">=3.9"
 authors = [
     {name = "Jigar", email = "astrojigs24@gmail.com"},
@@ -39,9 +39,9 @@ all = ["ipython>=7.0", "streamlit-echarts>=0.4.0", "scipy>=1.9.0"]
 dev = ["pytest>=7.0", "ipython>=7.0"]
 
 [project.urls]
-Homepage = "https://github.com/astrojigs/echartslib"
-Documentation = "https://github.com/astrojigs/echartslib#readme"
-Repository = "https://github.com/astrojigs/echartslib"
+Homepage = "https://github.com/astrojigs/echartsy"
+Documentation = "https://github.com/astrojigs/echartsy#readme"
+Repository = "https://github.com/astrojigs/echartsy"
 
 [tool.setuptools.packages.find]
-include = ["echartslib*"]
+include = ["echartsy*"]

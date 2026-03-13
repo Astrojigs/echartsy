@@ -1,4 +1,4 @@
-"""Style presets and colour palettes for echartslib."""
+"""Style presets and colour palettes for echartsy."""
 from __future__ import annotations
 
 from dataclasses import dataclass

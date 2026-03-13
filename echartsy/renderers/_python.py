@@ -11,7 +11,7 @@ import tempfile
 import webbrowser
 from typing import Optional
 
-from echartslib.renderers._html_template import build_html
+from echartsy.renderers._html_template import build_html
 
 _temp_files: list[str] = []
 
@@ -57,7 +57,7 @@ def render_python(
     )
 
     with tempfile.NamedTemporaryFile(
-        mode="w", suffix=".html", delete=False, prefix="echartslib_",
+        mode="w", suffix=".html", delete=False, prefix="echartsy_",
     ) as f:
         f.write(html)
         filepath = f.name

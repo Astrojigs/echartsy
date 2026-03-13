@@ -1,5 +1,5 @@
 """
-Figure — the top-level chart canvas for echartslib.
+Figure — the top-level chart canvas for echartsy.
 
 Equivalent to ``plt.figure()`` + ``plt.subplots()`` in matplotlib.
 Collects series incrementally via ``.plot()``, ``.bar()``, etc.,
@@ -26,7 +26,7 @@ from typing import (
 import numpy as np
 import pandas as pd
 
-from echartslib._helpers import (
+from echartsy._helpers import (
     _coerce_numeric,
     _resolve_agg,
     _resolve_layout,
@@ -34,9 +34,9 @@ from echartslib._helpers import (
     _validate_columns,
     _validate_df,
 )
-from echartslib.exceptions import BuilderConfigError, DataValidationError
-from echartslib.renderers import render
-from echartslib.styles import StylePreset
+from echartsy.exceptions import BuilderConfigError, DataValidationError
+from echartsy.renderers import render
+from echartsy.styles import StylePreset
 
 
 # ═══════════════════════════════════════════════════════════════════════════
@@ -77,7 +77,7 @@ class Figure:
 
     Example
     -------
-    >>> import echartslib as ec
+    >>> import echartsy as ec
     >>> ec.config(engine="jupyter")
     >>> fig = ec.Figure(height="600px", style=ec.StylePreset.CLINICAL)
     >>> fig.bar(df, x="Month", y="Revenue").title("Monthly Revenue").show()
@@ -1000,7 +1000,7 @@ class Figure:
     ) -> "Figure":
         """Add a KDE (kernel density estimate) curve — like ``sns.kdeplot()``.
 
-        Requires ``scipy``. Install with ``pip install echartslib[scipy]``.
+        Requires ``scipy``. Install with ``pip install echartsy[scipy]``.
         """
         from scipy.stats import gaussian_kde as _gaussian_kde
 
@@ -1441,8 +1441,8 @@ class Figure:
             The filepath written to.
         """
         import os
-        from echartslib._config import get_adaptive
-        from echartslib.renderers._html_template import build_html
+        from echartsy._config import get_adaptive
+        from echartsy.renderers._html_template import build_html
 
         # Validate parent directory exists
         parent = os.path.dirname(os.path.abspath(filepath))
@@ -1484,7 +1484,7 @@ def figure(
 
     Example
     -------
-    >>> import echartslib as ec
+    >>> import echartsy as ec
     >>> fig = ec.figure(height="600px", style=ec.StylePreset.KPI_REPORT)
     >>> fig.bar(df, "x", "y").show()
     """

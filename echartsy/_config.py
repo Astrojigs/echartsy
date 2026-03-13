@@ -1,4 +1,4 @@
-"""Global configuration for echartslib rendering engine."""
+"""Global configuration for echartsy rendering engine."""
 from __future__ import annotations
 
 from typing import Literal, Optional
@@ -36,7 +36,7 @@ def config(
 
     Example
     -------
-    >>> import echartslib as ec
+    >>> import echartsy as ec
     >>> ec.config(engine="jupyter")                   # auto-adapts
     >>> ec.config(engine="jupyter", adaptive="dark")  # force dark
     """

@@ -9,7 +9,7 @@ from typing import Any, Dict, List, Literal, Optional, Sequence
 import numpy as np
 import pandas as pd
 
-from echartslib.exceptions import (
+from echartsy.exceptions import (
     BuilderConfigError,
     DataValidationError,
     OverlapWarning,

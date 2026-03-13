@@ -33,5 +33,8 @@ htmlcov/
 echartsy_*.html
 *.ipynb_checkpoints/
 
+# Node
+node_modules/
+
 # Claude Code
 .claude/

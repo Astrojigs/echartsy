@@ -434,6 +434,69 @@ fig = ec.figure(style=my_style)
 
 ---
 
+## Emphasis (Hover Highlighting)
+
+Control what happens when users hover over chart elements — highlight, dim, scale, or restyle — using typed Python dataclasses instead of raw dicts.
+
+Every chart method accepts an optional `emphasis` parameter with a chart-specific type:
+
+| Chart method | Emphasis class | Extra fields |
+|:---|:---|:---|
+| `bar()`, `hist()`, `boxplot()`, `heatmap()` | `Emphasis` | — |
+| `plot()`, `kde()` | `LineEmphasis` | `line_style`, `area_style`, `end_label` |
+| `scatter()` | `ScatterEmphasis` | `scale` |
+| `pie()` | `PieEmphasis` | `scale`, `scale_size`, `label_line` |
+| `radar()` | `RadarEmphasis` | `line_style`, `area_style` |
+| `sankey()` | `SankeyEmphasis` | `line_style`, focus supports `"adjacency"` |
+| `funnel()` | `FunnelEmphasis` | `label_line` |
+| `treemap()` | `TreemapEmphasis` | `label_line`, `upper_label` |
+
+All classes share these common fields: `disabled`, `focus` (`"none"` / `"self"` / `"series"`), `blur_scope`, `item_style`, and `label`.
+
+```python
+from echartsy import Figure, Emphasis, ItemStyle
+
+# Highlight the hovered series, dim everything else
+fig = Figure()
+fig.bar(df, x="Month", y="Revenue", hue="Region",
+        emphasis=Emphasis(
+            focus="series",
+            item_style=ItemStyle(shadow_blur=10, shadow_color="rgba(0,0,0,0.3)"),
+        ))
+fig.show()
+```
+
+```python
+from echartsy import Figure, LineEmphasis, LineStyle, LabelStyle
+
+# Bold the hovered line and show value labels
+fig = Figure()
+fig.plot(df, x="Date", y="Price", hue="Stock",
+         emphasis=LineEmphasis(
+             focus="series",
+             line_style=LineStyle(width=4),
+             label=LabelStyle(show=True, formatter="{c}"),
+         ))
+fig.show()
+```
+
+```python
+from echartsy import Figure, PieEmphasis, ItemStyle
+
+# Scale and shadow on hover
+fig = Figure()
+fig.pie(df, names="Category", values="Amount",
+        emphasis=PieEmphasis(
+            scale=True, scale_size=15,
+            item_style=ItemStyle(shadow_blur=20),
+        ))
+fig.show()
+```
+
+When `emphasis` is omitted, each chart keeps its existing default behaviour (backward compatible).
+
+---
+
 ## Composite Charts
 
 Overlay pies on cartesian charts, or combine bar + line on dual axes — all on one figure.
@@ -565,6 +628,20 @@ Same as `Figure` but adds timeline animation. Extra parameters:
 ### `ec.StylePreset`
 
 Frozen dataclass bundling visual defaults: `palette`, `bg`, `font_family`, `title_font_size`, `axis_label_font_size`, `grid_line_color`, and more.
+
+### `ec.Emphasis`, `ec.LineEmphasis`, `ec.PieEmphasis`, ...
+
+Frozen dataclasses configuring hover-highlight behaviour per series. Common fields: `disabled`, `focus`, `blur_scope`, `item_style` (`ItemStyle`), `label` (`LabelStyle`). Chart-specific subclasses add fields like `line_style`, `area_style`, `scale`, `scale_size`, and `label_line`. See the [Emphasis section](#emphasis-hover-highlighting) for the full mapping.
+
+### Sub-style dataclasses
+
+| Class | Key fields |
+|:---|:---|
+| `ec.ItemStyle` | `color`, `border_color`, `border_width`, `border_radius`, `shadow_blur`, `shadow_color`, `opacity` |
+| `ec.LabelStyle` | `show`, `position`, `formatter`, `font_size`, `font_weight`, `color` |
+| `ec.LineStyle` | `color`, `width`, `type` (`"solid"` / `"dashed"` / `"dotted"`), `shadow_blur`, `opacity` |
+| `ec.AreaStyle` | `color`, `opacity` |
+| `ec.LabelLineStyle` | `show`, `length`, `length2` |
 
 ### `ec.detect_time_format(series)`
 

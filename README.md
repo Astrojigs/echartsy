@@ -391,12 +391,13 @@ ec.config(engine="jupyter")
 
 ## Adaptive Dark Mode
 
-Charts automatically respond to the user's OS or browser `prefers-color-scheme` setting.
+Charts automatically respond to the user's OS or browser `prefers-color-scheme` setting. In Streamlit, the app's theme is detected automatically via `st.get_option("theme.base")`.
 
 ```python
 ec.config(engine="jupyter", adaptive="auto")     # auto-detect (default)
 ec.config(engine="jupyter", adaptive="dark")     # force dark
-ec.config(engine="jupyter", adaptive="light")    # force light
+ec.config(engine="streamlit")                    # auto-adapts to Streamlit theme
+ec.config(engine="streamlit", adaptive="dark")   # force dark in Streamlit
 ```
 
 ---
@@ -547,7 +548,7 @@ fig.show()
 | Adjust after creation | `fig.playback(interval=1.0, rewind=True)` |
 | Fixed axis ranges | `fig.xlim(0, 5000)`, `fig.ylim(0, 15)` — consistent scales across frames |
 | Smart frame sorting | Parses years, quarters (`Q1 2024`), months (`Jan 2024`), ISO dates, fiscal years |
-| Supported series | `bar()`, `plot()`, `scatter()`, `pie()` |
+| Supported series | `bar()`, `plot()`, `scatter()`, `pie()`, `hist()` |
 | Diagnose format | `ec.detect_time_format(df["Year"])` |
 
 ---
@@ -664,6 +665,11 @@ python capture_screenshots.py
 ```
 
 ---
+
+## What's New in v0.4.0
+
+- **Added:** `TimelineFigure.hist()` — animated histograms with global bin edges for consistent comparison across frames.
+- **Added:** Streamlit auto dark mode — charts automatically detect and adapt to the Streamlit app's dark/light theme via `st.get_option("theme.base")`, with CSS `prefers-color-scheme` fallback.
 
 ## What's New in v0.3.1
 

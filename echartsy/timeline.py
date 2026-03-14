@@ -630,6 +630,100 @@ class TimelineFigure:
         self._sort_frame_order()
         return self
 
+    def hist(self, df: pd.DataFrame, column: str, *, time_col: str,
+             bins: int = 10, density: bool = False,
+             bar_color: Optional[str] = None,
+             border_radius: int = 2, labels: bool = False,
+             interval: Optional[float] = None, **series_kw: Any) -> "TimelineFigure":
+        """Add a timeline-animated histogram.
+
+        Computes bin edges from the **full dataset** (across all frames) so
+        that bins are directly comparable across timeline frames.
+
+        Parameters
+        ----------
+        df : pd.DataFrame
+            Source data.
+        column : str
+            Numeric column to bin.
+        time_col : str
+            Column whose unique values become animation frames.
+        bins : int
+            Number of histogram bins (default 10).
+        density : bool
+            If ``True``, normalize to a probability density.
+        bar_color : str or None
+            Override bar colour for all frames.
+        border_radius : int
+            Corner rounding on bars.
+        labels : bool
+            Show value labels on bars.
+        interval : float or None
+            Override playback interval (seconds) for this series.
+        """
+        self._ensure_cartesian("hist")
+        df = _validate_df(df, "hist")
+        _validate_columns(df, [column, time_col], "hist")
+        self._resolve_interval(interval)
+
+        if bins is not None and bins <= 0:
+            raise DataValidationError("hist(): bins must be a positive integer.")
+
+        dff = df.copy()
+        dff[column] = _coerce_numeric(dff, column, "hist")
+        dff[time_col] = dff[time_col].astype(str).str.strip()
+        n_before = len(dff)
+        dff = dff.dropna(subset=[column, time_col])
+        n_dropped = n_before - len(dff)
+        if n_dropped > 0:
+            warnings.warn(f"hist(): {n_dropped} rows dropped due to missing values", stacklevel=2)
+
+        all_vals = dff[column].astype(float).values
+        if len(all_vals) == 0:
+            raise DataValidationError(
+                f"hist(): Column '{column}' has no non-null numeric values."
+            )
+
+        # Compute global bin edges so bins are comparable across frames
+        _, edges = np.histogram(all_vals, bins=bins)
+        bin_labels = [f"{edges[i]:.1f}\u2013{edges[i + 1]:.1f}" for i in range(len(edges) - 1)]
+        self._merge_global_x_cats(bin_labels)
+
+        self._x_axis_template["name"] = column
+        self._y_axes_template[0].setdefault("name", "Density" if density else "Count")
+        self._tooltip_cfg["trigger"] = "axis"
+
+        for time_val, tgrp in dff.groupby(time_col, sort=False):
+            frame = self._get_frame(str(time_val))
+
+            frame_vals = tgrp[column].astype(float).values
+            if len(frame_vals) == 0:
+                counts = np.zeros(len(edges) - 1)
+            else:
+                counts, _ = np.histogram(frame_vals, bins=edges, density=density)
+
+            for bl in bin_labels:
+                if bl not in frame["x_cats"]:
+                    frame["x_cats"].append(bl)
+
+            entry: dict = {
+                "type": "bar",
+                "data": [round(float(c), 6) for c in counts],
+                "name": column,
+                "label": {"show": labels, "position": "top"},
+                "itemStyle": {"borderRadius": border_radius},
+            }
+            if bar_color:
+                entry["itemStyle"]["color"] = bar_color
+            entry.update(series_kw)
+            frame["series"].append(entry)
+            frame["meta"].append(_SeriesMeta("bar", column))
+            if column not in frame["legend_items"]:
+                frame["legend_items"].append(column)
+
+        self._sort_frame_order()
+        return self
+
     # ═══════════════════════════════════════════════════════════════════════
     # Build + render
     # ═══════════════════════════════════════════════════════════════════════

@@ -1,7 +1,8 @@
 """Streamlit rendering backend.
 
-Renders the chart inside a Streamlit app using ``streamlit-echarts``.
-Falls back to ``st.json`` if the package is not installed.
+Renders the chart inside a Streamlit app. Uses ``st.components.v1.html()``
+with ECharts loaded from CDN — no third-party Streamlit component required.
+Falls back to ``st.json`` if Streamlit itself is not available.
 """
 from __future__ import annotations
 
@@ -35,66 +36,62 @@ def render_streamlit(
     key : str or None
         Explicit Streamlit widget key.
     **render_kw
-        Extra kwargs forwarded to ``st_echarts()``.
+        Extra kwargs forwarded to ``st_echarts()`` (only used when
+        streamlit-echarts is installed and preferred).
 
     Returns
     -------
     dict
         The original option dict (pass-through).
     """
-    st_echarts = _import_st_echarts()
-
-    if st_echarts is None:
-        _fallback_render(option, height)
-        return option
-
-    kw: dict = {
-        "options": option,
-        "height": height,
-        "renderer": renderer,
-    }
-    if key:
-        kw["key"] = key
-    if width:
-        kw["width"] = width
-    if theme:
-        kw["theme"] = theme
-    kw.update(render_kw)
-
-    st_echarts(**kw)
+    _html_render(option, height, width, theme, renderer)
     return option
 
 
-# ── Lazy import helpers ──────────────────────────────────────────────────
-
-_ST_ECHARTS_AVAILABLE: Optional[bool] = None
-
-
-def _import_st_echarts():
-    """Return ``st_echarts`` callable, or ``None`` if the package is missing."""
-    global _ST_ECHARTS_AVAILABLE
-    if _ST_ECHARTS_AVAILABLE is None:
-        try:
-            from streamlit_echarts import st_echarts
-            _ST_ECHARTS_AVAILABLE = True
-            return st_echarts
-        except ImportError:
-            _ST_ECHARTS_AVAILABLE = False
-            return None
-    if _ST_ECHARTS_AVAILABLE:
-        from streamlit_echarts import st_echarts
-        return st_echarts
-    return None
-
-
-def _fallback_render(option: dict, height: str = "400px") -> None:
-    """Render the raw JSON dict via ``st.json`` when streamlit-echarts is absent."""
+def _html_render(
+    option: dict,
+    height: str = "400px",
+    width: Optional[str] = None,
+    theme: Optional[str] = None,
+    renderer: str = "svg",
+) -> None:
+    """Render using st.components.v1.html() with ECharts from CDN."""
     try:
         import streamlit as st
-        st.warning(
-            "streamlit-echarts is not installed. Showing raw ECharts JSON. "
-            "Install with:  pip install streamlit-echarts"
-        )
-        st.json(option, expanded=False)
+        import streamlit.components.v1 as components
     except ImportError:
         print(json.dumps(option, indent=2, default=str))
+        return
+
+    from echartsy.renderers._html_template import ECHARTS_CDN, _json_default
+
+    height_px = _parse_css_px(height, 400)
+    width_css = width or "100%"
+    theme_js = json.dumps(theme) if theme else "null"
+    option_json = json.dumps(option, default=_json_default)
+
+    html = f"""\
+<!DOCTYPE html>
+<html><head><meta charset="utf-8">
+<script src="{ECHARTS_CDN}"></script>
+</head><body style="margin:0;padding:0;">
+<div id="chart" style="width:{width_css};height:{height_px}px;"></div>
+<script>
+var chart = echarts.init(document.getElementById('chart'), {theme_js}, {{renderer: '{renderer}'}});
+chart.setOption({option_json});
+window.addEventListener('resize', function() {{ chart.resize(); }});
+</script>
+</body></html>"""
+
+    components.html(html, height=height_px + 10, scrolling=False)
+
+
+def _parse_css_px(value: str, default: int) -> int:
+    """Extract integer pixel value from a CSS height string like '400px'."""
+    v = str(value).strip().lower()
+    if v.endswith("px"):
+        v = v[:-2]
+    try:
+        return int(float(v))
+    except (ValueError, TypeError):
+        return default

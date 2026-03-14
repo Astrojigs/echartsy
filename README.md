@@ -381,7 +381,7 @@ echartsy writes your chart once; `ec.config()` controls where it renders.
 |:---|:---|:---|
 | `"python"` | Standalone scripts — opens the default browser | No extra deps |
 | `"jupyter"` | Jupyter Notebook / JupyterLab inline widgets | `pip install echartsy[jupyter]` |
-| `"streamlit"` | Streamlit applications | `pip install echartsy[streamlit]` |
+| `"streamlit"` | Streamlit applications | `pip install echartsy[streamlit]` (or just `pip install streamlit`) |
 
 ```python
 ec.config(engine="jupyter")
@@ -545,6 +545,7 @@ fig.show()
 |:---|:---|
 | Playback control | `TimelineFigure(interval=2.0, autoplay=True, loop=True)` |
 | Adjust after creation | `fig.playback(interval=1.0, rewind=True)` |
+| Fixed axis ranges | `fig.xlim(0, 5000)`, `fig.ylim(0, 15)` — consistent scales across frames |
 | Smart frame sorting | Parses years, quarters (`Q1 2024`), months (`Jan 2024`), ISO dates, fiscal years |
 | Supported series | `bar()`, `plot()`, `scatter()`, `pie()` |
 | Diagnose format | `ec.detect_time_format(df["Year"])` |
@@ -661,6 +662,15 @@ python generate_demos.py
 pip install playwright && playwright install chromium
 python capture_screenshots.py
 ```
+
+---
+
+## What's New in v0.3.0
+
+- **Fixed:** `xlabel(rotate=...)` no longer raises `KeyError` when called after `heatmap()` or other methods that reset the x-axis.
+- **Fixed:** `_auto_key()` collisions — multiple charts with the same height, series count, and mode no longer overwrite each other in Streamlit.
+- **Added:** `TimelineFigure.xlim()` and `TimelineFigure.ylim()` — lock axis ranges across animation frames for consistent comparisons.
+- **Changed:** Streamlit rendering now uses `st.components.v1.html()` with ECharts from CDN instead of the `streamlit-echarts` third-party component. This fixes silent empty renders on modern Streamlit versions and removes the external dependency.
 
 ---
 

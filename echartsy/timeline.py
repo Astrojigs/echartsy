@@ -8,7 +8,7 @@ the DataFrame into frames. The resulting ECharts option uses the
 from __future__ import annotations
 
 import copy
-import hashlib
+import itertools
 import re
 import warnings
 from typing import (
@@ -116,6 +116,8 @@ def detect_time_format(series: pd.Series) -> str:
     status = "sorted correctly" if n_ok == len(parsed) else f"{len(parsed) - n_ok} label(s) unrecognised"
     return f"{n_ok}/{len(uniq)} unique frames parsed, {status}\n  Sample: {sample!r}"
 
+
+_TL_COUNTER = itertools.count()
 
 # ═══════════════════════════════════════════════════════════════════════════
 # ██  TimelineFigure  ██
@@ -227,8 +229,7 @@ class TimelineFigure:
         self._ensure_mode("cartesian", caller)
 
     def _auto_key(self) -> str:
-        sig = f"tl_{self._height}_{len(self._frames)}_{self._chart_mode}"
-        return f"ecb_tl_{hashlib.md5(sig.encode()).hexdigest()[:10]}"
+        return f"ecb_tl_{next(_TL_COUNTER)}"
 
     def _get_frame(self, label: str) -> Dict[str, Any]:
         if label not in self._frames:
@@ -364,6 +365,30 @@ class TimelineFigure:
                 "restore": {"show": True},
             },
         }
+        return self
+
+    def xlim(self, min_val: Optional[float] = None, max_val: Optional[float] = None) -> "TimelineFigure":
+        """Set explicit x-axis bounds (value-type axes only)."""
+        if min_val is not None:
+            self._x_axis_template["min"] = min_val
+        if max_val is not None:
+            self._x_axis_template["max"] = max_val
+        return self
+
+    def ylim(self, min_val: Optional[float] = None,
+             max_val: Optional[float] = None, axis: int = 0) -> "TimelineFigure":
+        """Set y-axis bounds."""
+        if axis < 0:
+            raise ValueError("axis index must be non-negative")
+        if axis >= len(self._y_axes_template):
+            raise BuilderConfigError(
+                f"ylim(axis={axis}) — only {len(self._y_axes_template)} y-axis(es) exist. "
+                "Call ylabel_right() first to create a second axis."
+            )
+        if min_val is not None:
+            self._y_axes_template[axis]["min"] = min_val
+        if max_val is not None:
+            self._y_axes_template[axis]["max"] = max_val
         return self
 
     def extra(self, **kwargs: Any) -> "TimelineFigure":

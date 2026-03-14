@@ -9,7 +9,7 @@ in a single call to ``.show()``.
 from __future__ import annotations
 
 import copy
-import hashlib
+import itertools
 import warnings
 from dataclasses import dataclass, field
 from typing import (
@@ -56,6 +56,8 @@ class _SeriesMeta:
     is_category_series: bool = True
     raw_config: dict = field(default_factory=dict)
 
+
+_FIGURE_COUNTER = itertools.count()
 
 # ═══════════════════════════════════════════════════════════════════════════
 # ██  FIGURE  ██
@@ -184,8 +186,7 @@ class Figure:
                 existing.add(c)
 
     def _auto_key(self) -> str:
-        sig = f"{self._height}_{len(self._series)}_{self._chart_mode}"
-        return f"ecb_{hashlib.md5(sig.encode()).hexdigest()[:10]}"
+        return f"ecb_{next(_FIGURE_COUNTER)}"
 
     def _align_to_categories(
         self, df: pd.DataFrame, x: str, y: str, agg: str = "mean",
@@ -230,13 +231,14 @@ class Figure:
     ) -> "Figure":
         """Configure the x-axis label and tick styling."""
         self._x_axis["name"] = name
+        lbl = self._x_axis.setdefault("axisLabel", {})
         if rotate is not None:
-            self._x_axis["axisLabel"]["rotate"] = rotate
+            lbl["rotate"] = rotate
             self._user_set_rotate = True
         if font_size is not None:
-            self._x_axis["axisLabel"]["fontSize"] = font_size
+            lbl["fontSize"] = font_size
         if color is not None:
-            self._x_axis["axisLabel"]["color"] = color
+            lbl["color"] = color
         return self
 
     def xticks(

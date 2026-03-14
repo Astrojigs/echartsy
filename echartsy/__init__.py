@@ -16,7 +16,7 @@ Quick-start
 ...     .show()
 ... )
 """
-from echartsy._config import config, get_adaptive, get_engine
+from echartsy._config import config, get_adaptive, get_engine, get_overlap_warnings
 from echartsy.emphasis import (
     AreaStyle,
     Emphasis,
@@ -52,13 +52,14 @@ from echartsy.timeline import (
     timeline_figure,
 )
 
-__version__ = "0.1.0"
+__version__ = "0.2.0"
 
 __all__ = [
     # Config
     "config",
     "get_engine",
     "get_adaptive",
+    "get_overlap_warnings",
     # Figure
     "Figure",
     "figure",

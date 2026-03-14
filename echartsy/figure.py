@@ -107,6 +107,7 @@ class Figure:
         self._series: List[dict] = []
         self._series_meta: List[_SeriesMeta] = []
         self._legend_items: List[str] = []
+        self._user_set_rotate: bool = False  # True if user explicitly set label rotation
 
         # Axis storage
         self._x_axis: dict = {
@@ -231,6 +232,7 @@ class Figure:
         self._x_axis["name"] = name
         if rotate is not None:
             self._x_axis["axisLabel"]["rotate"] = rotate
+            self._user_set_rotate = True
         if font_size is not None:
             self._x_axis["axisLabel"]["fontSize"] = font_size
         if color is not None:
@@ -246,6 +248,7 @@ class Figure:
         lbl = self._x_axis.setdefault("axisLabel", {})
         if rotate is not None:
             lbl["rotate"] = rotate
+            self._user_set_rotate = True
         if interval is not None:
             lbl["interval"] = interval
         if formatter is not None:
@@ -1439,6 +1442,9 @@ class Figure:
         if self._style.bg:
             option.setdefault("backgroundColor", self._style.bg)
         option.update({k: v for k, v in self._extra.items() if not k.startswith("_")})
+
+        # Pass internal metadata for the layout resolver (stripped before output)
+        option["_meta"] = {"user_set_rotate": self._user_set_rotate}
 
         # Anti-overlap pass
         option = _resolve_layout(option, self._series_meta)

@@ -122,59 +122,159 @@ def _resolve_agg(agg: str) -> str:
 # Layout resolver (anti-overlap engine)
 # ═══════════════════════════════════════════════════════════════════════════
 
-_CATEGORY_COUNT_ROTATE_30 = 10
-_CATEGORY_COUNT_ROTATE_45 = 20
-_CATEGORY_COUNT_ROTATE_90 = 40
-_LABEL_LENGTH_ROTATE = 12
+# --- Pixel estimation constants ---
+_PX_PER_CHAR = 7           # Approx pixel width per character (normal text)
+_PX_PER_ROTATED_CHAR = 5   # Approx pixel width per character (rotated text)
+_DEFAULT_CHART_WIDTH = 800  # Assumed container width in pixels
+
+# --- Label density thresholds ---
+# Instead of rigid category-count cutoffs, we use a fill-ratio approach:
+#   fill_ratio = (n_cats * avg_label_px) / available_width
+# These thresholds define when rotation kicks in.
+_FILL_RATIO_ROTATE_30 = 0.85   # Labels fill ≥85% of width → rotate 30°
+_FILL_RATIO_ROTATE_45 = 1.4    # Labels fill ≥140% of width → rotate 45°
+_FILL_RATIO_ROTATE_90 = 2.5    # Labels fill ≥250% of width → rotate 90°
+
+# --- Hard limits (safety net for extreme cases) ---
+_HARD_COUNT_ROTATE_45 = 30     # Always rotate ≥45° at 30+ categories
+_HARD_COUNT_ROTATE_90 = 60     # Always rotate 90° at 60+ categories
+
+# --- Series-type multipliers ---
+# Some chart types space labels by cell/point width, so they tolerate more
+# labels before overlapping.  A multiplier > 1 means "more forgiving".
+_SERIES_TYPE_TOLERANCE: Dict[str, float] = {
+    "heatmap": 1.6,     # Labels spaced by cell width
+    "scatter": 1.4,     # Labels spaced by point distribution
+    "bar":     1.0,     # Default
+    "line":    1.0,     # Default
+}
+
+# --- Legend ---
 _LEGEND_SCROLL_THRESHOLD = 8
-_PX_PER_CHAR = 7
-_PX_PER_ROTATED_CHAR = 5
+
+# Sentinel value indicating the user has NOT explicitly set rotation.
+_ROTATE_NOT_SET = "__rotate_not_set__"
+
+
+def _estimate_available_width(option: dict) -> float:
+    """Estimate the pixel width available for x-axis labels.
+
+    Uses the chart's configured width if it's a pixel value, otherwise
+    falls back to ``_DEFAULT_CHART_WIDTH``.  Subtracts left/right grid
+    margins to get the actual plotting area width.
+    """
+    # Try to parse chart width from the option (only if it's a px value)
+    chart_width = _DEFAULT_CHART_WIDTH
+    # ECharts doesn't store width in the option dict normally — it's set
+    # on the container.  But we can check grid margins to narrow the estimate.
+    grid = option.get("grid", {})
+    left = grid.get("left", 60)
+    right = grid.get("right", 60)
+    left_px = int(left) if isinstance(left, (int, float)) else 60
+    right_px = int(right) if isinstance(right, (int, float)) else 60
+    return max(chart_width - left_px - right_px, 200)
+
+
+def _dominant_series_type(series_meta: List[Any]) -> str:
+    """Return the most common series type, used for tolerance lookup."""
+    if not series_meta:
+        return "bar"
+    from collections import Counter
+    counts = Counter(getattr(m, "chart_type", "bar") for m in series_meta)
+    return counts.most_common(1)[0][0]
 
 
 def _resolve_layout(option: dict, series_meta: List[Any]) -> dict:
     """Run the anti-overlap engine over a fully assembled ECharts option dict.
 
     Mutates a deep copy and returns it. Auto-adjusts:
-    1. Label rotation for crowded x-axes
+
+    1. Label rotation for crowded x-axes (width-aware, series-aware)
     2. Grid margins for rotated labels
     3. Scroll-mode legends for many items
     4. Tooltip confinement
     5. Dual-axis right margin
+
+    The resolver **respects explicit user intent**: if the user has called
+    ``xlabel(rotate=...)`` or ``xticks(rotate=...)``, the resolver will
+    not override that rotation or emit a warning.  This is signalled by
+    the presence of ``_user_set_rotate`` in the option's ``_meta`` dict.
+
+    Warnings can be globally silenced via
+    ``ec.config(overlap_warnings=False)`` while keeping the auto-fixes.
     """
+    from echartsy._config import get_overlap_warnings
+
     opt = copy.deepcopy(option)
+
+    # Pop internal metadata (not part of the ECharts spec)
+    meta = opt.pop("_meta", {})
+    user_set_rotate = meta.get("user_set_rotate", False)
 
     # 1) Tooltip safety
     tooltip = opt.setdefault("tooltip", {})
     tooltip["confine"] = True
     tooltip.setdefault("appendTo", "body")
 
-    # 2) X-axis label rotation
+    # 2) X-axis label rotation (smart heuristics)
     x_axis = opt.get("xAxis")
     if isinstance(x_axis, dict) and x_axis.get("type") == "category":
         cats = x_axis.get("data", [])
         n_cats = len(cats)
         max_label_len = max((len(str(c)) for c in cats), default=0)
+        avg_label_len = (
+            sum(len(str(c)) for c in cats) / n_cats if n_cats > 0 else 0
+        )
         label_cfg = x_axis.setdefault("axisLabel", {})
         current_rotate = label_cfg.get("rotate", 0)
 
-        if current_rotate == 0:
-            if n_cats >= _CATEGORY_COUNT_ROTATE_90:
+        # Only auto-rotate if user hasn't explicitly set rotation
+        if current_rotate == 0 and not user_set_rotate:
+            # Estimate how much space labels need vs how much is available
+            available_px = _estimate_available_width(opt)
+            # Use average label length (not max) for the fill ratio — this
+            # avoids one long outlier label triggering rotation for all.
+            label_px_each = avg_label_len * _PX_PER_CHAR
+            # Add inter-label gap (~12px between labels)
+            total_label_px = n_cats * (label_px_each + 12) - 12
+
+            # Series-type tolerance: heatmaps/scatter are more forgiving
+            dominant_type = _dominant_series_type(series_meta)
+            tolerance = _SERIES_TYPE_TOLERANCE.get(dominant_type, 1.0)
+
+            fill_ratio = total_label_px / (available_px * tolerance)
+
+            # Determine rotation angle
+            if n_cats >= _HARD_COUNT_ROTATE_90:
                 auto_rotate = 90
-            elif n_cats >= _CATEGORY_COUNT_ROTATE_45 or max_label_len > 20:
+            elif n_cats >= _HARD_COUNT_ROTATE_45:
                 auto_rotate = 45
-            elif n_cats >= _CATEGORY_COUNT_ROTATE_30 or max_label_len > _LABEL_LENGTH_ROTATE:
+            elif fill_ratio >= _FILL_RATIO_ROTATE_90:
+                auto_rotate = 90
+            elif fill_ratio >= _FILL_RATIO_ROTATE_45:
+                auto_rotate = 45
+            elif fill_ratio >= _FILL_RATIO_ROTATE_30:
                 auto_rotate = 30
             else:
                 auto_rotate = 0
 
+            # Extra check: even if fill ratio is low, very long individual
+            # labels (>25 chars) at moderate counts can still overlap
+            if auto_rotate == 0 and max_label_len > 25 and n_cats >= 6:
+                auto_rotate = 30
+
             if auto_rotate > 0:
                 label_cfg["rotate"] = auto_rotate
-                warnings.warn(
-                    f"{n_cats} x-axis categories detected (max label length "
-                    f"{max_label_len}) — auto-rotating labels to {auto_rotate}°.",
-                    OverlapWarning,
-                    stacklevel=4,
-                )
+                if get_overlap_warnings():
+                    warnings.warn(
+                        f"{n_cats} x-axis categories (avg length "
+                        f"{avg_label_len:.0f}, fill ratio {fill_ratio:.1f}×) "
+                        f"— auto-rotating labels to {auto_rotate}°. "
+                        f"Suppress with ec.config(overlap_warnings=False) or "
+                        f"set explicitly with fig.xlabel(rotate=0).",
+                        OverlapWarning,
+                        stacklevel=4,
+                    )
 
         # 3) Grid margin expansion
         grid = opt.setdefault("grid", {})

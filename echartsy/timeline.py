@@ -175,6 +175,7 @@ class TimelineFigure:
         )
         self._extra: dict = {}
         self._timeline_style: dict = {}
+        self._user_set_rotate: bool = False
 
         self._grid_cfg: dict = {
             "left": 70, "right": 70, "top": 60, "bottom": 80,
@@ -297,7 +298,9 @@ class TimelineFigure:
                font_size: Optional[int] = None, color: Optional[str] = None) -> "TimelineFigure":
         self._x_axis_template["name"] = name
         lbl = self._x_axis_template.setdefault("axisLabel", {})
-        if rotate is not None: lbl["rotate"] = rotate
+        if rotate is not None:
+            lbl["rotate"] = rotate
+            self._user_set_rotate = True
         if font_size is not None: lbl["fontSize"] = font_size
         if color is not None: lbl["color"] = color
         return self
@@ -671,6 +674,7 @@ class TimelineFigure:
                     all_legend_items.append(item)
 
             if mode == "cartesian" and "xAxis" in f_opt:
+                f_opt["_meta"] = {"user_set_rotate": self._user_set_rotate}
                 f_opt = _resolve_layout(f_opt, fd["meta"])
 
             frame_options.append(f_opt)

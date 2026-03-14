@@ -665,7 +665,7 @@ python capture_screenshots.py
 
 ---
 
-## What's New in v0.3.0
+## What's New in v0.3.1
 
 - **Fixed:** `xlabel(rotate=...)` no longer raises `KeyError` when called after `heatmap()` or other methods that reset the x-axis.
 - **Fixed:** `_auto_key()` collisions — multiple charts with the same height, series count, and mode no longer overwrite each other in Streamlit.

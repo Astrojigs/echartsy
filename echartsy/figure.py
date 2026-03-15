@@ -1576,7 +1576,7 @@ class Figure:
             width=self._width,
             theme=self._theme,
             renderer=self._renderer,
-            key=self._key or self._auto_key(),
+            key=self._key,
             **render_kw,
         )
 

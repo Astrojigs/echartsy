@@ -49,7 +49,7 @@ def render_streamlit(
     dict
         The original option dict (pass-through).
     """
-    _html_render(option, height, width, theme, renderer)
+    _html_render(option, height, width, theme, renderer, key=key)
     return option
 
 
@@ -105,6 +105,7 @@ def _html_render(
     width: Optional[str] = None,
     theme: Optional[str] = None,
     renderer: str = "svg",
+    key: Optional[str] = None,
 ) -> None:
     """Render using st.components.v1.html() with ECharts from CDN.
 
@@ -154,7 +155,12 @@ def _html_render(
 </script>
 </body></html>"""
 
-    components.html(html, height=height_px + 10, scrolling=False)
+    if key is not None:
+        import streamlit as st
+        with st.container(key=key):
+            components.html(html, height=height_px + 10, scrolling=False)
+    else:
+        components.html(html, height=height_px + 10, scrolling=False)
 
 
 def _parse_css_px(value: str, default: int) -> int:

@@ -900,7 +900,7 @@ class TimelineFigure:
         render(
             option, height=self._height, width=self._width,
             theme=self._theme, renderer=self._renderer,
-            key=self._key or self._auto_key(), **render_kw,
+            key=self._key, **render_kw,
         )
 
     def to_html(self, filepath: str = "timeline_chart.html") -> str:

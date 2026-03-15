@@ -52,7 +52,7 @@ from echartsy.timeline import (
     timeline_figure,
 )
 
-__version__ = "0.4.2"
+__version__ = "0.4.4"
 
 __all__ = [
     # Config

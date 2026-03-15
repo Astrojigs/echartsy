@@ -669,6 +669,15 @@ python capture_screenshots.py
 
 ---
 
+## What's New in v0.4.4
+
+- **Fixed:** `TypeError` when rendering charts in Streamlit 1.48+ — `components.html()` no longer accepts a `key` parameter. The `key` is now applied via `st.container(key=key)` instead, preserving unique widget identity for 20+ charts across `st.tabs()` without breaking.
+
+## What's New in v0.4.3
+
+- **Fixed:** Charts disappearing in Streamlit apps with 20+ charts across `st.tabs()` — the `key` parameter from `ec.figure(key=...)` was silently dropped and never reached `components.html()`, causing Streamlit widget identity conflicts on tab re-renders.
+- **Fixed:** Unstable auto-generated widget keys — the internal `itertools.count()` counter incremented across Streamlit reruns, producing different keys each run and forcing Streamlit to recreate all chart components. Auto-keys are no longer passed; Streamlit now uses its native delta-path identity (stable across reruns and tab-aware). Users needing explicit keys can still pass `key=` to `ec.figure()`.
+
 ## What's New in v0.4.2
 
 - **Added:** `axis_pointer()` method on both `Figure` and `TimelineFigure` — configure the global axis pointer with full styling: snap, labels, line/cross/shadow colors, widths, and dash types.

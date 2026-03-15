@@ -147,7 +147,7 @@ class TimelineFigure:
         self,
         height: str = "450px",
         width: Optional[str] = None,
-        renderer: Literal["canvas", "svg"] = "canvas",
+        renderer: Literal["canvas", "svg"] = "svg",
         theme: Optional[str] = None,
         style: Optional[StylePreset] = None,
         key: Optional[str] = None,
@@ -936,7 +936,7 @@ class TimelineFigure:
 
 def timeline_figure(
     height: str = "450px", width: Optional[str] = None,
-    renderer: Literal["canvas", "svg"] = "canvas",
+    renderer: Literal["canvas", "svg"] = "svg",
     style: Optional[StylePreset] = None,
     interval: float = 2.0, autoplay: bool = True, loop: bool = True,
     **kwargs: Any,

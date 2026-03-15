@@ -32,7 +32,7 @@ def render_python(
     height: str = "400px",
     width: str = "100%",
     theme: Optional[str] = None,
-    renderer: str = "canvas",
+    renderer: str = "svg",
     adaptive: str = "auto",
 ) -> None:
     """Write an HTML file to a temp location and open it in the browser.

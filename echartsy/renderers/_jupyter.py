@@ -18,7 +18,7 @@ def render_jupyter(
     height: str = "400px",
     width: str = "100%",
     theme: Optional[str] = None,
-    renderer: str = "canvas",
+    renderer: str = "svg",
     adaptive: str = "auto",
 ) -> None:
     """Render an ECharts chart inline in a Jupyter notebook cell.
@@ -63,7 +63,7 @@ def render_jupyter(
         f'<iframe src="data:text/html;base64,{encoded}" '
         f'width="{w_css}" height="{h_px + 20}px" '
         f'style="border:none; overflow:hidden;" '
-        f'sandbox="allow-scripts allow-same-origin">'
+        f'sandbox="allow-scripts allow-same-origin allow-downloads">'
         f'</iframe>'
     )
 

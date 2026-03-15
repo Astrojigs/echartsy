@@ -137,7 +137,7 @@ class Figure:
         self,
         height: str = "400px",
         width: Optional[str] = None,
-        renderer: Literal["canvas", "svg"] = "canvas",
+        renderer: Literal["canvas", "svg"] = "svg",
         theme: Optional[str] = None,
         style: Optional[StylePreset] = None,
         key: Optional[str] = None,
@@ -1715,7 +1715,7 @@ class Figure:
 def figure(
     height: str = "400px",
     width: Optional[str] = None,
-    renderer: Literal["canvas", "svg"] = "canvas",
+    renderer: Literal["canvas", "svg"] = "svg",
     style: Optional[StylePreset] = None,
     **kwargs: Any,
 ) -> Figure:

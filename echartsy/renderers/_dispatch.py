@@ -11,7 +11,7 @@ def render(
     height: str = "400px",
     width: Optional[str] = None,
     theme: Optional[str] = None,
-    renderer: str = "canvas",
+    renderer: str = "svg",
     key: Optional[str] = None,
     **render_kw: Any,
 ) -> None:

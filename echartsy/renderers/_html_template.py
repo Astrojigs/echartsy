@@ -198,7 +198,7 @@ def build_html(
     height: str = "400px",
     width: str = "100%",
     theme: Optional[str] = None,
-    renderer: str = "canvas",
+    renderer: str = "svg",
     chart_id: str = "ec_chart",
     adaptive: str = "auto",
 ) -> str:
@@ -271,7 +271,7 @@ def build_jupyter_html(
     height: str = "400px",
     width: str = "100%",
     theme: Optional[str] = None,
-    renderer: str = "canvas",
+    renderer: str = "svg",
     chart_id: str = "ec_chart",
     adaptive: str = "auto",
 ) -> str:

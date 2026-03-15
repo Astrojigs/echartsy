@@ -670,6 +670,11 @@ python capture_screenshots.py
 
 ---
 
+## What's New in v0.4.8
+
+- **Changed:** Default renderer switched from `"canvas"` to `"svg"` across all engines (Python, Jupyter, Streamlit). SVG fixes the broken toolbox download button (saveAsImage) that failed silently under canvas due to iframe sandbox restrictions and `file://` protocol security policies. Users can still pass `renderer="canvas"` explicitly.
+- **Fixed:** Jupyter iframe sandbox now includes `allow-downloads`, so canvas-mode chart exports also work when `renderer="canvas"` is explicitly requested.
+
 ## What's New in v0.4.7
 
 - **Added:** `fig.candlestick()` — native OHLC candlestick charts with configurable bullish/bearish colours, dual-axis support, and full composability with `plot()` (moving averages) and `bar()` (volume).

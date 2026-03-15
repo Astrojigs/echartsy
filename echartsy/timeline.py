@@ -691,6 +691,11 @@ class TimelineFigure:
 
         self._x_axis_template["name"] = column
         self._y_axes_template[0].setdefault("name", "Density" if density else "Count")
+
+        # Histogram bin labels (e.g. "34.5–45.2") are inherently long;
+        # pre-rotate to avoid OverlapWarning from the layout resolver.
+        self._x_axis_template.setdefault("axisLabel", {}).setdefault("rotate", 30)
+        self._user_set_rotate = True
         self._tooltip_cfg["trigger"] = "axis"
 
         for time_val, tgrp in dff.groupby(time_col, sort=False):

@@ -17,6 +17,16 @@ def _sanitize_chart_id(chart_id: str) -> str:
 
 _VALID_RENDERERS = {"canvas", "svg"}
 _VALID_ADAPTIVE = {"auto", "light", "dark"}
+# Whitelist of allowed ECharts built-in themes.
+_VALID_THEMES = {"dark", "light", "vintage", "westeros", "essos", "wonderland", "walden",
+                 "chalk", "infographic", "macarons", "roma", "shine", "purple-passion",
+                 "halloween"}
+
+
+def _validate_css_dimension(value: str, name: str) -> None:
+    """Validate that a CSS dimension string is safe (e.g. '100%', '400px')."""
+    if not re.match(r'^[\d.]+(px|%|em|rem|vw|vh)?$', value):
+        raise ValueError(f"{name} must be a valid CSS dimension (e.g. '100%', '400px'), got '{value}'")
 
 
 def _json_default(obj: object) -> object:
@@ -170,6 +180,8 @@ def _build_adaptive_script(
         raise ValueError(f"renderer must be one of {_VALID_RENDERERS}, got '{renderer}'")
     if adaptive not in _VALID_ADAPTIVE:
         raise ValueError(f"adaptive must be one of {_VALID_ADAPTIVE}, got '{adaptive}'")
+    if theme is not None and theme not in _VALID_THEMES:
+        raise ValueError(f"theme must be one of {sorted(_VALID_THEMES)} or None, got '{theme}'")
     explicit_theme = f"'{theme}'" if theme else "null"
     return (
         _ADAPTIVE_JS
@@ -215,6 +227,8 @@ def build_html(
         Complete HTML document string.
     """
     chart_id = _sanitize_chart_id(chart_id)
+    _validate_css_dimension(width, "width")
+    _validate_css_dimension(height, "height")
     option_json = json.dumps(option, indent=2, default=_json_default)
     script_body = _build_adaptive_script(
         option_json, chart_id, theme, renderer, adaptive,
@@ -267,6 +281,8 @@ def build_jupyter_html(
     full page chrome, optimised for ``IPython.display.IFrame``.
     """
     chart_id = _sanitize_chart_id(chart_id)
+    _validate_css_dimension(width, "width")
+    _validate_css_dimension(height, "height")
     option_json = json.dumps(option, indent=2, default=_json_default)
     script_body = _build_adaptive_script(
         option_json, chart_id, theme, renderer, adaptive,

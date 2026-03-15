@@ -964,6 +964,11 @@ class Figure:
         self._y_axes[0].setdefault("name", "Density" if density else "Count")
         self._x_axis["name"] = column
 
+        # Histogram bin labels (e.g. "34.5–45.2") are inherently long;
+        # pre-rotate to avoid OverlapWarning from the layout resolver.
+        self._x_axis.setdefault("axisLabel", {}).setdefault("rotate", 30)
+        self._user_set_rotate = True
+
         return self
 
     # ─── RADAR ────────────────────────────────────────────────────────────

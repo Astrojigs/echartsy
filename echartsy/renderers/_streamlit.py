@@ -7,6 +7,7 @@ dark/light theme. No third-party Streamlit component required.
 from __future__ import annotations
 
 import json
+import re
 from typing import Any, Optional
 
 
@@ -124,6 +125,9 @@ def _html_render(
 
     height_px = _parse_css_px(height, 400)
     width_css = width or "100%"
+    # Validate CSS dimensions to prevent injection
+    if not re.match(r'^[\d.]+(px|%|em|rem|vw|vh)?$', width_css):
+        raise ValueError(f"width must be a valid CSS dimension (e.g. '100%', '800px'), got '{width_css}'")
     adaptive = _resolve_adaptive(theme)
     option_json = json.dumps(option, default=_json_default)
 

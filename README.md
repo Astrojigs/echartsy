@@ -666,6 +666,11 @@ python capture_screenshots.py
 
 ---
 
+## What's New in v0.4.1
+
+- **Fixed:** Histogram bin labels (e.g. `"34.5–45.2"`) no longer trigger `OverlapWarning`; labels are pre-rotated to 30° by default.
+- **Security:** Added input validation for `theme` (whitelist), CSS `width`/`height` dimensions, and `chart_id` across all renderers.
+
 ## What's New in v0.4.0
 
 - **Added:** `TimelineFigure.hist()` — animated histograms with global bin edges for consistent comparison across frames.

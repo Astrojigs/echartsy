@@ -669,9 +669,15 @@ python capture_screenshots.py
 
 ---
 
+## What's New in v0.4.5
+
+- **Fixed:** Charts vanishing across `st.tabs()` in Streamlit 1.48+ — replaced the full HTML document + adaptive JS + `key` parameter approach with a minimal HTML fragment (`<div>` + `<script>` + `echarts.init`). Charts now persist reliably across tab switches.
+- **Changed:** Dark/light theme detection for Streamlit is now resolved server-side via `st.get_option("theme.base")` instead of client-side CSS media queries. The adaptive JS colour-patching is no longer injected in the Streamlit renderer.
+- **Fixed:** `components.html()` no longer receives a `key` parameter (unsupported in Streamlit 1.48). Each chart gets a unique div ID derived from its content hash to avoid widget collisions.
+
 ## What's New in v0.4.4
 
-- **Fixed:** `TypeError` when rendering charts in Streamlit 1.48+ — `components.html()` no longer accepts a `key` parameter. The `key` is now applied via `st.container(key=key)` instead, preserving unique widget identity for 20+ charts across `st.tabs()` without breaking.
+- **Fixed:** `TypeError` when rendering charts in Streamlit 1.48+ — `components.html()` does not accept a `key` parameter.
 
 ## What's New in v0.4.3
 

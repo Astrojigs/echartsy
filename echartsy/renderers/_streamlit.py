@@ -1,14 +1,16 @@
 """Streamlit rendering backend.
 
 Renders the chart inside a Streamlit app using ``st.components.v1.html()``
-with ECharts loaded from CDN. Automatically adapts to the Streamlit app's
-dark/light theme. No third-party Streamlit component required.
+with ECharts loaded from CDN.  Uses a minimal HTML fragment approach so
+charts persist reliably across ``st.tabs()`` switches.
 """
 from __future__ import annotations
 
 import json
 import re
 from typing import Any, Optional
+
+_CHART_COUNTER = 0
 
 
 def render_streamlit(
@@ -22,10 +24,9 @@ def render_streamlit(
 ) -> dict:
     """Render an ECharts chart in a Streamlit app.
 
-    Automatically detects the Streamlit theme (dark/light) and adapts
-    chart colours accordingly. When the user has set
-    ``ec.config(adaptive="dark")``, dark mode is forced regardless of
-    the Streamlit theme.
+    Dark-mode adaptation is **opt-in**: charts use the default (light)
+    ECharts theme unless the caller passes an explicit ``theme`` or sets
+    ``ec.config(adaptive="dark")``.
 
     Parameters
     ----------
@@ -36,11 +37,11 @@ def render_streamlit(
     width : str or None
         CSS width (``None`` = Streamlit container width).
     theme : str or None
-        ECharts theme. When ``None``, auto-detected from Streamlit.
+        ECharts theme.  ``None`` = default (light).
     renderer : str
         ``"canvas"`` or ``"svg"``.
     key : str or None
-        Explicit Streamlit widget key.
+        Accepted for backward compatibility; **not used**.
     **render_kw
         Extra kwargs (reserved for future use).
 
@@ -49,7 +50,7 @@ def render_streamlit(
     dict
         The original option dict (pass-through).
     """
-    _html_render(option, height, width, theme, renderer, key=key)
+    _html_render(option, height, width, theme, renderer)
     return option
 
 
@@ -68,35 +69,35 @@ def _detect_streamlit_theme() -> Optional[str]:
     return None
 
 
-def _resolve_adaptive(explicit_theme: Optional[str]) -> str:
-    """Determine the adaptive mode to use for the chart.
+def _resolve_theme(explicit_theme: Optional[str]) -> Optional[str]:
+    """Determine the ECharts theme to use.
 
     Priority:
     1. User's ``ec.config(adaptive=...)`` setting (if not "auto")
-    2. Streamlit's detected theme
-    3. Fall back to "auto" (uses CSS media query in the browser)
+    2. Explicit theme passed to the function
+    3. Streamlit's detected theme
+    4. ``None`` (ECharts default)
     """
     from echartsy._config import get_adaptive
 
     adaptive = get_adaptive()  # "auto", "light", or "dark"
 
-    # If user explicitly forced a mode, respect it
-    if adaptive != "auto":
-        return adaptive
+    # If user explicitly forced dark, use the "dark" ECharts theme
+    if adaptive == "dark":
+        return "dark"
+    if adaptive == "light":
+        return explicit_theme  # respect explicit or default
 
-    # If an explicit ECharts theme was passed (e.g. theme="dark"), don't override
+    # If an explicit ECharts theme was passed, use it
     if explicit_theme:
-        return "light"  # no adaptive patching needed, theme handles it
+        return explicit_theme
 
     # Try to detect Streamlit's theme
     st_theme = _detect_streamlit_theme()
     if st_theme == "dark":
         return "dark"
-    if st_theme == "light":
-        return "light"
 
-    # Fall back to browser-level auto-detection
-    return "auto"
+    return None
 
 
 def _html_render(
@@ -105,12 +106,12 @@ def _html_render(
     width: Optional[str] = None,
     theme: Optional[str] = None,
     renderer: str = "svg",
-    key: Optional[str] = None,
 ) -> None:
-    """Render using st.components.v1.html() with ECharts from CDN.
+    """Render using st.components.v1.html() with a minimal HTML fragment.
 
-    Uses the shared adaptive dark-mode script from ``_html_template``
-    so colour patching is consistent across all rendering engines.
+    Uses a simple ``<div>`` + ``<script>`` approach with a globally unique
+    div ID.  No full HTML document, no adaptive JS, no ``key`` parameter —
+    this ensures charts persist across ``st.tabs()`` switches.
     """
     try:
         import streamlit.components.v1 as components
@@ -120,47 +121,55 @@ def _html_render(
 
     from echartsy.renderers._html_template import (
         ECHARTS_CDN,
-        _build_adaptive_script,
         _json_default,
+        _VALID_RENDERERS,
+        _VALID_THEMES,
     )
+
+    if renderer not in _VALID_RENDERERS:
+        raise ValueError(f"renderer must be one of {_VALID_RENDERERS}, got '{renderer}'")
+    if theme is not None and theme not in _VALID_THEMES:
+        raise ValueError(f"theme must be one of {sorted(_VALID_THEMES)} or None, got '{theme}'")
 
     height_px = _parse_css_px(height, 400)
     width_css = width or "100%"
-    # Validate CSS dimensions to prevent injection
     if not re.match(r'^[\d.]+(px|%|em|rem|vw|vh)?$', width_css):
         raise ValueError(f"width must be a valid CSS dimension (e.g. '100%', '800px'), got '{width_css}'")
-    adaptive = _resolve_adaptive(theme)
-    option_json = json.dumps(option, default=_json_default)
 
-    script_body = _build_adaptive_script(
-        option_json=option_json,
-        chart_id="chart",
-        theme=theme,
-        renderer=renderer,
-        adaptive=adaptive,
+    # Theme: only auto-detect when user explicitly opted in via
+    # ec.config(adaptive="dark"|"light").  Default ("auto") skips
+    # detection and uses the explicit theme as-is — matching the simple
+    # fragment pattern that reliably survives st.tabs() switches.
+    from echartsy._config import get_adaptive
+
+    adaptive = get_adaptive()
+    if adaptive != "auto":
+        resolved_theme = _resolve_theme(theme)
+    else:
+        resolved_theme = theme
+
+    # Escape </ to prevent script-tag breakout in embedded JSON.
+    option_json = json.dumps(option, default=_json_default).replace("</", "<\\/")
+
+    global _CHART_COUNTER
+    _CHART_COUNTER += 1
+    div_id = f"ec{_CHART_COUNTER}"
+
+    theme_js = f"'{resolved_theme}'" if resolved_theme else "null"
+
+    html = (
+        f'<div id="{div_id}" style="width:{width_css};height:{height_px}px;"></div>\n'
+        f'<script src="{ECHARTS_CDN}"></script>\n'
+        f"<script>\n"
+        f"var c=echarts.init(document.getElementById('{div_id}'),{theme_js},"
+        f"{{renderer:'{renderer}'}});\n"
+        f"c.setOption({option_json});\n"
+        f"new ResizeObserver(function(){{c.resize();}})"
+        f".observe(document.getElementById('{div_id}'));\n"
+        f"</script>"
     )
 
-    html = f"""\
-<!DOCTYPE html>
-<html><head><meta charset="utf-8">
-<script src="{ECHARTS_CDN}"></script>
-<style>
-  * {{ margin: 0; padding: 0; }}
-  @media (prefers-color-scheme: dark) {{ body {{ background: transparent; }} }}
-</style>
-</head><body>
-<div id="chart" style="width:{width_css};height:{height_px}px;"></div>
-<script>
-{script_body}
-</script>
-</body></html>"""
-
-    if key is not None:
-        import streamlit as st
-        with st.container(key=key):
-            components.html(html, height=height_px + 10, scrolling=False)
-    else:
-        components.html(html, height=height_px + 10, scrolling=False)
+    components.html(html, height=height_px + 10)
 
 
 def _parse_css_px(value: str, default: int) -> int:

@@ -40,12 +40,14 @@ fig.show()
   - [Funnel Chart](#funnel-chart)
   - [Treemap](#treemap)
   - [Sankey Diagram](#sankey-diagram)
+  - [Candlestick Chart](#candlestick-chart)
 - [Composite Charts](#composite-charts)
   - [Dual Axis (Bar + Line)](#dual-axis-bar--line)
   - [Bar + Pie Overlay](#bar--pie-overlay)
   - [Triple Composite](#triple-composite)
   - [Side-by-Side Pies](#side-by-side-pies)
   - [Stacked + Trend + Breakdown](#stacked--trend--breakdown)
+  - [Candlestick + Moving Average + Volume](#candlestick--moving-average--volume)
 - [Chart Configuration](#chart-configuration)
   - [Titles](#titles)
   - [Axes & Ticks](#axes--ticks)
@@ -698,6 +700,56 @@ fig.show()
 
 ---
 
+### Candlestick Chart
+
+```python
+df = pd.DataFrame({
+    "Date": ["Mon", "Tue", "Wed", "Thu", "Fri"],
+    "Open": [20, 34, 31, 38, 20],
+    "Close": [34, 35, 38, 15, 30],
+    "Low": [10, 30, 28, 5, 18],
+    "High": [38, 50, 44, 42, 35],
+})
+
+fig = ec.figure(height="500px")
+fig.candlestick(df, date="Date", open="Open", close="Close",
+                low="Low", high="High")
+fig.title("Weekly Prices")
+fig.tooltip()
+fig.show()
+```
+
+Custom colours:
+
+```python
+fig = ec.figure(height="500px")
+fig.candlestick(df, date="Date", open="Open", close="Close",
+                low="Low", high="High",
+                up_color="#00DA3C", down_color="#EC0000",
+                up_border="#008F28", down_border="#8A0000")
+fig.title("Custom Candlestick Colors")
+fig.show()
+```
+
+**Parameters:**
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `df` | `DataFrame` | *required* | Source data |
+| `date` | `str` | *required* | Category axis column (date / label) |
+| `open` | `str` | *required* | Opening price column |
+| `close` | `str` | *required* | Closing price column |
+| `low` | `str` | *required* | Low price column |
+| `high` | `str` | *required* | High price column |
+| `up_color` | `str` | `"#EE6666"` | Bullish (close > open) body colour |
+| `down_color` | `str` | `"#73C0DE"` | Bearish (close < open) body colour |
+| `up_border` | `str` | `None` | Bullish border (defaults to `up_color`) |
+| `down_border` | `str` | `None` | Bearish border (defaults to `down_color`) |
+| `axis` | `int` | `0` | Y-axis index (`0` = left, `1` = right) |
+| `emphasis` | `Emphasis` | `None` | Hover effect |
+
+---
+
 ## Composite Charts
 
 Combine multiple series on one figure. Mix bar, line, pie, and scatter freely.
@@ -850,6 +902,36 @@ fig.title("Quarterly Revenue: Stacked + Trend + Breakdown")
 fig.ylabel("Revenue ($K)")
 fig.ylabel_right("Total ($K)")
 fig.margins(right=120)
+fig.legend(top=35)
+fig.show()
+```
+
+---
+
+### Candlestick + Moving Average + Volume
+
+Combine a candlestick chart with a moving-average line and volume bars on a
+secondary axis — a common stock-chart layout:
+
+```python
+df = pd.DataFrame({
+    "Date": ["Jan", "Feb", "Mar", "Apr", "May", "Jun"],
+    "Open": [20, 34, 31, 38, 20, 28],
+    "Close": [34, 35, 38, 15, 30, 42],
+    "Low": [10, 30, 28, 5, 18, 25],
+    "High": [38, 50, 44, 42, 35, 48],
+    "Volume": [120, 98, 140, 200, 160, 110],
+    "MA5": [28, 32, 34, 30, 26, 33],
+})
+
+fig = ec.figure(height="500px")
+fig.candlestick(df, date="Date", open="Open", close="Close",
+                low="Low", high="High")
+fig.plot(df, x="Date", y="MA5", smooth=True, line_width=2)
+fig.bar(df, x="Date", y="Volume", axis=1, bar_width="40%")
+fig.title("Stock Chart: OHLC + MA + Volume")
+fig.ylabel("Price")
+fig.ylabel_right("Volume")
 fig.legend(top=35)
 fig.show()
 ```
@@ -1415,6 +1497,7 @@ ec.Figure(
 | `.funnel(df, names, values, ...)` | Funnel / Conversion |
 | `.treemap(df, path, value, ...)` | Hierarchical treemap |
 | `.sankey(df, levels, value, ...)` | Sankey flow diagram |
+| `.candlestick(df, date, open, close, low, high, ...)` | Candlestick / OHLC |
 | `.raw_series(config)` | Raw ECharts series dict |
 
 **Configuration methods** (all return `self`):

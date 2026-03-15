@@ -1435,6 +1435,92 @@ class Figure:
         self._tooltip_cfg["trigger"] = "item"
         return self
 
+    # ─── CANDLESTICK ─────────────────────────────────────────────────────
+
+    def candlestick(
+        self, df: pd.DataFrame, date: str, open: str, close: str,
+        low: str, high: str, *,
+        up_color: str = "#EE6666",
+        down_color: str = "#73C0DE",
+        up_border: Optional[str] = None,
+        down_border: Optional[str] = None,
+        axis: int = 0,
+        emphasis: Optional[Emphasis] = None,
+        **series_kw: Any,
+    ) -> "Figure":
+        """Add a candlestick (OHLC) series — used for financial / stock charts.
+
+        Each row of *df* provides one candle. The four numeric columns map to
+        the ECharts data order ``[open, close, low, high]``.
+
+        Parameters
+        ----------
+        df : DataFrame
+            Source data.
+        date : str
+            Column used as category axis (typically a date string).
+        open, close, low, high : str
+            Column names for the four price components.
+        up_color / down_color : str
+            Body fill colour for bullish / bearish candles.
+        up_border / down_border : str | None
+            Border colour (defaults to body colour).
+        axis : int
+            ``0`` = left Y-axis, ``1`` = right Y-axis.
+        emphasis : Emphasis | None
+            Hover highlight — base ``Emphasis`` with ``ItemStyle`` works.
+        **series_kw
+            Forwarded verbatim into the ECharts series dict.
+        """
+        self._ensure_cartesian("candlestick")
+        df = _validate_df(df, "candlestick")
+        _validate_columns(df, [date, open, close, low, high], "candlestick")
+
+        dff = df.copy()
+        dff[date] = dff[date].astype(str).str.strip()
+        for col in (open, close, low, high):
+            dff[col] = _coerce_numeric(dff, col, "candlestick")
+        dff = dff.dropna(subset=[date, open, close, low, high])
+
+        cats = _sort_categories(dff[date])
+        self._merge_x_categories(cats)
+
+        if axis == 1 and len(self._y_axes) < 2:
+            self.ylabel_right("")
+
+        # Build data aligned to merged categories (ECharts order: open, close, low, high)
+        grouped = {str(r[date]): r for _, r in dff.iterrows()}
+        candlestick_data: list = []
+        for cat in self._x_categories:
+            row = grouped.get(cat)
+            if row is not None:
+                candlestick_data.append([
+                    round(float(row[open]), 4), round(float(row[close]), 4),
+                    round(float(row[low]), 4), round(float(row[high]), 4),
+                ])
+            else:
+                candlestick_data.append(None)
+
+        entry: dict = {
+            "type": "candlestick",
+            "name": series_kw.pop("name", ""),
+            "data": candlestick_data,
+            "yAxisIndex": axis,
+            "itemStyle": {
+                "color": up_color,
+                "color0": down_color,
+                "borderColor": up_border or up_color,
+                "borderColor0": down_border or down_color,
+            },
+        }
+        if emphasis is not None:
+            entry["emphasis"] = emphasis.to_dict()
+        entry.update(series_kw)
+        self._series.append(entry)
+        self._series_meta.append(_SeriesMeta("candlestick", entry["name"], axis))
+        self._tooltip_cfg = {"trigger": "axis", "confine": True}
+        return self
+
     # ═══════════════════════════════════════════════════════════════════════
     # Build + render
     # ═══════════════════════════════════════════════════════════════════════

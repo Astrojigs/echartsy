@@ -370,6 +370,7 @@ fig.show()
 | **Sankey** | `fig.sankey()` | Multi-level flow diagrams |
 | **Treemap** | `fig.treemap()` | Hierarchical area charts |
 | **Funnel** | `fig.funnel()` | Stage-based conversion funnels |
+| **Candlestick** | `fig.candlestick()` | OHLC financial / stock charts |
 
 ---
 
@@ -443,7 +444,7 @@ Every chart method accepts an optional `emphasis` parameter with a chart-specifi
 
 | Chart method | Emphasis class | Extra fields |
 |:---|:---|:---|
-| `bar()`, `hist()`, `boxplot()`, `heatmap()` | `Emphasis` | — |
+| `bar()`, `hist()`, `boxplot()`, `heatmap()`, `candlestick()` | `Emphasis` | — |
 | `plot()`, `kde()` | `LineEmphasis` | `line_style`, `area_style`, `end_label` |
 | `scatter()` | `ScatterEmphasis` | `scale` |
 | `pie()` | `PieEmphasis` | `scale`, `scale_size`, `label_line` |
@@ -668,6 +669,15 @@ python capture_screenshots.py
 ```
 
 ---
+
+## What's New in v0.4.7
+
+- **Added:** `fig.candlestick()` — native OHLC candlestick charts with configurable bullish/bearish colours, dual-axis support, and full composability with `plot()` (moving averages) and `bar()` (volume).
+
+## What's New in v0.4.6
+
+- **Added:** `Emphasis` support for `boxplot()`, `heatmap()`, and `funnel()` — consistent hover-highlight behaviour across all chart types.
+- **Added:** `FunnelEmphasis` and `TreemapEmphasis` dataclasses.
 
 ## What's New in v0.4.5
 

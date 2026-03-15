@@ -59,6 +59,50 @@ class _SeriesMeta:
 
 _FIGURE_COUNTER = itertools.count()
 
+
+def _build_axis_pointer_cfg(
+    type_val=None, snap=None, pointer_label=None,
+    label_precision=None, label_bg=None, label_color=None,
+    line_color=None, line_width=None, line_type=None,
+    cross_color=None, cross_width=None, cross_type=None,
+    shadow_color=None, shadow_opacity=None,
+):
+    """Build an ECharts axisPointer config dict from keyword arguments."""
+    ap = {}
+    if type_val is not None:
+        ap["type"] = type_val
+    if snap is not None:
+        ap["snap"] = snap
+    label_cfg = {}
+    if pointer_label is not None:
+        label_cfg["show"] = pointer_label
+    if label_precision is not None:
+        label_cfg["precision"] = label_precision
+    if label_bg is not None:
+        label_cfg["backgroundColor"] = label_bg
+    if label_color is not None:
+        label_cfg["color"] = label_color
+    if label_cfg:
+        ap["label"] = label_cfg
+    line_style = {}
+    if line_color is not None: line_style["color"] = line_color
+    if line_width is not None: line_style["width"] = line_width
+    if line_type is not None: line_style["type"] = line_type
+    if line_style:
+        ap["lineStyle"] = line_style
+    cross_style = {}
+    if cross_color is not None: cross_style["color"] = cross_color
+    if cross_width is not None: cross_style["width"] = cross_width
+    if cross_type is not None: cross_style["type"] = cross_type
+    if cross_style:
+        ap["crossStyle"] = cross_style
+    shadow_style = {}
+    if shadow_color is not None: shadow_style["color"] = shadow_color
+    if shadow_opacity is not None: shadow_style["opacity"] = shadow_opacity
+    if shadow_style:
+        ap["shadowStyle"] = shadow_style
+    return ap
+
 # ═══════════════════════════════════════════════════════════════════════════
 # ██  FIGURE  ██
 # ═══════════════════════════════════════════════════════════════════════════
@@ -143,6 +187,7 @@ class Figure:
             "confine": True,
             "appendTo": "body",
         }
+        self._axis_pointer_cfg: Optional[dict] = None
         self._grid_cfg: dict = {
             "left": 70, "right": 70,
             "top": 60, "bottom": 50,
@@ -396,12 +441,63 @@ class Figure:
         self, trigger: Literal["item", "axis", "none"] = "axis",
         pointer: Literal["cross", "shadow", "line", "none"] = "cross",
         formatter: Optional[str] = None,
+        snap: Optional[bool] = None,
+        pointer_label: Optional[bool] = None,
+        line_color: Optional[str] = None,
+        line_width: Optional[int] = None,
+        line_type: Optional[Literal["solid", "dashed", "dotted"]] = None,
+        cross_color: Optional[str] = None,
+        cross_width: Optional[int] = None,
+        cross_type: Optional[Literal["solid", "dashed", "dotted"]] = None,
+        shadow_color: Optional[str] = None,
+        shadow_opacity: Optional[float] = None,
     ) -> "Figure":
-        """Configure tooltip behaviour."""
+        """Configure tooltip behaviour and axis-pointer styling."""
         self._tooltip_cfg["trigger"] = trigger
-        self._tooltip_cfg["axisPointer"] = {"type": pointer}
+        ap = _build_axis_pointer_cfg(
+            type_val=pointer, snap=snap, pointer_label=pointer_label,
+            line_color=line_color, line_width=line_width, line_type=line_type,
+            cross_color=cross_color, cross_width=cross_width, cross_type=cross_type,
+            shadow_color=shadow_color, shadow_opacity=shadow_opacity,
+        )
+        self._tooltip_cfg["axisPointer"] = ap
         if formatter:
             self._tooltip_cfg["formatter"] = formatter
+        return self
+
+    def axis_pointer(
+        self,
+        type: Literal["line", "shadow", "cross", "none"] = "line",
+        snap: Optional[bool] = None,
+        label: Optional[bool] = None,
+        label_precision: Optional[int] = None,
+        label_bg: Optional[str] = None,
+        label_color: Optional[str] = None,
+        line_color: Optional[str] = None,
+        line_width: Optional[int] = None,
+        line_type: Optional[Literal["solid", "dashed", "dotted"]] = None,
+        cross_color: Optional[str] = None,
+        cross_width: Optional[int] = None,
+        cross_type: Optional[Literal["solid", "dashed", "dotted"]] = None,
+        shadow_color: Optional[str] = None,
+        shadow_opacity: Optional[float] = None,
+    ) -> "Figure":
+        """Configure the global axis pointer (top-level ``option.axisPointer``).
+
+        Also syncs type and styles into ``tooltip.axisPointer``.
+        If :meth:`tooltip` is called afterwards, it overwrites the
+        tooltip-level pointer (last call wins).
+        """
+        cfg = _build_axis_pointer_cfg(
+            type_val=type, snap=snap, pointer_label=label,
+            label_precision=label_precision, label_bg=label_bg,
+            label_color=label_color,
+            line_color=line_color, line_width=line_width, line_type=line_type,
+            cross_color=cross_color, cross_width=cross_width, cross_type=cross_type,
+            shadow_color=shadow_color, shadow_opacity=shadow_opacity,
+        )
+        self._axis_pointer_cfg = cfg
+        self._tooltip_cfg["axisPointer"] = copy.deepcopy(cfg)
         return self
 
     def save(
@@ -1399,6 +1495,8 @@ class Figure:
                 option["xAxis"] = copy.deepcopy(self._x_axis)
                 option["yAxis"] = copy.deepcopy(self._y_axes[0] if len(self._y_axes) == 1 else self._y_axes)
                 option["grid"] = copy.deepcopy(self._grid_cfg)
+                if self._axis_pointer_cfg:
+                    option["axisPointer"] = copy.deepcopy(self._axis_pointer_cfg)
             if self._legend_items and mode == "funnel":
                 legend_cfg = copy.deepcopy(self._legend_cfg) or {"orient": "vertical", "left": "left"}
                 legend_cfg["data"] = list(self._legend_items)
@@ -1430,6 +1528,8 @@ class Figure:
         if self._palette:
             option["color"] = list(self._palette)
         option["tooltip"] = copy.deepcopy(self._tooltip_cfg)
+        if self._axis_pointer_cfg:
+            option["axisPointer"] = copy.deepcopy(self._axis_pointer_cfg)
 
         if self._legend_items:
             legend_cfg = copy.deepcopy(self._legend_cfg) or {}

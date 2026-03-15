@@ -576,7 +576,10 @@ fig.grid(show=True)
 # Interactivity
 fig.datazoom(start=0, end=80)
 fig.toolbox(download=True, zoom=True)
-fig.tooltip(trigger="axis")
+fig.tooltip(trigger="axis", pointer="cross",
+            cross_color="#f00", cross_width=2)
+fig.axis_pointer(type="shadow", snap=True,
+                 shadow_color="rgba(0,0,0,0.2)")
 
 # Export
 fig.save(name="my_chart", fmt="png", dpi=3)
@@ -665,6 +668,12 @@ python capture_screenshots.py
 ```
 
 ---
+
+## What's New in v0.4.2
+
+- **Added:** `axis_pointer()` method on both `Figure` and `TimelineFigure` — configure the global axis pointer with full styling: snap, labels, line/cross/shadow colors, widths, and dash types.
+- **Added:** Extended `tooltip()` with pointer styling params (`line_color`, `cross_color`, `shadow_color`, widths, dash types, `snap`, `pointer_label`) — no more falling back to `extra()` for common pointer tweaks.
+- **Added:** `TimelineFigure.tooltip()` — previously missing; timeline charts now support the same tooltip configuration as `Figure`.
 
 ## What's New in v0.4.1
 

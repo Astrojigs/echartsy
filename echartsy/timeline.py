@@ -25,7 +25,7 @@ from echartsy._helpers import (
 from echartsy.exceptions import (
     BuilderConfigError, DataValidationError, TimelineConfigError,
 )
-from echartsy.figure import _SeriesMeta
+from echartsy.figure import _SeriesMeta, _build_axis_pointer_cfg
 from echartsy.renderers import render
 from echartsy.styles import StylePreset
 
@@ -207,6 +207,7 @@ class TimelineFigure:
             "axisPointer": {"type": self._style.tooltip_pointer},
             "confine": True, "appendTo": "body",
         }
+        self._axis_pointer_cfg: Optional[dict] = None
 
     def __repr__(self) -> str:
         return (
@@ -334,6 +335,73 @@ class TimelineFigure:
         if left is not None: cfg["left"] = left
         if top is not None: cfg["top"] = top
         self._legend_cfg = cfg
+        return self
+
+    def tooltip(
+        self, trigger: Literal["item", "axis", "none"] = "axis",
+        pointer: Literal["cross", "shadow", "line", "none"] = "cross",
+        formatter: Optional[str] = None,
+        snap: Optional[bool] = None,
+        pointer_label: Optional[bool] = None,
+        line_color: Optional[str] = None,
+        line_width: Optional[int] = None,
+        line_type: Optional[Literal["solid", "dashed", "dotted"]] = None,
+        cross_color: Optional[str] = None,
+        cross_width: Optional[int] = None,
+        cross_type: Optional[Literal["solid", "dashed", "dotted"]] = None,
+        shadow_color: Optional[str] = None,
+        shadow_opacity: Optional[float] = None,
+    ) -> "TimelineFigure":
+        """Configure tooltip behaviour and axis-pointer styling."""
+        self._tooltip_cfg["trigger"] = trigger
+        ap = _build_axis_pointer_cfg(
+            type_val=pointer, snap=snap, pointer_label=pointer_label,
+            line_color=line_color, line_width=line_width, line_type=line_type,
+            cross_color=cross_color, cross_width=cross_width, cross_type=cross_type,
+            shadow_color=shadow_color, shadow_opacity=shadow_opacity,
+        )
+        self._tooltip_cfg["axisPointer"] = ap
+        if formatter:
+            self._tooltip_cfg["formatter"] = formatter
+        for fd in self._frames.values():
+            fd["tooltip"] = copy.deepcopy(self._tooltip_cfg)
+        return self
+
+    def axis_pointer(
+        self,
+        type: Literal["line", "shadow", "cross", "none"] = "line",
+        snap: Optional[bool] = None,
+        label: Optional[bool] = None,
+        label_precision: Optional[int] = None,
+        label_bg: Optional[str] = None,
+        label_color: Optional[str] = None,
+        line_color: Optional[str] = None,
+        line_width: Optional[int] = None,
+        line_type: Optional[Literal["solid", "dashed", "dotted"]] = None,
+        cross_color: Optional[str] = None,
+        cross_width: Optional[int] = None,
+        cross_type: Optional[Literal["solid", "dashed", "dotted"]] = None,
+        shadow_color: Optional[str] = None,
+        shadow_opacity: Optional[float] = None,
+    ) -> "TimelineFigure":
+        """Configure the global axis pointer (top-level ``baseOption.axisPointer``).
+
+        Also syncs type and styles into ``tooltip.axisPointer``.
+        If :meth:`tooltip` is called afterwards, it overwrites the
+        tooltip-level pointer (last call wins).
+        """
+        cfg = _build_axis_pointer_cfg(
+            type_val=type, snap=snap, pointer_label=label,
+            label_precision=label_precision, label_bg=label_bg,
+            label_color=label_color,
+            line_color=line_color, line_width=line_width, line_type=line_type,
+            cross_color=cross_color, cross_width=cross_width, cross_type=cross_type,
+            shadow_color=shadow_color, shadow_opacity=shadow_opacity,
+        )
+        self._axis_pointer_cfg = cfg
+        self._tooltip_cfg["axisPointer"] = copy.deepcopy(cfg)
+        for fd in self._frames.values():
+            fd["tooltip"]["axisPointer"] = copy.deepcopy(cfg)
         return self
 
     def palette(self, colors: Sequence[str]) -> "TimelineFigure":
@@ -760,6 +828,7 @@ class TimelineFigure:
         if self._palette: base["color"] = list(self._palette)
         if self._toolbox_cfg: base["toolbox"] = self._toolbox_cfg
         if self._datazoom_cfg: base["dataZoom"] = self._datazoom_cfg
+        if self._axis_pointer_cfg: base["axisPointer"] = copy.deepcopy(self._axis_pointer_cfg)
 
         frame_options: List[dict] = []
         all_legend_items: List[str] = []

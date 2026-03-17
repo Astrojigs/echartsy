@@ -26,10 +26,14 @@
 
 ## Why echartsy?
 
-- **Feels like matplotlib** — If you know `plt.figure()` / `plt.show()`, you already know 90% of the API. No JSON wrangling, no JavaScript.
-- **Interactive out of the box** — Every chart ships with tooltips, legend toggling, zoom, and a built-in export toolbox.  Zero configuration needed.
-- **One library, three engines** — Write once, render in Jupyter notebooks, Streamlit apps, or plain Python scripts that pop open a browser.
-- **Composable & animated** — Layer pies on bar charts, build dual-axis dashboards, or animate any chart across time with `TimelineFigure`.
+| | |
+|:---|:---|
+| **Familiar API** | If you know `plt.figure()` / `plt.show()`, you already know 90% of the API. No JSON, no JavaScript. |
+| **Interactive by default** | Every chart ships with tooltips, legend toggling, zoom, and an export toolbox. Zero config needed. |
+| **Three render engines** | Write once, render in Jupyter notebooks, Streamlit apps, or standalone browser windows. |
+| **18 chart types** | From bar charts and scatter plots to sankey diagrams, sunbursts, gauges, and network graphs. |
+| **Composable & animated** | Layer pies on bar charts, build dual-axis dashboards, use multi-grid subplots, or animate across time with `TimelineFigure`. |
+| **Dark mode** | Adaptive dark/light theming out of the box, including automatic Streamlit theme detection. |
 
 ---
 
@@ -39,7 +43,7 @@
 pip install echartsy
 ```
 
-Need extras?
+Optional extras:
 
 ```bash
 pip install echartsy[jupyter]     # Jupyter Notebook / JupyterLab
@@ -76,6 +80,45 @@ Three lines from DataFrame to interactive chart.
 <p align="center">
   <img src="https://raw.githubusercontent.com/astrojigs/echartsy/main/assets/demo_bar.png" alt="Quick Start — Bar Chart" width="600" />
 </p>
+
+---
+
+## Chart Types
+
+echartsy v0.5.1 supports **18 chart types** covering cartesian, standalone, hierarchical, relational, and statistical visualizations.
+
+### Cartesian Charts
+
+| Method | Description | Key options |
+|:---|:---|:---|
+| `fig.plot()` | Line chart | `smooth`, `area`, `hue` (multi-series), dual-axis via `axis=1` |
+| `fig.bar()` | Vertical bar | `hue` (grouped), `stack`, `gradient`, `labels`, `border_radius` |
+| `fig.barh()` | Horizontal bar | Same as `bar()`, horizontal orientation |
+| `fig.scatter()` | Scatter plot | `color` and `size` encoding columns |
+| `fig.hist()` | Histogram | `bins`, auto-binned frequency distribution |
+| `fig.boxplot()` | Box plot | Five-number statistical summary |
+| `fig.kde()` | KDE density | Kernel density estimation (requires `scipy`) |
+| `fig.candlestick()` | Candlestick / OHLC | Configurable bullish/bearish colours, composable with `plot()` + `bar()` |
+| `fig.heatmap()` | Matrix heatmap | Colour-mapped grid with `visual_map` integration |
+
+### Standalone & Hierarchical Charts
+
+| Method | Description | Key options |
+|:---|:---|:---|
+| `fig.pie()` | Pie / donut | `inner_radius` (donut), rose mode, side-by-side multiples |
+| `fig.radar()` | Radar / spider | Multi-indicator polygon charts |
+| `fig.funnel()` | Funnel | Stage-based conversion funnels |
+| `fig.gauge()` | Gauge / meter | Speedometer style with colour stops |
+| `fig.treemap()` | Treemap | Hierarchical area via `path` columns |
+| `fig.sunburst()` | Sunburst | Hierarchical ring chart (same `path` API as treemap) |
+
+### Relational & Calendar Charts
+
+| Method | Description | Key options |
+|:---|:---|:---|
+| `fig.sankey()` | Sankey diagram | Multi-level flow via `levels` columns |
+| `fig.graph()` | Network graph | Force / circular layout, node categories, edge weights |
+| `fig.calendar_heatmap()` | Calendar heatmap | GitHub-style contribution grid with auto year detection |
 
 ---
 
@@ -160,30 +203,6 @@ fig.show()
 </tr>
 <tr>
 <td width="50%">
-<p align="center"><strong>Area Chart</strong></p>
-<p align="center"><img src="https://raw.githubusercontent.com/astrojigs/echartsy/main/assets/demo_area.png" alt="Area Chart" width="100%" /></p>
-
-```python
-fig = ec.figure()
-fig.plot(df, x="Month", y="Users",
-         area=True, smooth=True)
-fig.show()
-```
-</td>
-<td width="50%">
-<p align="center"><strong>Horizontal Bar</strong></p>
-<p align="center"><img src="https://raw.githubusercontent.com/astrojigs/echartsy/main/assets/demo_horizontal.png" alt="Horizontal Bar" width="100%" /></p>
-
-```python
-fig = ec.figure()
-fig.bar(df, x="Country", y="Population",
-        orient="h")
-fig.show()
-```
-</td>
-</tr>
-<tr>
-<td width="50%">
 <p align="center"><strong>Dual Axis: Bar + Line</strong></p>
 <p align="center"><img src="https://raw.githubusercontent.com/astrojigs/echartsy/main/assets/demo_dual.png" alt="Dual Axis" width="100%" /></p>
 
@@ -194,32 +213,6 @@ fig.plot(df, x="Month", y="Growth",
          smooth=True, axis=1)
 fig.ylabel("Revenue ($K)")
 fig.ylabel_right("Growth %")
-fig.show()
-```
-</td>
-<td width="50%">
-<p align="center"><strong>Gradient Bars</strong></p>
-<p align="center"><img src="https://raw.githubusercontent.com/astrojigs/echartsy/main/assets/demo_gradient.png" alt="Gradient Bars" width="100%" /></p>
-
-```python
-fig = ec.figure()
-fig.bar(df, x="City", y="Temp",
-        gradient=True,
-        gradient_colors=["#83bff6","#188df0"])
-fig.show()
-```
-</td>
-</tr>
-<tr>
-<td width="50%">
-<p align="center"><strong>Multi-Line with Area</strong></p>
-<p align="center"><img src="https://raw.githubusercontent.com/astrojigs/echartsy/main/assets/demo_multiline.png" alt="Multi-Line" width="100%" /></p>
-
-```python
-fig = ec.figure()
-fig.plot(df, x="Month", y="Value",
-         hue="Series", smooth=True,
-         area=True)
 fig.show()
 ```
 </td>
@@ -337,92 +330,152 @@ fig.show()
 <p align="center"><img src="https://raw.githubusercontent.com/astrojigs/echartsy/main/assets/demo_full_dashboard.png" alt="Full Dashboard" width="100%" /></p>
 </td>
 </tr>
-<tr>
-<td width="50%">
-<p align="center"><strong>Side-by-Side Pies</strong></p>
-<p align="center"><img src="https://raw.githubusercontent.com/astrojigs/echartsy/main/assets/demo_sidebyside_pies.png" alt="Side-by-Side Pies" width="100%" /></p>
-</td>
-<td width="50%">
-<p align="center"><strong>Dark Theme</strong></p>
-<p align="center"><img src="https://raw.githubusercontent.com/astrojigs/echartsy/main/assets/demo_dark.png" alt="Dark Theme" width="100%" /></p>
-</td>
-</tr>
 </table>
 
-> Every chart is fully interactive — hover for tooltips, click legend items to toggle series, use the toolbox to export.
+> Every chart is fully interactive -- hover for tooltips, click legend items to toggle series, use the toolbox to export.
 > Open the [HTML demos in `assets/`](assets/) for the live experience, or run `python generate_demos.py` yourself.
-
----
-
-## Supported Chart Types
-
-| Category | Method | Description |
-|:---|:---|:---|
-| **Line** | `fig.plot()` | Smooth/straight lines, multi-series via `hue`, optional filled area |
-| **Bar** | `fig.bar()` | Vertical/horizontal, grouped (`hue`), stacked, gradient fills |
-| **Scatter** | `fig.scatter()` | Color and size encoding, numeric axes |
-| **Histogram** | `fig.hist()` | Auto-binned frequency distribution |
-| **Boxplot** | `fig.boxplot()` | Five-number statistical summary |
-| **KDE** | `fig.kde()` | Kernel density estimation (requires `scipy`) |
-| **Pie / Donut** | `fig.pie()` | Pie, donut (`inner_radius`), rose charts, side-by-side multiples |
-| **Radar** | `fig.radar()` | Multi-indicator polygon charts |
-| **Heatmap** | `fig.heatmap()` | Matrix visualisation with colour mapping |
-| **Sankey** | `fig.sankey()` | Multi-level flow diagrams |
-| **Treemap** | `fig.treemap()` | Hierarchical area charts |
-| **Funnel** | `fig.funnel()` | Stage-based conversion funnels |
-| **Candlestick** | `fig.candlestick()` | OHLC financial / stock charts |
 
 ---
 
 ## Rendering Engines
 
-echartsy writes your chart once; `ec.config()` controls where it renders.
+Write your chart once; `ec.config()` controls where it renders.
 
 | Engine | Use case | Install |
 |:---|:---|:---|
-| `"python"` | Standalone scripts — opens the default browser | No extra deps |
+| `"python"` | Standalone scripts -- opens the default browser | No extra deps |
 | `"jupyter"` | Jupyter Notebook / JupyterLab inline widgets | `pip install echartsy[jupyter]` |
-| `"streamlit"` | Streamlit applications | `pip install echartsy[streamlit]` (or just `pip install streamlit`) |
+| `"streamlit"` | Streamlit applications | `pip install echartsy[streamlit]` |
 
 ```python
-ec.config(engine="jupyter")
+ec.config(engine="jupyter")          # or "python" / "streamlit"
 ```
 
 ---
 
-## Adaptive Dark Mode
+## Advanced Features
 
-Charts automatically respond to the user's OS or browser `prefers-color-scheme` setting. In Streamlit, the app's theme is detected automatically via `st.get_option("theme.base")`.
+### Multi-Grid Subplots
+
+Create vertically stacked chart panels sharing independent axes:
+
+```python
+fig = ec.figure(rows=2, height="700px", row_heights=["60%", "40%"])
+fig.bar(df, x="Month", y="Revenue", grid=0)
+fig.plot(df, x="Month", y="Growth", grid=1, smooth=True)
+fig.show()
+```
+
+### Timeline Animations
+
+Animate any chart across a time dimension with `TimelineFigure`:
+
+```python
+fig = ec.TimelineFigure(height="500px", interval=1.5)
+fig.bar(df, x="Country", y="GDP", time_col="Year", labels=True)
+fig.title("GDP by Country")
+fig.show()
+```
+
+<p align="center">
+  <img src="https://raw.githubusercontent.com/astrojigs/echartsy/main/assets/demo_timeline.png" alt="Timeline Animation" width="700" />
+</p>
+
+| Feature | API |
+|:---|:---|
+| Playback control | `TimelineFigure(interval=2.0, autoplay=True, loop=True)` |
+| Adjust after creation | `fig.playback(interval=1.0, rewind=True)` |
+| Fixed axis ranges | `fig.xlim()`, `fig.ylim()` -- consistent scales across frames |
+| Smart frame sorting | Parses years, quarters (`Q1 2024`), months, ISO dates, fiscal years |
+| Supported series | `bar()`, `plot()`, `scatter()`, `pie()`, `hist()` |
+| Diagnose format | `ec.detect_time_format(df["Year"])` |
+
+### Annotations
+
+Add reference lines, points, and shaded regions to any series:
+
+```python
+fig.plot(df, x="Month", y="Sales", smooth=True)
+fig.mark_line(y=500, label="Target", color="red", line_dash="dashed")
+fig.mark_point(type="max")
+fig.mark_area(y_range=[200, 400], color="#ccc", opacity=0.15)
+fig.show()
+```
+
+### Visual Map
+
+Attach a colour-mapping control for continuous or piecewise data ranges:
+
+```python
+fig.heatmap(df, x="Day", y="Hour", value="Count")
+fig.visual_map(min_val=0, max_val=100,
+               colors=["#313695", "#ffffbf", "#a50026"],
+               calculable=True)
+fig.show()
+```
+
+### Log Scale
+
+Switch any y-axis to logarithmic scale:
+
+```python
+fig.yscale("log")          # shorthand
+fig.ylim(scale="log")      # equivalent
+```
+
+### Emphasis (Hover Highlighting)
+
+Control what happens when users hover over chart elements using typed Python dataclasses:
+
+```python
+from echartsy import Emphasis, ItemStyle
+
+fig.bar(df, x="Month", y="Revenue", hue="Region",
+        emphasis=Emphasis(
+            focus="series",
+            item_style=ItemStyle(shadow_blur=10),
+        ))
+```
+
+Every chart method accepts an optional `emphasis` parameter with a chart-specific type:
+
+| Chart method | Emphasis class |
+|:---|:---|
+| `bar()`, `hist()`, `boxplot()`, `heatmap()`, `candlestick()` | `Emphasis` |
+| `plot()`, `kde()` | `LineEmphasis` |
+| `scatter()` | `ScatterEmphasis` |
+| `pie()` | `PieEmphasis` |
+| `radar()` | `RadarEmphasis` |
+| `sankey()` | `SankeyEmphasis` |
+| `funnel()` | `FunnelEmphasis` |
+| `treemap()` | `TreemapEmphasis` |
+| `graph()` | `GraphEmphasis` |
+
+### Adaptive Dark Mode
+
+Charts automatically respond to the user's OS or browser `prefers-color-scheme` setting:
 
 ```python
 ec.config(engine="jupyter", adaptive="auto")     # auto-detect (default)
 ec.config(engine="jupyter", adaptive="dark")     # force dark
 ec.config(engine="streamlit")                    # auto-adapts to Streamlit theme
-ec.config(engine="streamlit", adaptive="dark")   # force dark in Streamlit
 ```
 
----
+### Style Presets and Palettes
 
-## Style Presets & Palettes
-
-Apply a pre-built visual theme in one argument:
+Apply a pre-built visual theme or set custom colour palettes:
 
 ```python
-fig = ec.figure(style=ec.StylePreset.CLINICAL)         # Clean defaults
-fig = ec.figure(style=ec.StylePreset.DASHBOARD_DARK)    # Dark background
-fig = ec.figure(style=ec.StylePreset.KPI_REPORT)        # Warm rusty tones
-fig = ec.figure(style=ec.StylePreset.MINIMAL)            # Minimal & light
-```
+fig = ec.figure(style=ec.StylePreset.CLINICAL)
+fig = ec.figure(style=ec.StylePreset.DASHBOARD_DARK)
+fig = ec.figure(style=ec.StylePreset.KPI_REPORT)
+fig = ec.figure(style=ec.StylePreset.MINIMAL)
 
-Or set a custom palette at any time:
-
-```python
 fig.palette(["#667eea", "#764ba2", "#f093fb", "#f5576c", "#4facfe"])
 fig.palette(ec.PALETTE_RUSTY)
-fig.palette(ec.PALETTE_CLINICAL)
 ```
 
-Build your own `StylePreset` for full control over fonts, grid lines, tooltip style, and more:
+Build custom presets for full control over fonts, grid lines, tooltip style, and more:
 
 ```python
 my_style = ec.StylePreset(
@@ -436,125 +489,7 @@ fig = ec.figure(style=my_style)
 
 ---
 
-## Emphasis (Hover Highlighting)
-
-Control what happens when users hover over chart elements — highlight, dim, scale, or restyle — using typed Python dataclasses instead of raw dicts.
-
-Every chart method accepts an optional `emphasis` parameter with a chart-specific type:
-
-| Chart method | Emphasis class | Extra fields |
-|:---|:---|:---|
-| `bar()`, `hist()`, `boxplot()`, `heatmap()`, `candlestick()` | `Emphasis` | — |
-| `plot()`, `kde()` | `LineEmphasis` | `line_style`, `area_style`, `end_label` |
-| `scatter()` | `ScatterEmphasis` | `scale` |
-| `pie()` | `PieEmphasis` | `scale`, `scale_size`, `label_line` |
-| `radar()` | `RadarEmphasis` | `line_style`, `area_style` |
-| `sankey()` | `SankeyEmphasis` | `line_style`, focus supports `"adjacency"` |
-| `funnel()` | `FunnelEmphasis` | `label_line` |
-| `treemap()` | `TreemapEmphasis` | `label_line`, `upper_label` |
-
-All classes share these common fields: `disabled`, `focus` (`"none"` / `"self"` / `"series"`), `blur_scope`, `item_style`, and `label`.
-
-```python
-from echartsy import Figure, Emphasis, ItemStyle
-
-# Highlight the hovered series, dim everything else
-fig = Figure()
-fig.bar(df, x="Month", y="Revenue", hue="Region",
-        emphasis=Emphasis(
-            focus="series",
-            item_style=ItemStyle(shadow_blur=10, shadow_color="rgba(0,0,0,0.3)"),
-        ))
-fig.show()
-```
-
-```python
-from echartsy import Figure, LineEmphasis, LineStyle, LabelStyle
-
-# Bold the hovered line and show value labels
-fig = Figure()
-fig.plot(df, x="Date", y="Price", hue="Stock",
-         emphasis=LineEmphasis(
-             focus="series",
-             line_style=LineStyle(width=4),
-             label=LabelStyle(show=True, formatter="{c}"),
-         ))
-fig.show()
-```
-
-```python
-from echartsy import Figure, PieEmphasis, ItemStyle
-
-# Scale and shadow on hover
-fig = Figure()
-fig.pie(df, names="Category", values="Amount",
-        emphasis=PieEmphasis(
-            scale=True, scale_size=15,
-            item_style=ItemStyle(shadow_blur=20),
-        ))
-fig.show()
-```
-
-When `emphasis` is omitted, each chart keeps its existing default behaviour (backward compatible).
-
----
-
-## Composite Charts
-
-Overlay pies on cartesian charts, or combine bar + line on dual axes — all on one figure.
-
-```python
-fig = ec.figure(height="550px")
-
-# Primary axis: bars
-fig.bar(df, x="Month", y="Revenue", labels=True, border_radius=4)
-
-# Secondary axis: trend line
-fig.plot(df, x="Month", y="Growth", smooth=True, axis=1, line_width=3)
-
-# Inset pie
-fig.pie(df_mix, names="Plan", values="Share",
-        center=["25%", "32%"], radius=["15%", "25%"])
-
-fig.ylabel("Revenue ($K)")
-fig.ylabel_right("Growth %")
-fig.legend(top=40, left=350)
-fig.show()
-```
-
----
-
-## Timeline Animations
-
-Animate any chart across a time dimension with `TimelineFigure`. It mirrors the `Figure` API; every series method gains one extra parameter: `time_col`.
-
-```python
-fig = ec.TimelineFigure(height="500px", interval=1.5)
-fig.bar(df, x="Country", y="GDP", time_col="Year", labels=True)
-fig.title("GDP by Country")
-fig.ylabel("GDP (Trillion USD)")
-fig.legend(top=30)
-fig.show()
-```
-
-<p align="center">
-  <img src="https://raw.githubusercontent.com/astrojigs/echartsy/main/assets/demo_timeline.png" alt="Timeline Animation" width="700" />
-</p>
-
-**TimelineFigure features:**
-
-| Feature | API |
-|:---|:---|
-| Playback control | `TimelineFigure(interval=2.0, autoplay=True, loop=True)` |
-| Adjust after creation | `fig.playback(interval=1.0, rewind=True)` |
-| Fixed axis ranges | `fig.xlim(0, 5000)`, `fig.ylim(0, 15)` — consistent scales across frames |
-| Smart frame sorting | Parses years, quarters (`Q1 2024`), months (`Jan 2024`), ISO dates, fiscal years |
-| Supported series | `bar()`, `plot()`, `scatter()`, `pie()`, `hist()` |
-| Diagnose format | `ec.detect_time_format(df["Year"])` |
-
----
-
-## Chart Configuration Reference
+## Configuration Reference
 
 Every `Figure` and `TimelineFigure` supports these configuration methods:
 
@@ -568,6 +503,7 @@ fig.ylabel("Y Label")
 fig.ylabel_right("Secondary Y")
 fig.xlim(0, 100)
 fig.ylim(0, 500)
+fig.yscale("log")
 
 # Layout
 fig.legend(orient="vertical", left="right", top=40)
@@ -577,29 +513,17 @@ fig.grid(show=True)
 # Interactivity
 fig.datazoom(start=0, end=80)
 fig.toolbox(download=True, zoom=True)
-fig.tooltip(trigger="axis", pointer="cross",
-            cross_color="#f00", cross_width=2)
-fig.axis_pointer(type="shadow", snap=True,
-                 shadow_color="rgba(0,0,0,0.2)")
+fig.tooltip(trigger="axis", pointer="cross")
+fig.axis_pointer(type="shadow", snap=True)
+fig.visual_map(min_val=0, max_val=100)
 
 # Export
 fig.save(name="my_chart", fmt="png", dpi=3)
 fig.to_html("my_chart.html")
+option = fig.to_option()       # raw ECharts option dict
 
 # Palette
 fig.palette(["#5470C6", "#91CC75", "#FAC858"])
-```
-
----
-
-## Exporting
-
-```python
-# Standalone HTML file (fully interactive, no server needed)
-fig.to_html("report.html")
-
-# Raw ECharts option dict (for debugging or custom renderers)
-option = fig.to_option()
 ```
 
 ---
@@ -612,14 +536,16 @@ Set the global rendering engine (`"python"`, `"jupyter"`, `"streamlit"`) and the
 
 ### `ec.figure(**kwargs)` / `ec.Figure(**kwargs)`
 
-Create a chart canvas. Key keyword arguments:
+Create a chart canvas.
 
 | Parameter | Default | Description |
 |:---|:---|:---|
 | `height` | `"400px"` | CSS height of the chart container |
 | `width` | `None` | CSS width (defaults to full container) |
-| `renderer` | `"canvas"` | `"canvas"` or `"svg"` |
+| `renderer` | `"svg"` | `"canvas"` or `"svg"` |
 | `style` | `StylePreset.CLINICAL` | A `StylePreset` instance |
+| `rows` | `1` | Number of vertical grid panels (subplots) |
+| `row_heights` | `None` | List of CSS heights per grid panel |
 
 ### `ec.TimelineFigure(**kwargs)` / `ec.timeline_figure(**kwargs)`
 
@@ -631,15 +557,7 @@ Same as `Figure` but adds timeline animation. Extra parameters:
 | `autoplay` | `True` | Start playing automatically |
 | `loop` | `True` | Loop back to the first frame |
 
-### `ec.StylePreset`
-
-Frozen dataclass bundling visual defaults: `palette`, `bg`, `font_family`, `title_font_size`, `axis_label_font_size`, `grid_line_color`, and more.
-
-### `ec.Emphasis`, `ec.LineEmphasis`, `ec.PieEmphasis`, ...
-
-Frozen dataclasses configuring hover-highlight behaviour per series. Common fields: `disabled`, `focus`, `blur_scope`, `item_style` (`ItemStyle`), `label` (`LabelStyle`). Chart-specific subclasses add fields like `line_style`, `area_style`, `scale`, `scale_size`, and `label_line`. See the [Emphasis section](#emphasis-hover-highlighting) for the full mapping.
-
-### Sub-style dataclasses
+### Sub-style Dataclasses
 
 | Class | Key fields |
 |:---|:---|
@@ -649,78 +567,29 @@ Frozen dataclasses configuring hover-highlight behaviour per series. Common fiel
 | `ec.AreaStyle` | `color`, `opacity` |
 | `ec.LabelLineStyle` | `show`, `length`, `length2` |
 
-### `ec.detect_time_format(series)`
-
-Diagnostic helper that inspects a pandas Series and reports how well TimelineFigure will parse its values.
-
 ---
 
-## Generating Showcase Images
+## Changelog (Recent)
 
-To regenerate the demo screenshots shown above:
+### v0.5.1
 
-```bash
-# 1. Generate the interactive HTML demos
-python generate_demos.py
+Current release. See [Releases](https://github.com/astrojigs/echartsy/releases) for full details.
 
-# 2. Capture PNG screenshots (requires Playwright)
-pip install playwright && playwright install chromium
-python capture_screenshots.py
-```
+### v0.4.8
 
----
+- **Changed:** Default renderer switched from `"canvas"` to `"svg"` -- fixes the broken toolbox download button under canvas/iframe sandbox restrictions.
 
-## What's New in v0.4.8
+### v0.4.7
 
-- **Changed:** Default renderer switched from `"canvas"` to `"svg"` across all engines (Python, Jupyter, Streamlit). SVG fixes the broken toolbox download button (saveAsImage) that failed silently under canvas due to iframe sandbox restrictions and `file://` protocol security policies. Users can still pass `renderer="canvas"` explicitly.
-- **Fixed:** Jupyter iframe sandbox now includes `allow-downloads`, so canvas-mode chart exports also work when `renderer="canvas"` is explicitly requested.
+- **Added:** `fig.candlestick()` -- native OHLC candlestick charts with dual-axis support and full composability.
 
-## What's New in v0.4.7
+### v0.4.6
 
-- **Added:** `fig.candlestick()` — native OHLC candlestick charts with configurable bullish/bearish colours, dual-axis support, and full composability with `plot()` (moving averages) and `bar()` (volume).
+- **Added:** `Emphasis` support for `boxplot()`, `heatmap()`, and `funnel()`.
 
-## What's New in v0.4.6
+### v0.4.5
 
-- **Added:** `Emphasis` support for `boxplot()`, `heatmap()`, and `funnel()` — consistent hover-highlight behaviour across all chart types.
-- **Added:** `FunnelEmphasis` and `TreemapEmphasis` dataclasses.
-
-## What's New in v0.4.5
-
-- **Fixed:** Charts vanishing across `st.tabs()` in Streamlit 1.48+ — replaced the full HTML document + adaptive JS + `key` parameter approach with a minimal HTML fragment (`<div>` + `<script>` + `echarts.init`). Charts now persist reliably across tab switches.
-- **Changed:** Dark/light theme detection for Streamlit is now resolved server-side via `st.get_option("theme.base")` instead of client-side CSS media queries. The adaptive JS colour-patching is no longer injected in the Streamlit renderer.
-- **Fixed:** `components.html()` no longer receives a `key` parameter (unsupported in Streamlit 1.48). Each chart gets a unique div ID derived from its content hash to avoid widget collisions.
-
-## What's New in v0.4.4
-
-- **Fixed:** `TypeError` when rendering charts in Streamlit 1.48+ — `components.html()` does not accept a `key` parameter.
-
-## What's New in v0.4.3
-
-- **Fixed:** Charts disappearing in Streamlit apps with 20+ charts across `st.tabs()` — the `key` parameter from `ec.figure(key=...)` was silently dropped and never reached `components.html()`, causing Streamlit widget identity conflicts on tab re-renders.
-- **Fixed:** Unstable auto-generated widget keys — the internal `itertools.count()` counter incremented across Streamlit reruns, producing different keys each run and forcing Streamlit to recreate all chart components. Auto-keys are no longer passed; Streamlit now uses its native delta-path identity (stable across reruns and tab-aware). Users needing explicit keys can still pass `key=` to `ec.figure()`.
-
-## What's New in v0.4.2
-
-- **Added:** `axis_pointer()` method on both `Figure` and `TimelineFigure` — configure the global axis pointer with full styling: snap, labels, line/cross/shadow colors, widths, and dash types.
-- **Added:** Extended `tooltip()` with pointer styling params (`line_color`, `cross_color`, `shadow_color`, widths, dash types, `snap`, `pointer_label`) — no more falling back to `extra()` for common pointer tweaks.
-- **Added:** `TimelineFigure.tooltip()` — previously missing; timeline charts now support the same tooltip configuration as `Figure`.
-
-## What's New in v0.4.1
-
-- **Fixed:** Histogram bin labels (e.g. `"34.5–45.2"`) no longer trigger `OverlapWarning`; labels are pre-rotated to 30° by default.
-- **Security:** Added input validation for `theme` (whitelist), CSS `width`/`height` dimensions, and `chart_id` across all renderers.
-
-## What's New in v0.4.0
-
-- **Added:** `TimelineFigure.hist()` — animated histograms with global bin edges for consistent comparison across frames.
-- **Added:** Streamlit auto dark mode — charts automatically detect and adapt to the Streamlit app's dark/light theme via `st.get_option("theme.base")`, with CSS `prefers-color-scheme` fallback.
-
-## What's New in v0.3.1
-
-- **Fixed:** `xlabel(rotate=...)` no longer raises `KeyError` when called after `heatmap()` or other methods that reset the x-axis.
-- **Fixed:** `_auto_key()` collisions — multiple charts with the same height, series count, and mode no longer overwrite each other in Streamlit.
-- **Added:** `TimelineFigure.xlim()` and `TimelineFigure.ylim()` — lock axis ranges across animation frames for consistent comparisons.
-- **Changed:** Streamlit rendering now uses `st.components.v1.html()` with ECharts from CDN instead of the `streamlit-echarts` third-party component. This fixes silent empty renders on modern Streamlit versions and removes the external dependency.
+- **Fixed:** Charts vanishing across `st.tabs()` in Streamlit 1.48+.
 
 ---
 

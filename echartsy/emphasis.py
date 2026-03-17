@@ -452,3 +452,30 @@ class TreemapEmphasis(Emphasis):
             result["upperLabel"] = self.upper_label.to_dict()
 
         return result
+
+
+@dataclass(frozen=True)
+class GraphEmphasis(Emphasis):
+    """Emphasis configuration for graph/network charts.
+
+    Extends focus to include "adjacency" mode for connected nodes.
+
+    Attributes
+    ----------
+    focus : Optional[Literal["none", "self", "series", "adjacency"]]
+        What to focus on: additionally supports "adjacency" for connected nodes.
+    line_style : Optional[LineStyle]
+        Line style during emphasis (→ lineStyle).
+    """
+
+    focus: Optional[Literal["none", "self", "series", "adjacency"]] = None  # type: ignore[assignment]
+    line_style: Optional[LineStyle] = None
+
+    def to_dict(self) -> dict:
+        """Convert to ECharts camelCase dictionary, omitting None values."""
+        result = super().to_dict()
+
+        if self.line_style is not None:
+            result["lineStyle"] = self.line_style.to_dict()
+
+        return result

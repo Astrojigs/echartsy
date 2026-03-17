@@ -40,6 +40,7 @@ from echartsy.styles import StylePreset
 from echartsy.emphasis import (
     Emphasis, LineEmphasis, ScatterEmphasis, PieEmphasis,
     RadarEmphasis, SankeyEmphasis, FunnelEmphasis, TreemapEmphasis,
+    GraphEmphasis,
 )
 
 
@@ -55,6 +56,7 @@ class _SeriesMeta:
     y_axis_index: int = 0
     is_category_series: bool = True
     raw_config: dict = field(default_factory=dict)
+    grid_index: int = 0
 
 
 _FIGURE_COUNTER = itertools.count()
@@ -141,6 +143,8 @@ class Figure:
         theme: Optional[str] = None,
         style: Optional[StylePreset] = None,
         key: Optional[str] = None,
+        rows: int = 1,
+        row_heights: Optional[List[str]] = None,
     ) -> None:
         self._height = height
         self._width = width
@@ -148,6 +152,10 @@ class Figure:
         self._theme = theme
         self._key = key
         self._style = style or StylePreset.CLINICAL
+
+        # Multi-grid support
+        self._n_grids = max(1, rows)
+        self._row_heights = row_heights
 
         # Internal state
         self._series: List[dict] = []
@@ -178,6 +186,11 @@ class Figure:
         ]
         self._x_categories: List[str] = []
 
+        # Per-grid category tracking (grid 0 aliases self._x_categories)
+        self._grid_categories: Dict[int, List[str]] = {0: self._x_categories}
+        for gi in range(1, self._n_grids):
+            self._grid_categories[gi] = []
+
         # Layout / chrome
         self._title_cfg: Optional[dict] = None
         self._legend_cfg: Optional[dict] = None
@@ -206,8 +219,35 @@ class Figure:
     # ─── Repr ─────────────────────────────────────────────────────────────
 
     def __repr__(self) -> str:
-        n = len(self._series)
-        return f"<Figure series={n} height={self._height!r} mode={self._chart_mode!r}>"
+        parts = [f"series={len(self._series)}", f"height={self._height!r}"]
+        if self._chart_mode:
+            parts.append(f"mode={self._chart_mode!r}")
+        if self._renderer != "svg":
+            parts.append(f"renderer={self._renderer!r}")
+        if self._title_cfg:
+            parts.append(f"title={self._title_cfg.get('text', '')!r}")
+        return f"<Figure {', '.join(parts)}>"
+
+    def summary(self) -> str:
+        """Print a human-readable summary of the current figure state."""
+        lines = [f"Figure(height={self._height!r}, renderer={self._renderer!r})"]
+        lines.append(f"  Series: {len(self._series)}")
+        for i, (s, m) in enumerate(zip(self._series, self._series_meta)):
+            name_part = f"name={s.get('name', '')!r}" if s.get("name") else ""
+            axis_part = f", axis={m.y_axis_index}" if m.y_axis_index > 0 else ""
+            lines.append(f"    [{i}] {m.chart_type:10s} — {name_part}{axis_part}")
+        if self._title_cfg:
+            lines.append(f"  Title: {self._title_cfg.get('text', '')!r}")
+        axes_parts = []
+        if self._y_axes and self._y_axes[0].get("name"):
+            axes_parts.append(f"left={self._y_axes[0]['name']!r}")
+        if len(self._y_axes) > 1 and self._y_axes[1].get("name"):
+            axes_parts.append(f"right={self._y_axes[1]['name']!r}")
+        if axes_parts:
+            lines.append(f"  Axes: {', '.join(axes_parts)}")
+        result = "\n".join(lines)
+        print(result)
+        return result
 
     # ─── Private helpers ──────────────────────────────────────────────────
 
@@ -223,25 +263,27 @@ class Figure:
     def _ensure_cartesian(self, caller: str) -> None:
         self._ensure_mode("cartesian", caller)
 
-    def _merge_x_categories(self, new_cats: List[str]) -> None:
-        existing = set(self._x_categories)
+    def _merge_x_categories(self, new_cats: List[str], grid: int = 0) -> None:
+        cats = self._grid_categories.get(grid, self._x_categories)
+        existing = set(cats)
         for c in new_cats:
             if c not in existing:
-                self._x_categories.append(c)
+                cats.append(c)
                 existing.add(c)
 
     def _auto_key(self) -> str:
         return f"ecb_{next(_FIGURE_COUNTER)}"
 
     def _align_to_categories(
-        self, df: pd.DataFrame, x: str, y: str, agg: str = "mean",
+        self, df: pd.DataFrame, x: str, y: str, agg: str = "mean", grid: int = 0,
     ) -> List[Optional[float]]:
         agg_fn = _resolve_agg(agg)
         grouped = df.groupby(x)[y].agg(agg_fn)
+        cats = self._grid_categories.get(grid, self._x_categories)
         return [
             None if cat not in grouped.index or pd.isna(grouped.get(cat))
             else round(float(grouped.get(cat)), 4)
-            for cat in self._x_categories
+            for cat in cats
         ]
 
     # ═══════════════════════════════════════════════════════════════════════
@@ -302,15 +344,27 @@ class Figure:
             lbl["formatter"] = formatter
         return self
 
-    def xlim(self, min_val: Optional[float] = None, max_val: Optional[float] = None) -> "Figure":
-        """Set explicit x-axis bounds (value-type axes only)."""
+    def xlim(
+        self, min_val: Optional[float] = None, max_val: Optional[float] = None,
+        scale: Optional[Literal["value", "log"]] = None,
+    ) -> "Figure":
+        """Set explicit x-axis bounds and/or scale type."""
         if self._chart_mode == "pie":
             raise BuilderConfigError("xlim() is not applicable to pie charts.")
         if min_val is not None:
             self._x_axis["min"] = min_val
         if max_val is not None:
             self._x_axis["max"] = max_val
+        if scale is not None:
+            self._x_axis["type"] = scale
         return self
+
+    def xscale(self, scale: Literal["value", "log"]) -> "Figure":
+        """Set x-axis scale type (shortcut for ``xlim(scale=...)``).
+
+        >>> fig.xscale("log")
+        """
+        return self.xlim(scale=scale)
 
     def ylabel(
         self, name: str, font_size: Optional[int] = None,
@@ -348,8 +402,9 @@ class Figure:
     def ylim(
         self, min_val: Optional[float] = None,
         max_val: Optional[float] = None, axis: int = 0,
+        scale: Optional[Literal["value", "log"]] = None,
     ) -> "Figure":
-        """Set y-axis bounds."""
+        """Set y-axis bounds and/or scale type."""
         if axis < 0:
             raise ValueError("axis index must be non-negative")
         if axis >= len(self._y_axes):
@@ -361,7 +416,16 @@ class Figure:
             self._y_axes[axis]["min"] = min_val
         if max_val is not None:
             self._y_axes[axis]["max"] = max_val
+        if scale is not None:
+            self._y_axes[axis]["type"] = scale
         return self
+
+    def yscale(self, scale: Literal["value", "log"], axis: int = 0) -> "Figure":
+        """Set y-axis scale type (shortcut for ``ylim(scale=...)``).
+
+        >>> fig.yscale("log")
+        """
+        return self.ylim(scale=scale, axis=axis)
 
     def yticks(
         self, rotate: Optional[int] = None,
@@ -537,19 +601,82 @@ class Figure:
         self, start: int = 0, end: int = 100,
         orient: Literal["horizontal", "vertical"] = "horizontal",
         show_slider: bool = True,
+        grids: Optional[List[int]] = None,
     ) -> "Figure":
-        """Add a data-zoom slider for long time-series or many categories."""
+        """Add a data-zoom slider for long time-series or many categories.
+
+        Parameters
+        ----------
+        grids : list[int] or None
+            When using multi-grid subplots, link zoom across these grid
+            indices (e.g. ``grids=[0, 1]``).
+        """
         if not (0 <= start <= 100) or not (0 <= end <= 100):
             raise ValueError("datazoom start/end must be between 0 and 100")
-        zoom: list = [{"type": "inside", "start": start, "end": end, "orient": orient}]
+        inside: dict = {"type": "inside", "start": start, "end": end, "orient": orient}
+        slider: dict = {"type": "slider", "start": start, "end": end, "orient": orient}
+        if grids and self._n_grids > 1:
+            inside["xAxisIndex"] = grids
+            slider["xAxisIndex"] = grids
+        zoom: list = [inside]
         if show_slider:
-            zoom.append({"type": "slider", "start": start, "end": end, "orient": orient})
+            zoom.append(slider)
         self._datazoom_cfg = zoom
         return self
 
     def palette(self, colors: Sequence[str]) -> "Figure":
         """Set the global colour cycle for all series."""
         self._palette = list(colors)
+        return self
+
+    def visual_map(
+        self, min_val: float = 0, max_val: float = 100,
+        colors: Optional[List[str]] = None,
+        orient: Literal["horizontal", "vertical"] = "vertical",
+        position: Optional[str] = None,
+        calculable: bool = True,
+        piecewise: bool = False,
+        pieces: Optional[List[dict]] = None,
+    ) -> "Figure":
+        """Expose the ECharts ``visualMap`` component for colour mapping.
+
+        Parameters
+        ----------
+        min_val, max_val : float
+            Data range for continuous mapping.
+        colors : list[str]
+            Colour gradient stops (low → high).
+        orient : ``"horizontal"`` | ``"vertical"``
+            Legend orientation.
+        position : ``"left"`` | ``"right"`` | ``None``
+            Shorthand positioning.
+        calculable : bool
+            Allow interactive range dragging.
+        piecewise : bool
+            Use piecewise (discrete) mapping instead of continuous.
+        pieces : list[dict]
+            Explicit piece definitions when *piecewise* is True.
+        """
+        cfg: dict = {}
+        if piecewise:
+            cfg["type"] = "piecewise"
+            if pieces:
+                cfg["pieces"] = pieces
+        else:
+            cfg["type"] = "continuous"
+            cfg["min"] = min_val
+            cfg["max"] = max_val
+        cfg["calculable"] = calculable
+        cfg["orient"] = orient
+        if position == "right":
+            cfg["right"] = 10
+        elif position == "left":
+            cfg["left"] = 10
+        else:
+            cfg["left"] = "center"
+        if colors:
+            cfg["inRange"] = {"color": colors}
+        self._extra["visualMap"] = cfg
         return self
 
     def extra(self, **kwargs: Any) -> "Figure":
@@ -615,7 +742,8 @@ class Figure:
         symbol_size: int = 6, symbol: str = "circle",
         labels: bool = False, label_position: str = "top",
         label_prefix: str = "", label_suffix: str = "",
-        agg: str = "mean", axis: int = 0, emphasis: Optional[LineEmphasis] = None, **series_kw: Any,
+        agg: str = "mean", axis: int = 0, grid: int = 0,
+        emphasis: Optional[LineEmphasis] = None, **series_kw: Any,
     ) -> "Figure":
         """Add one or more line series — equivalent to ``plt.plot()``.
 
@@ -654,17 +782,21 @@ class Figure:
             return self
 
         cats = _sort_categories(dff[x])
-        self._merge_x_categories(cats)
+        self._merge_x_categories(cats, grid=grid)
 
         if axis == 1 and len(self._y_axes) < 2:
             self.ylabel_right("")
 
+        y_idx = axis + grid * 2 if self._n_grids > 1 else axis
+        x_idx = grid if self._n_grids > 1 else 0
         base: dict = {
             "type": "line", "smooth": smooth,
             "connectNulls": connect_nulls, "showSymbol": True,
             "symbol": symbol, "symbolSize": symbol_size,
-            "lineStyle": {"width": line_width}, "yAxisIndex": axis,
+            "lineStyle": {"width": line_width}, "yAxisIndex": y_idx,
         }
+        if self._n_grids > 1:
+            base["xAxisIndex"] = x_idx
         if area:
             base["areaStyle"] = {"opacity": area_opacity}
         if labels:
@@ -679,10 +811,10 @@ class Figure:
         groups = dff.groupby(hue) if hue else [(y, dff)]
         for name, grp in groups:
             name_str = str(name)
-            values = self._align_to_categories(grp, x, y, agg)
+            values = self._align_to_categories(grp, x, y, agg, grid=grid)
             entry = {**base, "name": name_str, "data": values}
             self._series.append(entry)
-            self._series_meta.append(_SeriesMeta("line", name_str, axis))
+            self._series_meta.append(_SeriesMeta("line", name_str, axis, grid_index=grid))
             if name_str not in self._legend_items:
                 self._legend_items.append(name_str)
 
@@ -701,7 +833,8 @@ class Figure:
         label_color: str = "#333",
         gradient: bool = False,
         gradient_colors: Tuple[str, str] = ("#83bff6", "#188df0"),
-        agg: str = "sum", axis: int = 0, emphasis: Optional[Emphasis] = None, **series_kw: Any,
+        agg: str = "sum", axis: int = 0, grid: int = 0,
+        emphasis: Optional[Emphasis] = None, **series_kw: Any,
     ) -> "Figure":
         """Add one or more bar series — equivalent to ``plt.bar()``.
 
@@ -741,10 +874,10 @@ class Figure:
         if orient == "h":
             self._x_axis["type"] = "value"
             cats = _sort_categories(dff[x])
-            self._merge_x_categories(cats)
+            self._merge_x_categories(cats, grid=grid)
         else:
             cats = _sort_categories(dff[x])
-            self._merge_x_categories(cats)
+            self._merge_x_categories(cats, grid=grid)
 
         if axis == 1 and len(self._y_axes) < 2:
             self.ylabel_right("")
@@ -762,6 +895,8 @@ class Figure:
                 ],
             }
 
+        y_idx = axis + grid * 2 if self._n_grids > 1 else axis
+        x_idx = grid if self._n_grids > 1 else 0
         base: dict = {
             "type": "bar",
             "label": {
@@ -769,8 +904,10 @@ class Figure:
                 "formatter": label_formatter, "fontSize": label_font_size,
                 "color": label_color,
             },
-            "itemStyle": item_style, "yAxisIndex": axis,
+            "itemStyle": item_style, "yAxisIndex": y_idx,
         }
+        if self._n_grids > 1:
+            base["xAxisIndex"] = x_idx
         if stack:
             base["stack"] = "total"
         if bar_width is not None:
@@ -784,10 +921,10 @@ class Figure:
         groups = dff.groupby(hue) if hue else [(y, dff)]
         for name, grp in groups:
             name_str = str(name)
-            values = self._align_to_categories(grp, x, y, agg)
+            values = self._align_to_categories(grp, x, y, agg, grid=grid)
             entry = {**base, "name": name_str, "data": values}
             self._series.append(entry)
-            self._series_meta.append(_SeriesMeta("bar", name_str, axis))
+            self._series_meta.append(_SeriesMeta("bar", name_str, axis, grid_index=grid))
             if name_str not in self._legend_items:
                 self._legend_items.append(name_str)
 
@@ -796,13 +933,22 @@ class Figure:
 
         return self
 
+    def barh(self, df: pd.DataFrame, x: str, y: str, **kwargs: Any) -> "Figure":
+        """Add horizontal bars — shortcut for ``bar(..., orient="h")``.
+
+        Mirrors the matplotlib ``barh()`` convention.
+        All keyword arguments are forwarded to :meth:`bar`.
+        """
+        kwargs.pop("orient", None)
+        return self.bar(df, x=x, y=y, orient="h", **kwargs)
+
     # ─── SCATTER ──────────────────────────────────────────────────────────
 
     def scatter(
         self, df: pd.DataFrame, x: str, y: str, *,
         color: Optional[str] = None, size: Optional[str] = None,
         size_range: Tuple[int, int] = (5, 30), symbol: str = "circle",
-        opacity: float = 0.7, labels: bool = False,
+        opacity: float = 0.7, labels: bool = False, grid: int = 0,
         emphasis: Optional[ScatterEmphasis] = None, **series_kw: Any,
     ) -> "Figure":
         """Add a scatter series — equivalent to ``plt.scatter()``."""
@@ -1023,7 +1169,7 @@ class Figure:
         self, df: pd.DataFrame, column: str, *,
         bins: int = 10, density: bool = False,
         bar_color: Optional[str] = None,
-        border_radius: int = 2, labels: bool = False,
+        border_radius: int = 2, labels: bool = False, grid: int = 0,
         emphasis: Optional[Emphasis] = None, **series_kw: Any,
     ) -> "Figure":
         """Add a histogram — equivalent to ``plt.hist()``."""
@@ -1127,7 +1273,12 @@ class Figure:
 
         Requires ``scipy``. Install with ``pip install echartsy[scipy]``.
         """
-        from scipy.stats import gaussian_kde as _gaussian_kde
+        try:
+            from scipy.stats import gaussian_kde as _gaussian_kde
+        except ImportError:
+            raise ImportError(
+                "kde() requires scipy. Install it with: pip install echartsy[scipy]"
+            ) from None
 
         self._ensure_cartesian("kde")
         df = _validate_df(df, "kde")
@@ -1399,7 +1550,8 @@ class Figure:
 
     def boxplot(
         self, df: pd.DataFrame, x: str, y: str, *,
-        orient: Literal["v", "h"] = "v", emphasis: Optional[Emphasis] = None, **series_kw: Any,
+        orient: Literal["v", "h"] = "v", grid: int = 0,
+        emphasis: Optional[Emphasis] = None, **series_kw: Any,
     ) -> "Figure":
         """Add a box-and-whisker plot — equivalent to ``plt.boxplot()``."""
         self._ensure_cartesian("boxplot")
@@ -1444,7 +1596,7 @@ class Figure:
         down_color: str = "#73C0DE",
         up_border: Optional[str] = None,
         down_border: Optional[str] = None,
-        axis: int = 0,
+        axis: int = 0, grid: int = 0,
         emphasis: Optional[Emphasis] = None,
         **series_kw: Any,
     ) -> "Figure":
@@ -1483,15 +1635,16 @@ class Figure:
         dff = dff.dropna(subset=[date, open, close, low, high])
 
         cats = _sort_categories(dff[date])
-        self._merge_x_categories(cats)
+        self._merge_x_categories(cats, grid=grid)
 
         if axis == 1 and len(self._y_axes) < 2:
             self.ylabel_right("")
 
         # Build data aligned to merged categories (ECharts order: open, close, low, high)
         grouped = {str(r[date]): r for _, r in dff.iterrows()}
+        grid_cats = self._grid_categories.get(grid, self._x_categories)
         candlestick_data: list = []
-        for cat in self._x_categories:
+        for cat in grid_cats:
             row = grouped.get(cat)
             if row is not None:
                 candlestick_data.append([
@@ -1501,11 +1654,13 @@ class Figure:
             else:
                 candlestick_data.append(None)
 
+        y_idx = axis + grid * 2 if self._n_grids > 1 else axis
+        x_idx = grid if self._n_grids > 1 else 0
         entry: dict = {
             "type": "candlestick",
             "name": series_kw.pop("name", ""),
             "data": candlestick_data,
-            "yAxisIndex": axis,
+            "yAxisIndex": y_idx,
             "itemStyle": {
                 "color": up_color,
                 "color0": down_color,
@@ -1513,12 +1668,467 @@ class Figure:
                 "borderColor0": down_border or down_color,
             },
         }
+        if self._n_grids > 1:
+            entry["xAxisIndex"] = x_idx
         if emphasis is not None:
             entry["emphasis"] = emphasis.to_dict()
         entry.update(series_kw)
         self._series.append(entry)
-        self._series_meta.append(_SeriesMeta("candlestick", entry["name"], axis))
+        self._series_meta.append(_SeriesMeta("candlestick", entry["name"], axis, grid_index=grid))
         self._tooltip_cfg = {"trigger": "axis", "confine": True}
+        return self
+
+    # ─── GAUGE ───────────────────────────────────────────────────────────
+
+    def gauge(
+        self, value: float, name: str = "", *,
+        min_val: float = 0, max_val: float = 100,
+        start_angle: int = 225, end_angle: int = -45,
+        split_number: int = 10, pointer: bool = True,
+        axis_line_colors: Optional[List[Tuple[float, str]]] = None,
+        radius: str = "75%",
+        emphasis: Optional[Emphasis] = None, **series_kw: Any,
+    ) -> "Figure":
+        """Add a gauge / meter chart (speedometer style).
+
+        Parameters
+        ----------
+        value : float
+            The gauge value.
+        name : str
+            Label shown below the pointer.
+        min_val, max_val : float
+            Data range.
+        start_angle, end_angle : int
+            Arc angles in degrees.
+        split_number : int
+            Number of tick divisions.
+        pointer : bool
+            Show the pointer needle.
+        axis_line_colors : list of (float, str) tuples
+            Colour stops for the arc, e.g.
+            ``[(0.3, "#67e0e3"), (0.7, "#37a2da"), (1, "#fd666d")]``.
+        """
+        self._ensure_mode("gauge", "gauge")
+
+        entry: dict = {
+            "type": "gauge",
+            "min": min_val,
+            "max": max_val,
+            "startAngle": start_angle,
+            "endAngle": end_angle,
+            "splitNumber": split_number,
+            "radius": radius,
+            "pointer": {"show": pointer},
+            "data": [{"value": value, "name": name}],
+            "detail": {"formatter": "{value}"},
+        }
+        if axis_line_colors:
+            entry["axisLine"] = {
+                "lineStyle": {
+                    "width": 30,
+                    "color": [[stop, color] for stop, color in axis_line_colors],
+                }
+            }
+        if emphasis is not None:
+            entry["emphasis"] = emphasis.to_dict()
+        entry.update(series_kw)
+
+        self._series.append(entry)
+        self._series_meta.append(_SeriesMeta("gauge", name))
+        self._tooltip_cfg = {"trigger": "item", "confine": True}
+        return self
+
+    # ─── SUNBURST ────────────────────────────────────────────────────────
+
+    def sunburst(
+        self, df: pd.DataFrame, path: List[str],
+        value: Optional[str] = None, *,
+        inner_radius: str = "15%",
+        sort: Optional[Literal["desc", "asc"]] = "desc",
+        emphasis: Optional[Emphasis] = None, **series_kw: Any,
+    ) -> "Figure":
+        """Add a sunburst (hierarchical pie) chart.
+
+        Uses the same *path* + *value* API as :meth:`treemap`.
+
+        Parameters
+        ----------
+        df : pd.DataFrame
+            Source data.
+        path : list[str]
+            Hierarchy columns from root → leaf.
+        value : str or None
+            Numeric size column (counts if ``None``).
+        inner_radius : str
+            Inner ring radius.
+        sort : ``"desc"`` | ``"asc"`` | ``None``
+            Slice sort order.
+        """
+        self._ensure_mode("sunburst", "sunburst")
+        df = _validate_df(df, "sunburst")
+        _validate_columns(df, path + ([value] if value else []), "sunburst")
+
+        val_col = value
+        work = df.copy()
+        if val_col is None:
+            work["__count__"] = 1
+            val_col = "__count__"
+
+        for lvl in path:
+            work[lvl] = work[lvl].astype(object).where(pd.notna(work[lvl]), "<NA>")
+
+        g = work.groupby(path, dropna=False)[val_col].sum().reset_index()
+
+        root: dict = {}
+        for _, row in g.iterrows():
+            node = root
+            for lvl in path:
+                key = str(row[lvl])
+                node = node.setdefault(key, {"__val": 0, "__ch": {}})
+                node["__val"] += float(row[val_col])
+                node = node["__ch"]
+
+        def _build(subtree: dict) -> list:
+            out = []
+            for nm, meta in subtree.items():
+                item: dict = {"name": nm, "value": round(meta["__val"], 2)}
+                children = _build(meta["__ch"])
+                if children:
+                    item["children"] = children
+                out.append(item)
+            return out
+
+        data = _build(root)
+
+        entry: dict = {
+            "type": "sunburst",
+            "data": data,
+            "radius": [inner_radius, "90%"],
+            "label": {"rotate": "radial"},
+        }
+        if sort is not None:
+            entry["sort"] = sort
+        if emphasis is not None:
+            entry["emphasis"] = emphasis.to_dict()
+        entry.update(series_kw)
+
+        self._series.append(entry)
+        self._series_meta.append(_SeriesMeta("sunburst", "sunburst"))
+        self._tooltip_cfg = {"trigger": "item", "confine": True}
+        return self
+
+    # ─── GRAPH / NETWORK ─────────────────────────────────────────────────
+
+    def graph(
+        self, nodes_df: pd.DataFrame, edges_df: pd.DataFrame, *,
+        source: str = "source", target: str = "target",
+        value: Optional[str] = None,
+        node_name: str = "name", node_value: Optional[str] = None,
+        node_category: Optional[str] = None,
+        layout: Literal["force", "circular", "none"] = "force",
+        roam: bool = True, symbol_size: int = 20,
+        emphasis: Optional[Union[GraphEmphasis, Emphasis]] = None,
+        **series_kw: Any,
+    ) -> "Figure":
+        """Add a graph / network chart.
+
+        Parameters
+        ----------
+        nodes_df : pd.DataFrame
+            DataFrame of nodes with at least a *node_name* column.
+        edges_df : pd.DataFrame
+            DataFrame of edges with *source* and *target* columns.
+        source, target : str
+            Column names in *edges_df*.
+        value : str or None
+            Edge weight column in *edges_df*.
+        node_name : str
+            Column in *nodes_df* for node labels.
+        node_value : str or None
+            Column in *nodes_df* for node size.
+        node_category : str or None
+            Column in *nodes_df* for grouping (legend categories).
+        layout : ``"force"`` | ``"circular"`` | ``"none"``
+            Graph layout algorithm.
+        roam : bool
+            Allow pan/zoom.
+        """
+        self._ensure_mode("graph", "graph")
+        _validate_df(nodes_df, "graph (nodes)")
+        _validate_df(edges_df, "graph (edges)")
+        _validate_columns(edges_df, [source, target], "graph (edges)")
+        _validate_columns(nodes_df, [node_name], "graph (nodes)")
+
+        nodes: list = []
+        for _, r in nodes_df.iterrows():
+            node: dict = {"name": str(r[node_name]), "symbolSize": symbol_size}
+            if node_value and node_value in nodes_df.columns:
+                node["value"] = float(r[node_value])
+            if node_category and node_category in nodes_df.columns:
+                node["category"] = str(r[node_category])
+            nodes.append(node)
+
+        edges: list = []
+        for _, r in edges_df.iterrows():
+            edge: dict = {"source": str(r[source]), "target": str(r[target])}
+            if value and value in edges_df.columns:
+                edge["value"] = float(r[value])
+            edges.append(edge)
+
+        categories: list = []
+        if node_category and node_category in nodes_df.columns:
+            cats = nodes_df[node_category].dropna().unique()
+            categories = [{"name": str(c)} for c in cats]
+
+        entry: dict = {
+            "type": "graph",
+            "layout": layout,
+            "data": nodes,
+            "links": edges,
+            "roam": roam,
+            "label": {"show": True, "position": "right"},
+        }
+        if layout == "force":
+            entry["force"] = {"repulsion": 100, "edgeLength": [50, 200]}
+        if categories:
+            entry["categories"] = categories
+        if emphasis is not None:
+            entry["emphasis"] = emphasis.to_dict()
+        entry.update(series_kw)
+
+        self._series.append(entry)
+        self._series_meta.append(_SeriesMeta("graph", "graph"))
+        self._tooltip_cfg = {"trigger": "item", "confine": True}
+        if categories:
+            self._legend_items = [c["name"] for c in categories]
+        return self
+
+    # ─── CALENDAR HEATMAP ────────────────────────────────────────────────
+
+    def calendar_heatmap(
+        self, df: pd.DataFrame, date: str, value: str, *,
+        year: Optional[int] = None,
+        cell_size: Optional[List] = None,
+        orient: Literal["horizontal", "vertical"] = "horizontal",
+        visual_min: Optional[float] = None,
+        visual_max: Optional[float] = None,
+        in_range_colors: Optional[List[str]] = None,
+        **series_kw: Any,
+    ) -> "Figure":
+        """Add a calendar heatmap (GitHub-style contribution grid).
+
+        Parameters
+        ----------
+        df : pd.DataFrame
+            Source data.
+        date : str
+            Date column (parseable by ``pd.to_datetime``).
+        value : str
+            Numeric value column.
+        year : int or None
+            Calendar year to display (auto-detected from data if ``None``).
+        cell_size : list or None
+            ``["auto", 14]`` etc.
+        orient : ``"horizontal"`` | ``"vertical"``
+        visual_min, visual_max : float or None
+            Colour scale range.
+        in_range_colors : list[str] or None
+            Colour stops for the gradient.
+        """
+        self._ensure_mode("calendar", "calendar_heatmap")
+        df = _validate_df(df, "calendar_heatmap")
+        _validate_columns(df, [date, value], "calendar_heatmap")
+
+        dff = df.copy()
+        dff[value] = _coerce_numeric(dff, value, "calendar_heatmap")
+        dff[date] = pd.to_datetime(dff[date]).dt.strftime("%Y-%m-%d")
+        dff = dff.dropna(subset=[date, value])
+
+        if year is None:
+            year = int(pd.to_datetime(dff[date]).dt.year.mode().iloc[0])
+
+        data = [[str(d), round(float(v), 4)] for d, v in zip(dff[date], dff[value])]
+
+        vmin = visual_min if visual_min is not None else float(dff[value].min())
+        vmax = visual_max if visual_max is not None else float(dff[value].max())
+        colors = in_range_colors or ["#ebedf0", "#9be9a8", "#40c463", "#30a14e", "#216e39"]
+
+        self._extra["calendar"] = {
+            "range": str(year),
+            "cellSize": cell_size or ["auto", 14],
+            "orient": orient,
+            "left": 30, "right": 30, "top": 60, "bottom": 30,
+            "itemStyle": {"borderWidth": 0.5, "borderColor": "#fff"},
+        }
+        self._extra["visualMap"] = {
+            "min": vmin, "max": vmax, "calculable": True,
+            "orient": "horizontal", "left": "center", "bottom": "2%",
+            "inRange": {"color": colors},
+        }
+
+        entry: dict = {
+            "type": "heatmap",
+            "coordinateSystem": "calendar",
+            "data": data,
+        }
+        entry.update(series_kw)
+
+        self._series.append(entry)
+        self._series_meta.append(_SeriesMeta("heatmap", value))
+        self._tooltip_cfg = {"trigger": "item", "confine": True}
+        return self
+
+    # ═══════════════════════════════════════════════════════════════════════
+    # Annotations — markLine / markPoint / markArea
+    # ═══════════════════════════════════════════════════════════════════════
+
+    def mark_line(
+        self, y: Optional[float] = None, x: Optional[str] = None,
+        label: Optional[str] = None, color: Optional[str] = None,
+        line_dash: Optional[Literal["solid", "dashed", "dotted"]] = None,
+        series_index: int = -1,
+    ) -> "Figure":
+        """Add a reference line to a series.
+
+        Parameters
+        ----------
+        y : float or None
+            Horizontal line at this y-value.
+        x : str or None
+            Vertical line at this x-value.
+        label : str or None
+            Annotation text.
+        color : str or None
+            Line colour.
+        line_dash : ``"solid"`` | ``"dashed"`` | ``"dotted"``
+            Line dash style.
+        series_index : int
+            Which series to attach to (default: last added).
+        """
+        if not self._series:
+            raise BuilderConfigError("mark_line(): no series to annotate.")
+        idx = series_index if series_index >= 0 else len(self._series) + series_index
+        if idx < 0 or idx >= len(self._series):
+            raise BuilderConfigError(
+                f"mark_line(): series_index {series_index} out of range "
+                f"(have {len(self._series)} series)."
+            )
+
+        mark_data: dict = {}
+        if y is not None:
+            mark_data["yAxis"] = y
+        elif x is not None:
+            mark_data["xAxis"] = x
+
+        if label is not None:
+            mark_data["name"] = label
+            mark_data["label"] = {"formatter": label, "show": True}
+
+        line_style: dict = {}
+        if color is not None:
+            line_style["color"] = color
+        if line_dash is not None:
+            line_style["type"] = line_dash
+        if line_style:
+            mark_data["lineStyle"] = line_style
+
+        ml = self._series[idx].setdefault("markLine", {"data": [], "silent": True})
+        ml["data"].append(mark_data)
+        return self
+
+    def mark_point(
+        self, type: Optional[Literal["max", "min"]] = None,
+        label: Optional[str] = None,
+        coord: Optional[List] = None,
+        symbol_size: int = 50,
+        series_index: int = -1,
+    ) -> "Figure":
+        """Add a marker point to a series.
+
+        Parameters
+        ----------
+        type : ``"max"`` | ``"min"`` or None
+            Auto-detect the max/min point.
+        label : str or None
+            Annotation text.
+        coord : list or None
+            Explicit ``[x, y]`` coordinate.
+        series_index : int
+            Which series to attach to (default: last added).
+        """
+        if not self._series:
+            raise BuilderConfigError("mark_point(): no series to annotate.")
+        idx = series_index if series_index >= 0 else len(self._series) + series_index
+        if idx < 0 or idx >= len(self._series):
+            raise BuilderConfigError(
+                f"mark_point(): series_index {series_index} out of range "
+                f"(have {len(self._series)} series)."
+            )
+
+        mark_data: dict = {}
+        if type is not None:
+            mark_data["type"] = type
+        if label is not None:
+            mark_data["name"] = label
+        if coord is not None:
+            mark_data["coord"] = coord
+
+        mp = self._series[idx].setdefault(
+            "markPoint", {"data": [], "symbolSize": symbol_size}
+        )
+        mp["data"].append(mark_data)
+        return self
+
+    def mark_area(
+        self, y_range: Optional[List[float]] = None,
+        x_range: Optional[List[str]] = None,
+        color: Optional[str] = None, opacity: float = 0.1,
+        series_index: int = -1,
+    ) -> "Figure":
+        """Add a shaded region to a series.
+
+        Parameters
+        ----------
+        y_range : [low, high] or None
+            Horizontal band between two y-values.
+        x_range : [start, end] or None
+            Vertical band between two x-values.
+        color : str or None
+            Fill colour.
+        opacity : float
+            Fill opacity.
+        series_index : int
+            Which series to attach to (default: last added).
+        """
+        if not self._series:
+            raise BuilderConfigError("mark_area(): no series to annotate.")
+        idx = series_index if series_index >= 0 else len(self._series) + series_index
+        if idx < 0 or idx >= len(self._series):
+            raise BuilderConfigError(
+                f"mark_area(): series_index {series_index} out of range "
+                f"(have {len(self._series)} series)."
+            )
+
+        item_style: dict = {"opacity": opacity}
+        if color is not None:
+            item_style["color"] = color
+
+        area_data: list = []
+        if y_range is not None and len(y_range) == 2:
+            area_data = [
+                {"yAxis": y_range[0], "itemStyle": item_style},
+                {"yAxis": y_range[1]},
+            ]
+        elif x_range is not None and len(x_range) == 2:
+            area_data = [
+                {"xAxis": x_range[0], "itemStyle": item_style},
+                {"xAxis": x_range[1]},
+            ]
+
+        if area_data:
+            ma = self._series[idx].setdefault("markArea", {"data": []})
+            ma["data"].append(area_data)
         return self
 
     # ═══════════════════════════════════════════════════════════════════════
@@ -1570,7 +2180,8 @@ class Figure:
             option.update({k: copy.deepcopy(v) for k, v in self._extra.items() if not k.startswith("_")})
             return option
 
-        if mode in ("sankey", "treemap", "funnel", "heatmap"):
+        if mode in ("sankey", "treemap", "funnel", "heatmap",
+                    "sunburst", "graph", "gauge", "calendar"):
             option = {}
             if self._title_cfg:
                 option["title"] = copy.deepcopy(self._title_cfg)
@@ -1583,7 +2194,7 @@ class Figure:
                 option["grid"] = copy.deepcopy(self._grid_cfg)
                 if self._axis_pointer_cfg:
                     option["axisPointer"] = copy.deepcopy(self._axis_pointer_cfg)
-            if self._legend_items and mode == "funnel":
+            if self._legend_items and mode in ("funnel", "graph"):
                 legend_cfg = copy.deepcopy(self._legend_cfg) or {"orient": "vertical", "left": "left"}
                 legend_cfg["data"] = list(self._legend_items)
                 option["legend"] = legend_cfg
@@ -1597,6 +2208,10 @@ class Figure:
 
         # ── Cartesian mode ────────────────────────────────────────────────
         is_h_bar = self._extra.get("_bar_orient_h", False)
+
+        # Multi-grid mode
+        if self._n_grids > 1:
+            return self._build_multi_grid_option(is_h_bar)
 
         x_axis_cfg = copy.deepcopy(self._x_axis)
         y_axis_cfg = copy.deepcopy(self._y_axes)
@@ -1642,6 +2257,93 @@ class Figure:
         # Anti-overlap pass
         option = _resolve_layout(option, self._series_meta)
 
+        return option
+
+    def _build_multi_grid_option(self, is_h_bar: bool) -> dict:
+        """Build the ECharts option dict for multi-grid (subplot) layouts."""
+        n = self._n_grids
+        heights = self._row_heights
+
+        # Compute grid positions
+        if heights:
+            nums = [float(h.rstrip("%")) for h in heights]
+            total = sum(nums)
+            ratios = [v / total for v in nums]
+        else:
+            ratios = [1.0 / n] * n
+
+        avail_pct = 75  # percentage of total height available
+        start_pct = 10  # top offset percentage
+        gap_pct = 5
+
+        grids: list = []
+        x_axes: list = []
+        y_axes: list = []
+        cur_top = start_pct
+
+        base_grid = copy.deepcopy(self._grid_cfg)
+        for gi in range(n):
+            h_pct = avail_pct * ratios[gi] - (gap_pct if gi < n - 1 else 0)
+            g = {
+                "left": base_grid.get("left", 70),
+                "right": base_grid.get("right", 70),
+                "top": f"{cur_top:.0f}%",
+                "height": f"{h_pct:.0f}%",
+                "containLabel": True,
+            }
+            grids.append(g)
+            cur_top += avail_pct * ratios[gi]
+
+            cats = self._grid_categories.get(gi, [])
+            x_cfg = copy.deepcopy(self._x_axis)
+            x_cfg["gridIndex"] = gi
+            if not is_h_bar:
+                x_cfg["data"] = cats
+            else:
+                x_cfg = {"type": "value", "gridIndex": gi}
+            x_axes.append(x_cfg)
+
+            # Primary y-axis (left) for this grid
+            y_cfg = copy.deepcopy(self._y_axes[0])
+            y_cfg["gridIndex"] = gi
+            y_axes.append(y_cfg)
+
+            # Secondary y-axis (right) for this grid — keeps indices
+            # consistent with the formula: y_idx = axis + grid * 2
+            if len(self._y_axes) > 1:
+                y2_cfg = copy.deepcopy(self._y_axes[1])
+            else:
+                y2_cfg = {"type": "value", "show": False}
+            y2_cfg["gridIndex"] = gi
+            y_axes.append(y2_cfg)
+
+        option: dict = {}
+        if self._title_cfg:
+            option["title"] = copy.deepcopy(self._title_cfg)
+        if self._palette:
+            option["color"] = list(self._palette)
+        option["tooltip"] = copy.deepcopy(self._tooltip_cfg)
+        if self._axis_pointer_cfg:
+            option["axisPointer"] = copy.deepcopy(self._axis_pointer_cfg)
+
+        if self._legend_items:
+            legend_cfg = copy.deepcopy(self._legend_cfg) or {}
+            legend_cfg["data"] = list(dict.fromkeys(self._legend_items))
+            option["legend"] = legend_cfg
+
+        option["grid"] = grids
+        option["xAxis"] = x_axes
+        option["yAxis"] = y_axes
+        option["series"] = copy.deepcopy(self._series)
+
+        if self._toolbox_cfg:
+            option["toolbox"] = copy.deepcopy(self._toolbox_cfg)
+        if self._datazoom_cfg:
+            option["dataZoom"] = self._datazoom_cfg
+        if self._style.bg:
+            option.setdefault("backgroundColor", self._style.bg)
+
+        option.update({k: v for k, v in self._extra.items() if not k.startswith("_")})
         return option
 
     def show(self, **render_kw: Any) -> None:

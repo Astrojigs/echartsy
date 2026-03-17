@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "echartsy"
-version = "0.4.8"
+version = "0.5.2"
 description = "A matplotlib-style fluent builder API for Apache ECharts in Python, Jupyter Notebooks, and Streamlit."
 readme = "README.md"
 license = {text = "MIT"}
@@ -17,6 +17,8 @@ classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: Developers",
     "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
@@ -36,7 +38,7 @@ jupyter = ["ipython>=7.0"]
 streamlit = ["streamlit>=1.20.0"]
 scipy = ["scipy>=1.9.0"]
 all = ["ipython>=7.0", "streamlit>=1.20.0", "scipy>=1.9.0"]
-dev = ["pytest>=7.0", "ipython>=7.0"]
+dev = ["pytest>=7.0", "pytest-cov>=4.0", "ipython>=7.0"]
 
 [project.urls]
 Homepage = "https://github.com/astrojigs/echartsy"
@@ -45,3 +47,17 @@ Repository = "https://github.com/astrojigs/echartsy"
 
 [tool.setuptools.packages.find]
 include = ["echartsy*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-v --tb=short"
+
+[tool.coverage.run]
+source = ["echartsy"]
+
+[tool.coverage.report]
+show_missing = true
+exclude_lines = [
+    "pragma: no cover",
+    "if TYPE_CHECKING:",
+]

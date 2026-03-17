@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import copy
+import difflib
 import re
 import warnings
 from typing import Any, Dict, List, Literal, Optional, Sequence
@@ -80,10 +81,13 @@ def _validate_columns(
     missing = [c for c in cols if c not in df.columns]
     if missing:
         avail = list(df.columns)
-        raise DataValidationError(
-            f"{caller}(): Column(s) {missing} not found in DataFrame.\n"
-            f"  Available columns: {avail}"
-        )
+        parts = [f"{caller}(): Column(s) {missing} not found in DataFrame."]
+        parts.append(f"  Available columns: {avail}")
+        for m in missing:
+            suggestions = difflib.get_close_matches(m, [str(c) for c in avail], n=1, cutoff=0.6)
+            if suggestions:
+                parts.append(f"  Did you mean {suggestions[0]!r}? (for {m!r})")
+        raise DataValidationError("\n".join(parts))
 
 
 def _coerce_numeric(df: pd.DataFrame, col: str, caller: str) -> pd.Series:

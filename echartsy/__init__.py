@@ -21,6 +21,7 @@ from echartsy.emphasis import (
     AreaStyle,
     Emphasis,
     FunnelEmphasis,
+    GraphEmphasis,
     ItemStyle,
     LabelLineStyle,
     LabelStyle,
@@ -52,7 +53,7 @@ from echartsy.timeline import (
     timeline_figure,
 )
 
-__version__ = "0.4.8"
+__version__ = "0.5.2"
 
 __all__ = [
     # Config
@@ -81,6 +82,7 @@ __all__ = [
     "SankeyEmphasis",
     "FunnelEmphasis",
     "TreemapEmphasis",
+    "GraphEmphasis",
     "ItemStyle",
     "LabelStyle",
     "LineStyle",

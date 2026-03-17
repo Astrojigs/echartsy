@@ -593,6 +593,18 @@ Current release. See [Releases](https://github.com/astrojigs/echartsy/releases) 
 
 ---
 
+## Support the Project
+
+If echartsy saves you time or you enjoy using it, consider buying me a coffee. It helps keep the project maintained and growing.
+
+<p align="center">
+  <a href="https://www.buymeacoffee.com/astrojigs2a" target="_blank">
+    <img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" height="50" width="200" />
+  </a>
+</p>
+
+---
+
 ## Contributing
 
 Contributions, bug reports, and feature requests are welcome. Please open an [issue](https://github.com/astrojigs/echartsy/issues) or submit a pull request on [GitHub](https://github.com/astrojigs/echartsy).

@@ -41,6 +41,7 @@ fig.show()
   - [Treemap](#treemap)
   - [Sankey Diagram](#sankey-diagram)
   - [Candlestick Chart](#candlestick-chart)
+  - [Waterfall Chart](#waterfall-chart)
 - [Composite Charts](#composite-charts)
   - [Dual Axis (Bar + Line)](#dual-axis-bar--line)
   - [Bar + Pie Overlay](#bar--pie-overlay)
@@ -746,6 +747,51 @@ fig.show()
 | `up_border` | `str` | `None` | Bullish border (defaults to `up_color`) |
 | `down_border` | `str` | `None` | Bearish border (defaults to `down_color`) |
 | `axis` | `int` | `0` | Y-axis index (`0` = left, `1` = right) |
+| `emphasis` | `Emphasis` | `None` | Hover effect |
+
+---
+
+### Waterfall Chart
+
+```python
+df = pd.DataFrame({
+    "Category": ["Revenue", "COGS", "Gross Profit", "OpEx", "Tax", "Net Income"],
+    "Amount": [120, -45, 75, -30, -12, 33],
+})
+
+fig = ec.figure(height="420px")
+fig.waterfall(df, x="Category", y="Amount",
+              total=True, labels=True, connector=True)
+fig.title("Income Statement Waterfall")
+fig.ylabel("$ Millions")
+fig.tooltip()
+fig.show()
+```
+
+**Parameters:**
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `df` | `DataFrame` | *required* | Source data |
+| `x` | `str` | *required* | Category column |
+| `y` | `str` | *required* | Value column (deltas) |
+| `positive_color` | `str` | `"#4ade80"` | Colour for positive delta bars |
+| `negative_color` | `str` | `"#f87171"` | Colour for negative delta bars |
+| `total` | `bool` | `False` | Append a final total bar |
+| `total_label` | `str` | `"Total"` | Label for the total bar |
+| `total_color` | `str` | `"#60a5fa"` | Colour for the total bar |
+| `connector` | `bool` | `True` | Draw dashed connector lines between bar tops |
+| `connector_color` | `str` | `"#999"` | Connector line colour |
+| `connector_width` | `float` | `1` | Connector line width |
+| `connector_dash` | `str` | `"dashed"` | Connector line style (`"solid"`, `"dashed"`, `"dotted"`) |
+| `border_radius` | `int` | `4` | Rounded bar corners |
+| `labels` | `bool` | `False` | Show value labels on bars |
+| `label_formatter` | `str` | `"{c}"` | ECharts label format string |
+| `label_font_size` | `int` | `12` | Label font size |
+| `label_color` | `str` | `None` | Label colour (defaults to bar colour) |
+| `agg` | `str` | `"sum"` | Aggregation function |
+| `axis` | `int` | `0` | Y-axis index (`0` = left, `1` = right) |
+| `grid` | `int` | `0` | Grid index for multi-grid subplots |
 | `emphasis` | `Emphasis` | `None` | Hover effect |
 
 ---

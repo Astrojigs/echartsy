@@ -933,6 +933,233 @@ class Figure:
 
         return self
 
+    # ─── WATERFALL ─────────────────────────────────────────────────────────
+
+    def waterfall(
+        self, df: pd.DataFrame, x: str, y: str, *,
+        positive_color: str = "#4ade80",
+        negative_color: str = "#f87171",
+        total: bool = False,
+        total_label: str = "Total",
+        total_color: str = "#60a5fa",
+        connector: bool = True,
+        connector_color: str = "#999",
+        connector_width: float = 1,
+        connector_dash: str = "dashed",
+        border_radius: int = 4,
+        labels: bool = False,
+        label_formatter: str = "{c}",
+        label_font_size: int = 12,
+        label_color: Optional[str] = None,
+        agg: str = "sum",
+        axis: int = 0,
+        grid: int = 0,
+        emphasis: Optional[Emphasis] = None,
+        **series_kw: Any,
+    ) -> "Figure":
+        """Add a waterfall chart — cumulative positive/negative deltas.
+
+        Uses stacked transparent bars under the hood: an invisible base bar
+        plus colored positive/negative delta bars on top.
+
+        Parameters
+        ----------
+        df : pd.DataFrame
+        x : str
+            Category column.
+        y : str
+            Value column (deltas).
+        positive_color : str
+            Color for positive delta bars.
+        negative_color : str
+            Color for negative delta bars.
+        total : bool
+            Append a final total bar.
+        total_label : str
+            Label for the total bar.
+        total_color : str
+            Color for the total bar.
+        connector : bool
+            Draw dashed connector lines between bar tops.
+        labels : bool
+            Show value labels on bars.
+        """
+        self._ensure_cartesian("waterfall")
+        df = _validate_df(df, "waterfall")
+        _validate_columns(df, [x, y], "waterfall")
+
+        dff = df.copy()
+        dff[x] = dff[x].astype(str).str.strip()
+        dff[y] = _coerce_numeric(dff, y, "waterfall")
+        n_before = len(dff)
+        dff = dff.dropna(subset=[x, y])
+        n_dropped = n_before - len(dff)
+        if n_dropped > 0:
+            warnings.warn(f"waterfall(): {n_dropped} rows dropped due to missing values", stacklevel=2)
+        if dff.empty:
+            warnings.warn("waterfall(): all rows dropped after removing missing values; chart will be empty", stacklevel=2)
+            return self
+
+        cats = _sort_categories(dff[x])
+        self._merge_x_categories(cats, grid=grid)
+
+        # Align values to the merged category order
+        values = self._align_to_categories(dff, x, y, agg, grid=grid)
+
+        # ── Compute waterfall base / positive / negative arrays ──
+        all_cats = self._grid_categories.get(grid, self._x_categories)
+        base_data: List[float] = []
+        pos_data: List[float] = []
+        neg_data: List[float] = []
+        running = 0.0
+        for v in values:
+            val = v if v is not None else 0.0
+            if val >= 0:
+                base_data.append(round(running, 4))
+                pos_data.append(round(val, 4))
+                neg_data.append(0)
+            else:
+                base_data.append(round(running + val, 4))
+                pos_data.append(0)
+                neg_data.append(round(abs(val), 4))
+            running += val
+
+        # Append total bar
+        if total:
+            if total_label not in set(all_cats):
+                all_cats.append(total_label)
+            base_data.append(0)
+            pos_data.append(round(running, 4) if running >= 0 else 0)
+            neg_data.append(round(abs(running), 4) if running < 0 else 0)
+
+        if axis == 1 and len(self._y_axes) < 2:
+            self.ylabel_right("")
+
+        y_idx = axis + grid * 2 if self._n_grids > 1 else axis
+        x_idx = grid if self._n_grids > 1 else 0
+        stack_name = f"waterfall_{len(self._series)}"
+
+        # ── Base series (invisible) ──
+        base_series: dict = {
+            "type": "bar",
+            "name": "",
+            "stack": stack_name,
+            "data": base_data,
+            "itemStyle": {"color": "transparent", "borderColor": "transparent"},
+            "emphasis": {"disabled": True},
+            "tooltip": {"show": False},
+            "yAxisIndex": y_idx,
+        }
+        if self._n_grids > 1:
+            base_series["xAxisIndex"] = x_idx
+
+        # ── Connector markLines on the base series ──
+        if connector:
+            mark_lines = []
+            n_bars = len(base_data)
+            for i in range(n_bars - 1):
+                # Running total after bar i = base + positive (neg bars: base already = running_after)
+                top_i = base_data[i] + pos_data[i]
+                mark_lines.append({
+                    "symbol": "none",
+                    "lineStyle": {
+                        "color": connector_color,
+                        "width": connector_width,
+                        "type": connector_dash,
+                    },
+                    "label": {"show": False},
+                    "data": [
+                        {"xAxis": i, "yAxis": round(top_i, 4)},
+                        {"xAxis": i + 1, "yAxis": round(top_i, 4)},
+                    ],
+                })
+            if mark_lines:
+                base_series["markLine"] = {
+                    "symbol": "none",
+                    "data": mark_lines,
+                    "silent": True,
+                    "animation": False,
+                }
+
+        self._series.append(base_series)
+        self._series_meta.append(_SeriesMeta("bar", "", axis, grid_index=grid))
+
+        # ── Positive series ──
+        pos_item_style: dict = {"color": positive_color, "borderRadius": border_radius}
+        # If total=True, color the last bar with total_color
+        pos_series_data: list = list(pos_data)
+        if total and pos_series_data:
+            last_val = pos_series_data[-1]
+            if last_val > 0:
+                pos_series_data[-1] = {
+                    "value": last_val,
+                    "itemStyle": {"color": total_color},
+                }
+
+        pos_label_cfg: dict = {
+            "show": labels, "position": "top",
+            "formatter": label_formatter, "fontSize": label_font_size,
+            "color": label_color if label_color else positive_color,
+        }
+        pos_series: dict = {
+            "type": "bar",
+            "name": "Positive",
+            "stack": stack_name,
+            "data": pos_series_data,
+            "itemStyle": pos_item_style,
+            "label": pos_label_cfg,
+            "yAxisIndex": y_idx,
+        }
+        if self._n_grids > 1:
+            pos_series["xAxisIndex"] = x_idx
+        if emphasis is not None:
+            pos_series["emphasis"] = emphasis.to_dict()
+        pos_series.update({k: v for k, v in series_kw.items() if k not in ("name", "data", "stack", "itemStyle", "label")})
+        self._series.append(pos_series)
+        self._series_meta.append(_SeriesMeta("bar", "Positive", axis, grid_index=grid))
+
+        # ── Negative series ──
+        neg_item_style: dict = {"color": negative_color, "borderRadius": border_radius}
+        neg_series_data: list = list(neg_data)
+        if total and neg_series_data:
+            last_val = neg_series_data[-1]
+            if last_val > 0:
+                neg_series_data[-1] = {
+                    "value": last_val,
+                    "itemStyle": {"color": total_color},
+                }
+
+        neg_label_cfg: dict = {
+            "show": labels, "position": "bottom",
+            "formatter": label_formatter, "fontSize": label_font_size,
+            "color": label_color if label_color else negative_color,
+        }
+        neg_series: dict = {
+            "type": "bar",
+            "name": "Negative",
+            "stack": stack_name,
+            "data": neg_series_data,
+            "itemStyle": neg_item_style,
+            "label": neg_label_cfg,
+            "yAxisIndex": y_idx,
+        }
+        if self._n_grids > 1:
+            neg_series["xAxisIndex"] = x_idx
+        if emphasis is not None:
+            neg_series["emphasis"] = emphasis.to_dict()
+        neg_series.update({k: v for k, v in series_kw.items() if k not in ("name", "data", "stack", "itemStyle", "label")})
+        self._series.append(neg_series)
+        self._series_meta.append(_SeriesMeta("bar", "Negative", axis, grid_index=grid))
+
+        # Add legend items (skip the invisible base)
+        for lbl in ("Positive", "Negative"):
+            if lbl not in self._legend_items:
+                self._legend_items.append(lbl)
+        if total and total_label not in self._legend_items:
+            self._legend_items.append(total_label)
+
+        return self
+
     def barh(self, df: pd.DataFrame, x: str, y: str, **kwargs: Any) -> "Figure":
         """Add horizontal bars — shortcut for ``bar(..., orient="h")``.
 

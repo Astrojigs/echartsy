@@ -31,7 +31,7 @@
 | **Familiar API** | If you know `plt.figure()` / `plt.show()`, you already know 90% of the API. No JSON, no JavaScript. |
 | **Interactive by default** | Every chart ships with tooltips, legend toggling, zoom, and an export toolbox. Zero config needed. |
 | **Three render engines** | Write once, render in Jupyter notebooks, Streamlit apps, or standalone browser windows. |
-| **18 chart types** | From bar charts and scatter plots to sankey diagrams, sunbursts, gauges, and network graphs. |
+| **19 chart types** | From bar charts and waterfall charts to sankey diagrams, sunbursts, gauges, and network graphs. |
 | **Composable & animated** | Layer pies on bar charts, build dual-axis dashboards, use multi-grid subplots, or animate across time with `TimelineFigure`. |
 | **Dark mode** | Adaptive dark/light theming out of the box, including automatic Streamlit theme detection. |
 
@@ -85,7 +85,7 @@ Three lines from DataFrame to interactive chart.
 
 ## Chart Types
 
-echartsy v0.5.1 supports **18 chart types** covering cartesian, standalone, hierarchical, relational, and statistical visualizations.
+echartsy v0.5.3 supports **19 chart types** covering cartesian, standalone, hierarchical, relational, and statistical visualizations.
 
 ### Cartesian Charts
 
@@ -98,6 +98,7 @@ echartsy v0.5.1 supports **18 chart types** covering cartesian, standalone, hier
 | `fig.hist()` | Histogram | `bins`, auto-binned frequency distribution |
 | `fig.boxplot()` | Box plot | Five-number statistical summary |
 | `fig.kde()` | KDE density | Kernel density estimation (requires `scipy`) |
+| `fig.waterfall()` | Waterfall chart | Cumulative deltas with `total`, `connector`, customisable colors |
 | `fig.candlestick()` | Candlestick / OHLC | Configurable bullish/bearish colours, composable with `plot()` + `bar()` |
 | `fig.heatmap()` | Matrix heatmap | Colour-mapped grid with `visual_map` integration |
 
@@ -441,7 +442,7 @@ Every chart method accepts an optional `emphasis` parameter with a chart-specifi
 
 | Chart method | Emphasis class |
 |:---|:---|
-| `bar()`, `hist()`, `boxplot()`, `heatmap()`, `candlestick()` | `Emphasis` |
+| `bar()`, `waterfall()`, `hist()`, `boxplot()`, `heatmap()`, `candlestick()` | `Emphasis` |
 | `plot()`, `kde()` | `LineEmphasis` |
 | `scatter()` | `ScatterEmphasis` |
 | `pie()` | `PieEmphasis` |
@@ -571,9 +572,13 @@ Same as `Figure` but adds timeline animation. Extra parameters:
 
 ## Changelog (Recent)
 
+### v0.5.3
+
+- **Added:** `fig.waterfall()` -- finance/accounting waterfall charts with cumulative positive/negative deltas, optional total bar, connector lines, and value labels.
+
 ### v0.5.1
 
-Current release. See [Releases](https://github.com/astrojigs/echartsy/releases) for full details.
+See [Releases](https://github.com/astrojigs/echartsy/releases) for full details.
 
 ### v0.4.8
 

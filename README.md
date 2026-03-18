@@ -85,7 +85,7 @@ Three lines from DataFrame to interactive chart.
 
 ## Chart Types
 
-echartsy v0.6.1 supports **19 chart types** covering cartesian, standalone, hierarchical, relational, and statistical visualizations.
+echartsy v0.6.2 supports **19 chart types** covering cartesian, standalone, hierarchical, relational, and statistical visualizations.
 
 ### Cartesian Charts
 
@@ -106,7 +106,7 @@ echartsy v0.6.1 supports **19 chart types** covering cartesian, standalone, hier
 
 | Method | Description | Key options |
 |:---|:---|:---|
-| `fig.pie()` | Pie / donut | `inner_radius`, `min_angle`, `clockwise`, `item_style`, `blur`, `select`, `tooltip` |
+| `fig.pie()` | Pie / donut | `inner_radius`, `link_legend`, `min_angle`, `clockwise`, `item_style`, `blur`, `select`, `tooltip` |
 | `fig.radar()` | Radar / spider | `shape`, `split_number`, `line_style`, `color`, `tooltip` |
 | `fig.funnel()` | Funnel | `orient`, `funnel_align`, `min_size`, `max_size`, `item_style`, `tooltip` |
 | `fig.gauge()` | Gauge / meter | `detail_formatter`, `progress`, `item_style`, `tooltip` |
@@ -137,9 +137,7 @@ echartsy v0.6.1 supports **19 chart types** covering cartesian, standalone, hier
 fig = ec.figure(height="500px")
 fig.bar(df, x="Dept", y="Budget",
         gradient=True, labels=True)
-fig.pie(df, names="Dept", values="Budget",
-        center=["82%","25%"],
-        radius=["18%","28%"])
+fig.pie(df, names="Dept", values="Budget")  # auto-overlay
 fig.show()
 ```
 </td>
@@ -595,6 +593,13 @@ Same as `Figure` but adds timeline animation. Extra parameters:
 ---
 
 ## Changelog (Recent)
+
+### v0.6.2
+
+- **Added:** Auto-overlay for `pie()` on cartesian figures — calling `fig.bar(); fig.pie()` now works without specifying `center` or `radius` (defaults to top-right mini pie at `["82%", "25%"]`).
+- **Added:** `link_legend` parameter on `pie()` — controls whether overlay pie shares colors with existing series (`True`), uses distinct colors (`False`), or auto-detects based on name overlap (`None`, default).
+- **Fixed:** Overlay pies now automatically get per-series `trigger: "item"` tooltips so hovering works correctly (the global `"axis"` trigger doesn't fire for pie series).
+- **Fixed:** Multi-grid (subplot) figures with overlay pies now correctly inject per-series tooltips.
 
 ### v0.6.1
 

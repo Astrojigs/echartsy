@@ -405,7 +405,8 @@ fig.show()
 | `inner_radius` | `str` | `None` | Inner radius for donut (e.g. `"40%"`) |
 | `outer_radius` | `str` | `"60%"` | Outer radius |
 | `radius` | `str / list` | `None` | Shorthand `[inner, outer]` |
-| `center` | `list` | `None` | Position as overlay (e.g. `["80%", "25%"]`) |
+| `center` | `list` | `None` | Position as overlay; auto-defaults to `["82%", "25%"]` on cartesian figures |
+| `link_legend` | `bool` | `None` | `True` = share legend colors, `False` = distinct colors, `None` = auto-detect |
 | `border_radius` | `int` | `0` | Slice corner rounding |
 | `start_angle` | `int` | `45` | Starting angle (degrees) |
 | `label_inside` | `bool` | `False` | Labels inside slices |
@@ -941,7 +942,9 @@ Use `axis=1` on any series to bind it to the right Y-axis.
 
 ### Bar + Pie Overlay
 
-Place a pie chart as an inset on a bar chart by passing `center` to `.pie()`:
+Calling `.pie()` on a cartesian figure automatically overlays the pie in the
+top-right corner (`center=["82%", "25%"]`, `radius=["15%", "28%"]`).
+Explicit values always override the defaults:
 
 ```python
 df = pd.DataFrame({
@@ -949,14 +952,20 @@ df = pd.DataFrame({
     "Budget": [450, 280, 320, 180, 120],
 })
 
+# Auto-overlay — just call .pie() after .bar()
 fig = ec.figure(height="500px")
 fig.bar(df, x="Department", y="Budget", gradient=True, labels=True)
-fig.pie(df, names="Department", values="Budget",
-        center=["82%", "25%"], radius=["18%", "28%"],
-        border_radius=4, label_font_size=9)
+fig.pie(df, names="Department", values="Budget")
 fig.title("Department Budgets ($K)")
 fig.legend(top=40, left=200)
 fig.margins(right=120)
+fig.show()
+
+# Distinct legend colors for the pie
+fig = ec.figure(height="500px")
+fig.bar(df, x="Department", y="Budget", gradient=True, labels=True)
+fig.pie(df, names="Department", values="Budget", link_legend=False)
+fig.title("With Distinct Pie Colors")
 fig.show()
 ```
 

@@ -930,6 +930,81 @@ class TestPieExtended:
         opt = fig.to_option()
         assert opt["series"][0]["radius"] == "50%"
 
+    def test_pie_auto_overlay(self, simple_df):
+        """bar() then pie() without center auto-defaults to overlay."""
+        fig = ec.Figure()
+        fig.bar(simple_df, x="X", y="Y")
+        fig.pie(simple_df, names="X", values="Y")
+        opt = fig.to_option()
+        assert any(s["type"] == "bar" for s in opt["series"])
+        pie = [s for s in opt["series"] if s["type"] == "pie"][0]
+        assert pie["center"] == ["82%", "25%"]
+        assert pie["radius"] == ["15%", "28%"]
+
+    def test_pie_auto_overlay_explicit_center(self, simple_df):
+        """Explicit center overrides auto-default."""
+        fig = ec.Figure()
+        fig.bar(simple_df, x="X", y="Y")
+        fig.pie(simple_df, names="X", values="Y", center=["50%", "50%"])
+        opt = fig.to_option()
+        pie = [s for s in opt["series"] if s["type"] == "pie"][0]
+        assert pie["center"] == ["50%", "50%"]
+
+    def test_pie_auto_overlay_explicit_radius(self, simple_df):
+        """Explicit radius is used; center still gets default."""
+        fig = ec.Figure()
+        fig.bar(simple_df, x="X", y="Y")
+        fig.pie(simple_df, names="X", values="Y", radius="40%")
+        opt = fig.to_option()
+        pie = [s for s in opt["series"] if s["type"] == "pie"][0]
+        assert pie["radius"] == "40%"
+        assert pie["center"] == ["82%", "25%"]
+
+    def test_pie_link_legend_false(self, simple_df):
+        """link_legend=False forces offset colors even with disjoint names."""
+        fig = ec.Figure()
+        fig.bar(simple_df, x="X", y="Y")
+        df2 = pd.DataFrame({"N": ["P", "Q"], "V": [5, 10]})
+        fig.pie(df2, names="N", values="V", link_legend=False)
+        opt = fig.to_option()
+        pie = [s for s in opt["series"] if s["type"] == "pie"][0]
+        # Offset applied → first slice gets color at index len(bar_names)
+        assert "itemStyle" in pie["data"][0]
+        assert "color" in pie["data"][0]["itemStyle"]
+
+    def test_pie_link_legend_true(self, simple_df):
+        """link_legend=True forces shared colors (no offset) even with overlap."""
+        fig = ec.Figure()
+        fig.bar(simple_df, x="X", y="Y")
+        fig.pie(simple_df, names="X", values="Y", link_legend=True)
+        opt = fig.to_option()
+        pie = [s for s in opt["series"] if s["type"] == "pie"][0]
+        # No color offset applied → data items should not have itemStyle.color
+        for item in pie["data"]:
+            assert "color" not in item.get("itemStyle", {})
+
+    def test_pie_overlay_tooltip(self, simple_df):
+        """Overlay pie gets a per-series item tooltip."""
+        fig = ec.Figure()
+        fig.bar(simple_df, x="X", y="Y")
+        fig.pie(simple_df, names="X", values="Y")
+        opt = fig.to_option()
+        pie = [s for s in opt["series"] if s["type"] == "pie"][0]
+        assert pie["tooltip"]["trigger"] == "item"
+
+    def test_pie_overlay_non_cartesian_error(self):
+        """pie() on a radar figure raises a clear error."""
+        fig = ec.Figure()
+        fig.radar(
+            indicators=[{"name": "A", "max": 10}, {"name": "B", "max": 10}],
+            data=[[5, 8]],
+        )
+        with pytest.raises(BuilderConfigError, match="only supported on cartesian"):
+            fig.pie(
+                pd.DataFrame({"N": ["X"], "V": [1]}),
+                names="N", values="V",
+            )
+
 
 class TestHistExtended:
     def test_hist_with_color(self):

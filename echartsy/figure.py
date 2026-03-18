@@ -1507,6 +1507,7 @@ class Figure:
         inner_radius: Optional[str] = None, outer_radius: str = "60%",
         center: Optional[List[str]] = None,
         radius: Optional[Union[str, List[str]]] = None,
+        link_legend: Optional[bool] = None,
         border_radius: int = 0, start_angle: int = 45,
         label_inside: bool = False, label_outside: bool = True,
         label_formatter: str = "{b}: {c} ({d}%)",
@@ -1533,38 +1534,52 @@ class Figure:
         """Add a pie (or donut) chart — equivalent to ``plt.pie()``.
 
         When called on a figure that already has cartesian series (bar, line,
-        etc.), the pie is rendered as an **overlay** positioned via *center*
-        and *radius*.  This lets you place a small pie on top of a bar chart
-        without needing ``raw_series()``.
+        etc.), the pie is automatically rendered as an **overlay**.  If
+        *center* and *radius* are not provided, sensible defaults are used
+        (top-right mini pie at ``["82%", "25%"]`` with radius
+        ``["15%", "28%"]``).  Explicit values always take precedence.
 
         Parameters
         ----------
         center : list[str], optional
             ``["x%", "y%"]`` position of the pie centre inside the chart
-            area (e.g. ``["80%", "25%"]``).  When provided on a non-pie
-            figure the pie becomes an overlay and skips the mode lock.
+            area (e.g. ``["80%", "25%"]``).  Defaults to ``["82%", "25%"]``
+            when overlaying on a cartesian figure.
         radius : str | list[str], optional
             Shorthand for ``[inner_radius, outer_radius]``.  Accepts a
             single string (``"30%"``) or a two-element list
             (``["15%", "25%"]``).  Overrides *inner_radius* / *outer_radius*
-            when provided.
+            when provided.  Defaults to ``["15%", "28%"]`` for overlays.
+        link_legend : bool, optional
+            Controls whether the pie shares legend colors with existing
+            series.  ``True`` forces shared colors, ``False`` forces
+            distinct (offset) colors.  Default (``None``) auto-detects:
+            shared when slice names overlap with existing legend entries,
+            offset otherwise.
         label_font_size : int, optional
             Override the label font size (handy for small overlay pies).
         """
         # ── Overlay mode: allow pie on top of cartesian charts ─────────
         _OVERLAY_COMPATIBLE = ("cartesian",)
-        is_overlay = (
-            center is not None
-            and self._chart_mode is not None
+        _on_cartesian = (
+            self._chart_mode is not None
             and self._chart_mode != "pie"
         )
-        if is_overlay and self._chart_mode not in _OVERLAY_COMPATIBLE:
-            raise BuilderConfigError(
-                f"pie() overlay (center={center!r}) is only supported on cartesian "
-                f"figures (bar/line/scatter), but the current mode is "
-                f"'{self._chart_mode}'. Use a separate Figure for this pie chart."
-            )
-        if not is_overlay:
+
+        if _on_cartesian:
+            if self._chart_mode not in _OVERLAY_COMPATIBLE:
+                raise BuilderConfigError(
+                    f"pie() overlay is only supported on cartesian figures "
+                    f"(bar/line/scatter), but the current mode is "
+                    f"'{self._chart_mode}'. Use a separate Figure."
+                )
+            if center is None:
+                center = ["82%", "25%"]
+            if radius is None and inner_radius is None:
+                radius = ["15%", "28%"]
+            is_overlay = True
+        else:
+            is_overlay = False
             self._ensure_mode("pie", "pie")
 
         df = _validate_df(df, "pie")
@@ -1665,11 +1680,18 @@ class Figure:
         # ── Overlay color offset ──────────────────────────────────────────
         # When the pie's categories differ from the existing legend items,
         # offset slice colours so they don't collide with the bar/line palette.
+        # `link_legend` lets the user override the auto-detection.
         if is_overlay:
             pie_names_set = {str(n) for n in dff[names]}
             existing_names_set = set(self._legend_items)
-            if not pie_names_set & existing_names_set:
-                # Categories are disjoint → offset colours
+            names_overlap = bool(pie_names_set & existing_names_set)
+
+            if link_legend is None:
+                effectively_linked = names_overlap
+            else:
+                effectively_linked = link_legend
+
+            if not effectively_linked:
                 pal = list(self._palette or (
                     "#5470C6", "#91CC75", "#FAC858", "#EE6666",
                     "#73C0DE", "#3BA272", "#FC8452", "#9A60B4", "#EA7CCC",
@@ -3078,6 +3100,11 @@ class Figure:
         option["yAxis"] = y_axis_cfg if len(y_axis_cfg) > 1 else y_axis_cfg[0]
         option["series"] = copy.deepcopy(self._series)
 
+        # Overlay pies need per-series tooltip (global "axis" trigger won't fire)
+        for s in option["series"]:
+            if s.get("type") == "pie" and "tooltip" not in s:
+                s["tooltip"] = {"trigger": "item", "formatter": "{b}: {c} ({d}%)"}
+
         if self._toolbox_cfg:
             option["toolbox"] = copy.deepcopy(self._toolbox_cfg)
         if self._datazoom_cfg:
@@ -3171,6 +3198,11 @@ class Figure:
         option["xAxis"] = x_axes
         option["yAxis"] = y_axes
         option["series"] = copy.deepcopy(self._series)
+
+        # Overlay pies need per-series tooltip (global "axis" trigger won't fire)
+        for s in option["series"]:
+            if s.get("type") == "pie" and "tooltip" not in s:
+                s["tooltip"] = {"trigger": "item", "formatter": "{b}: {c} ({d}%)"}
 
         if self._toolbox_cfg:
             option["toolbox"] = copy.deepcopy(self._toolbox_cfg)

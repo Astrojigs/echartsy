@@ -181,7 +181,7 @@ def build_bar_series(
     if stack:
         base["stack"] = "total"
     if bar_width is not None:
-        base["barMaxWidth"] = bar_width
+        base["barWidth"] = bar_width
     if bar_gap is not None:
         base["barGap"] = bar_gap
     if emphasis is not None:

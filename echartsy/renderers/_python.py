@@ -63,4 +63,5 @@ def render_python(
         filepath = f.name
 
     _temp_files.append(filepath)
-    webbrowser.open(f"file://{filepath}")
+    from pathlib import Path
+    webbrowser.open(Path(filepath).as_uri())

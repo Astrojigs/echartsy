@@ -381,13 +381,13 @@ class LineEmphasis(Emphasis):
         Line style during emphasis (→ lineStyle).
     area_style : Optional[AreaStyle]
         Area fill style during emphasis (→ areaStyle).
-    end_label : Optional[LabelStyle]
+    end_label : Optional[EndLabelStyle]
         Label style for line endpoints (→ endLabel).
     """
 
     line_style: Optional[LineStyle] = None
     area_style: Optional[AreaStyle] = None
-    end_label: Optional[LabelStyle] = None
+    end_label: Optional[EndLabelStyle] = None
 
     def to_dict(self) -> dict:
         """Convert to ECharts camelCase dictionary, omitting None values."""

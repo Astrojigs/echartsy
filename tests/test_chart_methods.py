@@ -116,7 +116,7 @@ class TestBuildBarSeries:
 
     def test_bar_width_and_gap(self, df):
         series, _, _, _ = build_bar_series(df, "X", "Y", bar_width=40, bar_gap="20%")
-        assert series[0]["barMaxWidth"] == 40
+        assert series[0]["barWidth"] == 40
         assert series[0]["barGap"] == "20%"
 
     def test_hue(self, hue_df):

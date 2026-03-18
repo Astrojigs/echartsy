@@ -635,7 +635,7 @@ class Figure:
             cross_color=cross_color, cross_width=cross_width, cross_type=cross_type,
             shadow_color=shadow_color, shadow_opacity=shadow_opacity,
         )
-        self._tooltip_cfg["axisPointer"] = ap
+        self._tooltip_cfg.setdefault("axisPointer", {}).update(ap)
         if formatter:
             self._tooltip_cfg["formatter"] = formatter
         if background_color is not None:
@@ -1124,7 +1124,7 @@ class Figure:
         if stack:
             base["stack"] = "total"
         if bar_width is not None:
-            base["barMaxWidth"] = bar_width
+            base["barWidth"] = bar_width
         if bar_gap is not None:
             base["barGap"] = bar_gap
         if bar_min_width is not None:
@@ -1288,7 +1288,12 @@ class Figure:
             for i in range(n_bars - 1):
                 # Running total after bar i = base + positive (neg bars: base already = running_after)
                 top_i = base_data[i] + pos_data[i]
-                mark_lines.append({
+                mark_lines.append([
+                    {"xAxis": i, "yAxis": round(top_i, 4)},
+                    {"xAxis": i + 1, "yAxis": round(top_i, 4)},
+                ])
+            if mark_lines:
+                base_series["markLine"] = {
                     "symbol": "none",
                     "lineStyle": {
                         "color": connector_color,
@@ -1296,14 +1301,6 @@ class Figure:
                         "type": connector_dash,
                     },
                     "label": {"show": False},
-                    "data": [
-                        {"xAxis": i, "yAxis": round(top_i, 4)},
-                        {"xAxis": i + 1, "yAxis": round(top_i, 4)},
-                    ],
-                })
-            if mark_lines:
-                base_series["markLine"] = {
-                    "symbol": "none",
                     "data": mark_lines,
                     "silent": True,
                     "animation": False,
@@ -1453,8 +1450,9 @@ class Figure:
             warnings.warn("scatter(): all rows dropped after removing missing values; chart will be empty", stacklevel=2)
             return self
 
-        self._x_axis["type"] = "value"
-        self._x_axis.pop("data", None)
+        if not self._x_categories:
+            self._x_axis["type"] = "value"
+            self._x_axis.pop("data", None)
         self._tooltip_cfg["trigger"] = "item"
 
         def _build_scatter_data(sub: pd.DataFrame) -> List[list]:
@@ -1528,6 +1526,7 @@ class Figure:
         blur: Optional[Blur] = None,
         select: Optional[Select] = None,
         selected_mode: Optional[Union[bool, str]] = None,
+        animation: Optional[AnimationConfig] = None,
         tooltip: Optional[TooltipStyle] = None,
         **series_kw: Any,
     ) -> "Figure":
@@ -1649,6 +1648,8 @@ class Figure:
             entry["select"] = select.to_dict()
         if selected_mode is not None:
             entry["selectedMode"] = selected_mode
+        if animation is not None:
+            entry.update(animation.to_dict())
         if tooltip is not None:
             entry["tooltip"] = tooltip.to_dict()
         if center is not None:
@@ -1681,12 +1682,15 @@ class Figure:
         self._series.append(entry)
         self._series_meta.append(_SeriesMeta("pie", names))
 
-        # For standalone pies, overwrite the legend; for overlays, extend it.
         pie_names = [str(n) for n in dff[names]]
         if is_overlay:
-            self._legend_items.extend(pie_names)
+            for n in pie_names:
+                if n not in self._legend_items:
+                    self._legend_items.append(n)
         else:
-            self._legend_items = pie_names
+            for n in pie_names:
+                if n not in self._legend_items:
+                    self._legend_items.append(n)
 
         return self
 
@@ -1790,7 +1794,8 @@ class Figure:
         for i, vals in enumerate(data):
             name = series_names[i] if series_names and i < len(series_names) else f"Series {i + 1}"
             series_data.append({"value": list(vals), "name": name, "label": {"show": show_labels}})
-            self._legend_items.append(name)
+            if name not in self._legend_items:
+                self._legend_items.append(name)
 
         entry: dict = {
             "type": "radar", "data": series_data,
@@ -1956,8 +1961,8 @@ class Figure:
                 continue
             data.append([x_lookup[xk], y_lookup[yk], round(float(r[value]), 4)])
 
-        self._x_axis = {"type": "category", "data": x_cats, "splitArea": {"show": True}}
-        self._y_axes = [{"type": "category", "data": y_cats, "splitArea": {"show": True}}]
+        self._x_axis.update({"type": "category", "data": x_cats, "splitArea": {"show": True}})
+        self._y_axes[0].update({"type": "category", "data": y_cats, "splitArea": {"show": True}})
 
         vmin = visual_min if visual_min is not None else float(dff[value].min())
         vmax = visual_max if visual_max is not None else float(dff[value].max())
@@ -2045,7 +2050,7 @@ class Figure:
         if layout_iterations is not None:
             entry["layoutIterations"] = layout_iterations
         if item_style is not None:
-            entry["itemStyle"] = item_style.to_dict()
+            entry.setdefault("itemStyle", {}).update(item_style.to_dict())
         if label_style is not None:
             entry.setdefault("label", {}).update(label_style.to_dict())
         if tooltip is not None:
@@ -2213,7 +2218,9 @@ class Figure:
         entry.update(series_kw)
         self._series.append(entry)
         self._series_meta.append(_SeriesMeta("funnel", names))
-        self._legend_items = [str(n) for n in dff[names]]
+        for n in dff[names]:
+            if str(n) not in self._legend_items:
+                self._legend_items.append(str(n))
         self._tooltip_cfg = {"trigger": "item", "confine": True}
         return self
 
@@ -2235,6 +2242,12 @@ class Figure:
         **series_kw: Any,
     ) -> "Figure":
         """Add a box-and-whisker plot — equivalent to ``plt.boxplot()``."""
+        if orient != "v":
+            warnings.warn(
+                "boxplot(): horizontal orientation (orient='h') is not yet supported; "
+                "rendering as vertical.",
+                stacklevel=2,
+            )
         self._ensure_cartesian("boxplot")
         df = _validate_df(df, "boxplot")
         _validate_columns(df, [x, y], "boxplot")
@@ -2337,6 +2350,13 @@ class Figure:
             self.ylabel_right("")
 
         # Build data aligned to merged categories (ECharts order: open, close, low, high)
+        n_unique_dates = dff[date].nunique()
+        if n_unique_dates < len(dff):
+            warnings.warn(
+                f"candlestick(): {len(dff) - n_unique_dates} duplicate date(s) found; "
+                "only the last row per date will be used.",
+                stacklevel=2,
+            )
         grouped = {str(r[date]): r for _, r in dff.iterrows()}
         grid_cats = self._grid_categories.get(grid, self._x_categories)
         candlestick_data: list = []
@@ -2679,7 +2699,7 @@ class Figure:
         if item_style is not None:
             entry.setdefault("itemStyle", {}).update(item_style.to_dict())
         if line_style is not None:
-            entry["lineStyle"] = line_style.to_dict()
+            entry.setdefault("lineStyle", {}).update(line_style.to_dict())
         if tooltip is not None:
             entry["tooltip"] = tooltip.to_dict()
         if emphasis is not None:
@@ -3035,7 +3055,9 @@ class Figure:
 
         if is_h_bar:
             x_axis_cfg = {"type": "value"}
-            y_axis_cfg = [{"type": "category", "data": self._x_categories}]
+            y_base = copy.deepcopy(self._y_axes[0]) if self._y_axes else {}
+            y_base.update({"type": "category", "data": self._x_categories})
+            y_axis_cfg = [y_base]
 
         option = {}
         if self._title_cfg:
@@ -3059,11 +3081,11 @@ class Figure:
         if self._toolbox_cfg:
             option["toolbox"] = copy.deepcopy(self._toolbox_cfg)
         if self._datazoom_cfg:
-            option["dataZoom"] = self._datazoom_cfg
+            option["dataZoom"] = copy.deepcopy(self._datazoom_cfg)
 
         if self._style.bg:
             option.setdefault("backgroundColor", self._style.bg)
-        option.update({k: v for k, v in self._extra.items() if not k.startswith("_")})
+        option.update({k: copy.deepcopy(v) for k, v in self._extra.items() if not k.startswith("_")})
 
         # Pass internal metadata for the layout resolver (stripped before output)
         option["_meta"] = {"user_set_rotate": self._user_set_rotate}
@@ -3153,11 +3175,11 @@ class Figure:
         if self._toolbox_cfg:
             option["toolbox"] = copy.deepcopy(self._toolbox_cfg)
         if self._datazoom_cfg:
-            option["dataZoom"] = self._datazoom_cfg
+            option["dataZoom"] = copy.deepcopy(self._datazoom_cfg)
         if self._style.bg:
             option.setdefault("backgroundColor", self._style.bg)
 
-        option.update({k: v for k, v in self._extra.items() if not k.startswith("_")})
+        option.update({k: copy.deepcopy(v) for k, v in self._extra.items() if not k.startswith("_")})
         return option
 
     def show(self, **render_kw: Any) -> None:

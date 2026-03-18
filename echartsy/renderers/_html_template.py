@@ -185,11 +185,11 @@ def _build_adaptive_script(
     explicit_theme = f"'{theme}'" if theme else "null"
     return (
         _ADAPTIVE_JS
-        .replace("__OPTION_JSON__", option_json)
         .replace("__CHART_ID__", chart_id)
         .replace("__EXPLICIT_THEME__", explicit_theme)
         .replace('"__RENDERER__"', f'"{renderer}"')
         .replace('"__FORCE_MODE__"', f'"{adaptive}"')
+        .replace("__OPTION_JSON__", option_json)
     )
 
 
@@ -229,7 +229,7 @@ def build_html(
     chart_id = _sanitize_chart_id(chart_id)
     _validate_css_dimension(width, "width")
     _validate_css_dimension(height, "height")
-    option_json = json.dumps(option, indent=2, default=_json_default)
+    option_json = json.dumps(option, indent=2, default=_json_default).replace("</", "<\\/")
     script_body = _build_adaptive_script(
         option_json, chart_id, theme, renderer, adaptive,
     )
@@ -283,7 +283,7 @@ def build_jupyter_html(
     chart_id = _sanitize_chart_id(chart_id)
     _validate_css_dimension(width, "width")
     _validate_css_dimension(height, "height")
-    option_json = json.dumps(option, indent=2, default=_json_default)
+    option_json = json.dumps(option, indent=2, default=_json_default).replace("</", "<\\/")
     script_body = _build_adaptive_script(
         option_json, chart_id, theme, renderer, adaptive,
     )

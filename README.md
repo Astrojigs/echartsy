@@ -85,7 +85,7 @@ Three lines from DataFrame to interactive chart.
 
 ## Chart Types
 
-echartsy v0.6.0 supports **19 chart types** covering cartesian, standalone, hierarchical, relational, and statistical visualizations.
+echartsy v0.6.1 supports **19 chart types** covering cartesian, standalone, hierarchical, relational, and statistical visualizations.
 
 ### Cartesian Charts
 
@@ -595,6 +595,27 @@ Same as `Figure` but adds timeline animation. Extra parameters:
 ---
 
 ## Changelog (Recent)
+
+### v0.6.1
+
+- **Fixed:** Waterfall `connector=True` rendered blank charts — markLine data used invalid nested format instead of `[start, end]` pairs.
+- **Fixed:** `bar_width` parameter mapped to `barMaxWidth` instead of `barWidth` in ECharts options.
+- **Fixed:** `scatter()` mutated the global x-axis type to `"value"`, breaking any previously added category-based series (bar/line).
+- **Fixed:** Horizontal bar charts (`barh()`) discarded all y-axis customizations (labels, fonts, colors) during option building.
+- **Fixed:** `heatmap()` overwrote axis config entirely, discarding `StylePreset` axis formatting.
+- **Fixed:** `tooltip()` replaced the entire `axisPointer` sub-config instead of merging, losing prior `axis_pointer()` settings.
+- **Fixed:** `sankey()` and `graph()` used direct assignment for `item_style`/`line_style`, overwriting prior config instead of merging.
+- **Fixed:** `datazoom` and `extra` configs were not deep-copied in `to_option()`, causing mutable reference leaks.
+- **Fixed:** `radar()`, `funnel()`, and standalone `pie()` legend deduplication — duplicate or overwritten legend entries no longer occur.
+- **Fixed:** `candlestick()` now warns when duplicate date rows are found (only the last row per date is used).
+- **Fixed:** `boxplot(orient="h")` now warns that horizontal orientation is not yet supported instead of silently ignoring it.
+- **Fixed:** `_sort_categories` 60% parse threshold could silently drop non-date categories — now requires all unique categories to parse as dates before sorting chronologically.
+- **Fixed:** `LineEmphasis.end_label` was typed as `LabelStyle` instead of `EndLabelStyle`, allowing invalid fields.
+- **Fixed:** `StylePreset` preset constants (`CLINICAL`, `DASHBOARD_DARK`, etc.) were dataclass fields instead of `ClassVar`, polluting constructor, `repr`, and `fields()`.
+- **Fixed:** Python/Jupyter HTML renderers did not escape `</` sequences in JSON, allowing potential `</script>` injection (XSS).
+- **Fixed:** HTML template placeholder substitution order could corrupt user data containing `__CHART_ID__` or similar strings.
+- **Fixed:** Malformed `file://` URL on Windows in the Python standalone renderer.
+- **Added:** `animation` parameter to `pie()` (was missing while all other chart methods had it).
 
 ### v0.6.0
 

@@ -46,12 +46,11 @@ def _parse_time_value(v: str) -> Optional[pd.Timestamp]:
 
 def _sort_categories(series: pd.Series) -> List[str]:
     """Sort a string category column chronologically if possible, else first-seen."""
-    uniq = series.astype(str).str.strip()
-    parsed = uniq.apply(_parse_time_value)
-    if parsed.notna().mean() > 0.6:
-        df_tmp = pd.DataFrame({"label": uniq, "_dt": parsed}).dropna(subset=["_dt"])
-        return df_tmp.sort_values("_dt")["label"].drop_duplicates().tolist()
-    return list(dict.fromkeys(uniq.tolist()))
+    first_seen = list(dict.fromkeys(series.astype(str).str.strip().tolist()))
+    parsed = {cat: _parse_time_value(cat) for cat in first_seen}
+    if all(v is not None for v in parsed.values()) and len(first_seen) > 1:
+        return sorted(first_seen, key=lambda c: parsed[c])
+    return first_seen
 
 
 # ═══════════════════════════════════════════════════════════════════════════

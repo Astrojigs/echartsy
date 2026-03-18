@@ -828,7 +828,7 @@ class TestBarExtended:
         fig = ec.Figure()
         fig.bar(simple_df, x="X", y="Y", bar_width=40, bar_gap="20%")
         opt = fig.to_option()
-        assert opt["series"][0]["barMaxWidth"] == 40
+        assert opt["series"][0]["barWidth"] == 40
         assert opt["series"][0]["barGap"] == "20%"
 
     def test_bar_emphasis(self, simple_df):

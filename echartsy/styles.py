@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Optional, Tuple
+from typing import ClassVar, Optional, Tuple
 
 # ── Reusable palettes ────────────────────────────────────────────────────
 
@@ -42,10 +42,10 @@ class StylePreset:
     legend_orient: str = "horizontal"
 
     # Pre-built presets (populated after class definition)
-    CLINICAL: "StylePreset" = None  # type: ignore[assignment]
-    DASHBOARD_DARK: "StylePreset" = None  # type: ignore[assignment]
-    KPI_REPORT: "StylePreset" = None  # type: ignore[assignment]
-    MINIMAL: "StylePreset" = None  # type: ignore[assignment]
+    CLINICAL: ClassVar["StylePreset"]
+    DASHBOARD_DARK: ClassVar["StylePreset"]
+    KPI_REPORT: ClassVar["StylePreset"]
+    MINIMAL: ClassVar["StylePreset"]
 
 
 # Populate class-level presets after the class is defined

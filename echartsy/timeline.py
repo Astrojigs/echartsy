@@ -613,7 +613,7 @@ class TimelineFigure:
             "itemStyle": bar_item_style, "yAxisIndex": axis,
         }
         if stack: base["stack"] = "total"
-        if bar_width is not None: base["barMaxWidth"] = bar_width
+        if bar_width is not None: base["barWidth"] = bar_width
         if bar_min_width is not None: base["barMinWidth"] = bar_min_width
         if bar_category_gap is not None: base["barCategoryGap"] = bar_category_gap
         if emphasis is not None:

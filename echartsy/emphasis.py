@@ -15,7 +15,35 @@ Example
 from __future__ import annotations
 
 from dataclasses import dataclass, fields
-from typing import Literal, Optional
+from typing import Literal, Optional, Union
+
+
+# ── Shared helpers ────────────────────────────────────────────────────────
+
+
+def _to_camel_case(snake_str: str) -> str:
+    """Convert snake_case to camelCase."""
+    components = snake_str.split("_")
+    return components[0] + "".join(x.title() for x in components[1:])
+
+
+def _dataclass_to_echarts_dict(obj) -> dict:
+    """Convert a frozen dataclass to an ECharts camelCase dict.
+
+    Omits ``None`` values and recursively serializes nested dataclasses
+    that expose a ``to_dict()`` method.
+    """
+    result = {}
+    for f in fields(obj):
+        value = getattr(obj, f.name)
+        if value is None:
+            continue
+        key = _to_camel_case(f.name)
+        if hasattr(value, "to_dict"):
+            result[key] = value.to_dict()
+        else:
+            result[key] = value
+    return result
 
 
 # ── Sub-style dataclasses ─────────────────────────────────────────────────────
@@ -35,6 +63,8 @@ class ItemStyle:
         Border width in pixels (→ borderWidth).
     border_radius : Optional[int]
         Border radius in pixels (→ borderRadius).
+    border_type : Optional[Union[str, list]]
+        Border dash type (→ borderType), e.g. ``"solid"``, ``"dashed"``, or ``[5, 10]``.
     shadow_blur : Optional[int]
         Shadow blur radius (→ shadowBlur).
     shadow_color : Optional[str]
@@ -45,34 +75,30 @@ class ItemStyle:
         Vertical shadow offset (→ shadowOffsetY).
     opacity : Optional[float]
         Opacity value between 0 and 1.
+    decal : Optional[dict]
+        Decal pattern configuration.
     """
 
     color: Optional[str] = None
     border_color: Optional[str] = None
     border_width: Optional[int] = None
     border_radius: Optional[int] = None
+    border_type: Optional[Union[str, list]] = None
     shadow_blur: Optional[int] = None
     shadow_color: Optional[str] = None
     shadow_offset_x: Optional[int] = None
     shadow_offset_y: Optional[int] = None
     opacity: Optional[float] = None
+    decal: Optional[dict] = None
 
     def to_dict(self) -> dict:
         """Convert to ECharts camelCase dictionary, omitting None values."""
-        result = {}
-        for field in fields(self):
-            value = getattr(self, field.name)
-            if value is not None:
-                # Convert snake_case to camelCase
-                key = self._to_camel_case(field.name)
-                result[key] = value
-        return result
+        return _dataclass_to_echarts_dict(self)
 
     @staticmethod
     def _to_camel_case(snake_str: str) -> str:
         """Convert snake_case to camelCase."""
-        components = snake_str.split("_")
-        return components[0] + "".join(x.title() for x in components[1:])
+        return _to_camel_case(snake_str)
 
 
 @dataclass(frozen=True)
@@ -91,8 +117,16 @@ class LabelStyle:
         Font size in pixels (→ fontSize).
     font_weight : Optional[str]
         Font weight (e.g., "bold", "normal", "400", "700").
+    font_family : Optional[str]
+        Font family (→ fontFamily).
     color : Optional[str]
         Text color.
+    rotate : Optional[int]
+        Label rotation in degrees.
+    offset : Optional[list]
+        Label offset ``[x, y]`` in pixels.
+    align : Optional[str]
+        Horizontal text alignment (e.g., "left", "center", "right").
     """
 
     show: Optional[bool] = None
@@ -100,17 +134,15 @@ class LabelStyle:
     formatter: Optional[str] = None
     font_size: Optional[int] = None
     font_weight: Optional[str] = None
+    font_family: Optional[str] = None
     color: Optional[str] = None
+    rotate: Optional[int] = None
+    offset: Optional[list] = None
+    align: Optional[str] = None
 
     def to_dict(self) -> dict:
         """Convert to ECharts camelCase dictionary, omitting None values."""
-        result = {}
-        for field in fields(self):
-            value = getattr(self, field.name)
-            if value is not None:
-                key = ItemStyle._to_camel_case(field.name)
-                result[key] = value
-        return result
+        return _dataclass_to_echarts_dict(self)
 
 
 @dataclass(frozen=True)
@@ -127,25 +159,34 @@ class LineStyle:
         Line dash type.
     shadow_blur : Optional[int]
         Shadow blur radius (→ shadowBlur).
+    shadow_color : Optional[str]
+        Shadow color (→ shadowColor).
+    shadow_offset_x : Optional[int]
+        Horizontal shadow offset (→ shadowOffsetX).
+    shadow_offset_y : Optional[int]
+        Vertical shadow offset (→ shadowOffsetY).
     opacity : Optional[float]
         Opacity value between 0 and 1.
+    cap : Optional[Literal["butt", "round", "square"]]
+        Line cap style.
+    join : Optional[Literal["bevel", "round", "miter"]]
+        Line join style.
     """
 
     color: Optional[str] = None
     width: Optional[int] = None
     type: Optional[Literal["solid", "dashed", "dotted"]] = None
     shadow_blur: Optional[int] = None
+    shadow_color: Optional[str] = None
+    shadow_offset_x: Optional[int] = None
+    shadow_offset_y: Optional[int] = None
     opacity: Optional[float] = None
+    cap: Optional[Literal["butt", "round", "square"]] = None
+    join: Optional[Literal["bevel", "round", "miter"]] = None
 
     def to_dict(self) -> dict:
         """Convert to ECharts camelCase dictionary, omitting None values."""
-        result = {}
-        for field in fields(self):
-            value = getattr(self, field.name)
-            if value is not None:
-                key = ItemStyle._to_camel_case(field.name)
-                result[key] = value
-        return result
+        return _dataclass_to_echarts_dict(self)
 
 
 @dataclass(frozen=True)
@@ -158,20 +199,23 @@ class AreaStyle:
         Fill color.
     opacity : Optional[float]
         Opacity value between 0 and 1.
+    origin : Optional[Literal["auto", "start", "end"]]
+        Area fill origin.
+    shadow_blur : Optional[int]
+        Shadow blur radius (→ shadowBlur).
+    shadow_color : Optional[str]
+        Shadow color (→ shadowColor).
     """
 
     color: Optional[str] = None
     opacity: Optional[float] = None
+    origin: Optional[Literal["auto", "start", "end"]] = None
+    shadow_blur: Optional[int] = None
+    shadow_color: Optional[str] = None
 
     def to_dict(self) -> dict:
         """Convert to ECharts camelCase dictionary, omitting None values."""
-        result = {}
-        for field in fields(self):
-            value = getattr(self, field.name)
-            if value is not None:
-                key = ItemStyle._to_camel_case(field.name)
-                result[key] = value
-        return result
+        return _dataclass_to_echarts_dict(self)
 
 
 @dataclass(frozen=True)
@@ -194,13 +238,100 @@ class LabelLineStyle:
 
     def to_dict(self) -> dict:
         """Convert to ECharts camelCase dictionary, omitting None values."""
+        return _dataclass_to_echarts_dict(self)
+
+
+# ── New sub-style dataclasses ─────────────────────────────────────────────
+
+
+@dataclass(frozen=True)
+class EndLabelStyle:
+    """Style for labels at the end of a line series."""
+
+    show: Optional[bool] = None
+    formatter: Optional[str] = None
+    font_size: Optional[int] = None
+    font_weight: Optional[str] = None
+    color: Optional[str] = None
+
+    def to_dict(self) -> dict:
+        """Convert to ECharts camelCase dictionary, omitting None values."""
+        return _dataclass_to_echarts_dict(self)
+
+
+@dataclass(frozen=True)
+class TooltipStyle:
+    """Per-series tooltip configuration."""
+
+    show: Optional[bool] = None
+    formatter: Optional[str] = None
+    value_formatter: Optional[str] = None
+    background_color: Optional[str] = None
+    border_color: Optional[str] = None
+    border_width: Optional[int] = None
+    text_color: Optional[str] = None
+    text_size: Optional[int] = None
+
+    def to_dict(self) -> dict:
+        """Convert to ECharts camelCase dictionary, omitting None values.
+
+        Maps ``text_color`` and ``text_size`` into a nested ``textStyle`` dict.
+        """
         result = {}
-        for field in fields(self):
-            value = getattr(self, field.name)
-            if value is not None:
-                key = ItemStyle._to_camel_case(field.name)
-                result[key] = value
+        for f in fields(self):
+            value = getattr(self, f.name)
+            if value is None:
+                continue
+            if f.name == "text_color":
+                result.setdefault("textStyle", {})["color"] = value
+            elif f.name == "text_size":
+                result.setdefault("textStyle", {})["fontSize"] = value
+            else:
+                result[_to_camel_case(f.name)] = value
         return result
+
+
+@dataclass(frozen=True)
+class AnimationConfig:
+    """Animation settings for a series."""
+
+    animation: Optional[bool] = None
+    animation_duration: Optional[int] = None
+    animation_easing: Optional[str] = None
+    animation_delay: Optional[int] = None
+
+    def to_dict(self) -> dict:
+        """Convert to ECharts camelCase dictionary, omitting None values."""
+        return _dataclass_to_echarts_dict(self)
+
+
+@dataclass(frozen=True)
+class Blur:
+    """Blur state configuration (visual style for non-focused elements)."""
+
+    item_style: Optional[ItemStyle] = None
+    label: Optional[LabelStyle] = None
+    line_style: Optional[LineStyle] = None
+    area_style: Optional[AreaStyle] = None
+
+    def to_dict(self) -> dict:
+        """Convert to ECharts camelCase dictionary, omitting None values."""
+        return _dataclass_to_echarts_dict(self)
+
+
+@dataclass(frozen=True)
+class Select:
+    """Select state configuration for selected chart elements."""
+
+    disabled: Optional[bool] = None
+    item_style: Optional[ItemStyle] = None
+    label: Optional[LabelStyle] = None
+    line_style: Optional[LineStyle] = None
+    area_style: Optional[AreaStyle] = None
+
+    def to_dict(self) -> dict:
+        """Convert to ECharts camelCase dictionary, omitting None values."""
+        return _dataclass_to_echarts_dict(self)
 
 
 # ── Emphasis dataclasses ──────────────────────────────────────────────────────
@@ -235,21 +366,7 @@ class Emphasis:
 
     def to_dict(self) -> dict:
         """Convert to ECharts camelCase dictionary, omitting None values."""
-        result = {}
-        for field in fields(self):
-            value = getattr(self, field.name)
-            if value is None:
-                continue
-
-            key = ItemStyle._to_camel_case(field.name)
-
-            # Serialize nested dataclasses
-            if hasattr(value, "to_dict"):
-                result[key] = value.to_dict()
-            else:
-                result[key] = value
-
-        return result
+        return _dataclass_to_echarts_dict(self)
 
 
 @dataclass(frozen=True)
@@ -274,17 +391,7 @@ class LineEmphasis(Emphasis):
 
     def to_dict(self) -> dict:
         """Convert to ECharts camelCase dictionary, omitting None values."""
-        result = super().to_dict()
-
-        # Add LineEmphasis-specific fields
-        if self.line_style is not None:
-            result["lineStyle"] = self.line_style.to_dict()
-        if self.area_style is not None:
-            result["areaStyle"] = self.area_style.to_dict()
-        if self.end_label is not None:
-            result["endLabel"] = self.end_label.to_dict()
-
-        return result
+        return _dataclass_to_echarts_dict(self)
 
 
 @dataclass(frozen=True)
@@ -303,12 +410,7 @@ class ScatterEmphasis(Emphasis):
 
     def to_dict(self) -> dict:
         """Convert to ECharts camelCase dictionary, omitting None values."""
-        result = super().to_dict()
-
-        if self.scale is not None:
-            result["scale"] = self.scale
-
-        return result
+        return _dataclass_to_echarts_dict(self)
 
 
 @dataclass(frozen=True)
@@ -333,16 +435,7 @@ class PieEmphasis(Emphasis):
 
     def to_dict(self) -> dict:
         """Convert to ECharts camelCase dictionary, omitting None values."""
-        result = super().to_dict()
-
-        if self.scale is not None:
-            result["scale"] = self.scale
-        if self.scale_size is not None:
-            result["scaleSize"] = self.scale_size
-        if self.label_line is not None:
-            result["labelLine"] = self.label_line.to_dict()
-
-        return result
+        return _dataclass_to_echarts_dict(self)
 
 
 @dataclass(frozen=True)
@@ -364,14 +457,7 @@ class RadarEmphasis(Emphasis):
 
     def to_dict(self) -> dict:
         """Convert to ECharts camelCase dictionary, omitting None values."""
-        result = super().to_dict()
-
-        if self.line_style is not None:
-            result["lineStyle"] = self.line_style.to_dict()
-        if self.area_style is not None:
-            result["areaStyle"] = self.area_style.to_dict()
-
-        return result
+        return _dataclass_to_echarts_dict(self)
 
 
 @dataclass(frozen=True)
@@ -393,12 +479,7 @@ class SankeyEmphasis(Emphasis):
 
     def to_dict(self) -> dict:
         """Convert to ECharts camelCase dictionary, omitting None values."""
-        result = super().to_dict()
-
-        if self.line_style is not None:
-            result["lineStyle"] = self.line_style.to_dict()
-
-        return result
+        return _dataclass_to_echarts_dict(self)
 
 
 @dataclass(frozen=True)
@@ -417,12 +498,7 @@ class FunnelEmphasis(Emphasis):
 
     def to_dict(self) -> dict:
         """Convert to ECharts camelCase dictionary, omitting None values."""
-        result = super().to_dict()
-
-        if self.label_line is not None:
-            result["labelLine"] = self.label_line.to_dict()
-
-        return result
+        return _dataclass_to_echarts_dict(self)
 
 
 @dataclass(frozen=True)
@@ -444,14 +520,7 @@ class TreemapEmphasis(Emphasis):
 
     def to_dict(self) -> dict:
         """Convert to ECharts camelCase dictionary, omitting None values."""
-        result = super().to_dict()
-
-        if self.label_line is not None:
-            result["labelLine"] = self.label_line.to_dict()
-        if self.upper_label is not None:
-            result["upperLabel"] = self.upper_label.to_dict()
-
-        return result
+        return _dataclass_to_echarts_dict(self)
 
 
 @dataclass(frozen=True)
@@ -473,9 +542,4 @@ class GraphEmphasis(Emphasis):
 
     def to_dict(self) -> dict:
         """Convert to ECharts camelCase dictionary, omitting None values."""
-        result = super().to_dict()
-
-        if self.line_style is not None:
-            result["lineStyle"] = self.line_style.to_dict()
-
-        return result
+        return _dataclass_to_echarts_dict(self)

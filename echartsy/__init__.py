@@ -18,8 +18,11 @@ Quick-start
 """
 from echartsy._config import config, get_adaptive, get_engine, get_overlap_warnings
 from echartsy.emphasis import (
+    AnimationConfig,
     AreaStyle,
+    Blur,
     Emphasis,
+    EndLabelStyle,
     FunnelEmphasis,
     GraphEmphasis,
     ItemStyle,
@@ -31,6 +34,8 @@ from echartsy.emphasis import (
     RadarEmphasis,
     SankeyEmphasis,
     ScatterEmphasis,
+    Select,
+    TooltipStyle,
     TreemapEmphasis,
 )
 from echartsy.exceptions import (
@@ -53,7 +58,7 @@ from echartsy.timeline import (
     timeline_figure,
 )
 
-__version__ = "0.5.3"
+__version__ = "0.6.0"
 
 __all__ = [
     # Config
@@ -88,6 +93,11 @@ __all__ = [
     "LineStyle",
     "AreaStyle",
     "LabelLineStyle",
+    "EndLabelStyle",
+    "Blur",
+    "Select",
+    "TooltipStyle",
+    "AnimationConfig",
     # Exceptions
     "BuilderError",
     "BuilderConfigError",

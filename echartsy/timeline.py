@@ -25,7 +25,12 @@ from echartsy._helpers import (
 from echartsy.exceptions import (
     BuilderConfigError, DataValidationError, TimelineConfigError,
 )
-from echartsy.figure import _SeriesMeta, _build_axis_pointer_cfg
+from echartsy.emphasis import (
+    ItemStyle, LabelStyle, LineStyle, AreaStyle, EndLabelStyle,
+    LabelLineStyle, Blur, Select, TooltipStyle, AnimationConfig,
+    LineEmphasis, ScatterEmphasis, PieEmphasis, Emphasis,
+)
+from echartsy.figure import _SeriesMeta, _build_axis_pointer_cfg, _merge_style_params
 from echartsy.renderers import render
 from echartsy.styles import StylePreset
 
@@ -474,7 +479,20 @@ class TimelineFigure:
              symbol_size: int = 6, symbol: str = "circle",
              labels: bool = False, label_position: str = "top",
              agg: str = "mean", axis: int = 0,
-             interval: Optional[float] = None, **series_kw: Any) -> "TimelineFigure":
+             interval: Optional[float] = None,
+             emphasis: Optional[LineEmphasis] = None,
+             line_style: Optional[LineStyle] = None,
+             area_style: Optional[AreaStyle] = None,
+             label_style: Optional[LabelStyle] = None,
+             end_label: Optional[EndLabelStyle] = None,
+             show_symbol: Optional[bool] = None,
+             color: Optional[str] = None,
+             blur: Optional[Blur] = None,
+             select: Optional[Select] = None,
+             selected_mode: Optional[Union[bool, str]] = None,
+             animation: Optional[AnimationConfig] = None,
+             tooltip: Optional[TooltipStyle] = None,
+             **series_kw: Any) -> "TimelineFigure":
         """Add timeline-animated line series."""
         self._ensure_cartesian("plot")
         df = _validate_df(df, "plot")
@@ -501,6 +519,15 @@ class TimelineFigure:
         }
         if area: base["areaStyle"] = {"opacity": area_opacity}
         if labels: base["label"] = {"show": True, "position": label_position}
+        if emphasis is not None:
+            base["emphasis"] = emphasis.to_dict()
+        _merge_style_params(
+            base, line_style=line_style, area_style=area_style,
+            label_style=label_style, end_label=end_label,
+            show_symbol=show_symbol, color=color, blur=blur,
+            select=select, selected_mode=selected_mode,
+            animation=animation, tooltip=tooltip,
+        )
         base.update(series_kw)
 
         for time_val, tgrp in dff.groupby(time_col, sort=False):
@@ -531,7 +558,19 @@ class TimelineFigure:
             gradient: bool = False,
             gradient_colors: Tuple[str, str] = ("#83bff6", "#188df0"),
             agg: str = "sum", axis: int = 0,
-            interval: Optional[float] = None, **series_kw: Any) -> "TimelineFigure":
+            interval: Optional[float] = None,
+            emphasis: Optional[Emphasis] = None,
+            item_style: Optional[ItemStyle] = None,
+            label_style: Optional[LabelStyle] = None,
+            bar_min_width: Optional[Union[int, str]] = None,
+            bar_category_gap: Optional[str] = None,
+            color: Optional[str] = None,
+            blur: Optional[Blur] = None,
+            select: Optional[Select] = None,
+            selected_mode: Optional[Union[bool, str]] = None,
+            animation: Optional[AnimationConfig] = None,
+            tooltip: Optional[TooltipStyle] = None,
+            **series_kw: Any) -> "TimelineFigure":
         """Add timeline-animated bar series."""
         self._ensure_cartesian("bar")
         df = _validate_df(df, "bar")
@@ -551,11 +590,11 @@ class TimelineFigure:
         if axis == 1 and len(self._y_axes_template) < 2:
             self.ylabel_right("")
 
-        item_style: dict = {"borderRadius": border_radius}
+        bar_item_style: dict = {"borderRadius": border_radius}
         if gradient:
             if len(gradient_colors) != 2:
                 raise ValueError("gradient_colors must be a tuple of exactly 2 color strings")
-            item_style["color"] = {
+            bar_item_style["color"] = {
                 "type": "linear", "x": 0, "y": 0, "x2": 0, "y2": 1,
                 "colorStops": [
                     {"offset": 0, "color": gradient_colors[0]},
@@ -571,10 +610,20 @@ class TimelineFigure:
                 "formatter": label_formatter,
                 "fontSize": label_font_size, "color": label_color,
             },
-            "itemStyle": item_style, "yAxisIndex": axis,
+            "itemStyle": bar_item_style, "yAxisIndex": axis,
         }
         if stack: base["stack"] = "total"
         if bar_width is not None: base["barMaxWidth"] = bar_width
+        if bar_min_width is not None: base["barMinWidth"] = bar_min_width
+        if bar_category_gap is not None: base["barCategoryGap"] = bar_category_gap
+        if emphasis is not None:
+            base["emphasis"] = emphasis.to_dict()
+        _merge_style_params(
+            base, item_style=item_style, label_style=label_style,
+            color=color, blur=blur, select=select,
+            selected_mode=selected_mode, animation=animation,
+            tooltip=tooltip,
+        )
         base.update(series_kw)
 
         for time_val, tgrp in dff.groupby(time_col, sort=False):
@@ -603,7 +652,20 @@ class TimelineFigure:
             start_angle: int = 90, border_radius: int = 6,
             show_labels: bool = True, label_formatter: str = "{b}: {d}%",
             center: Optional[List[str]] = None,
-            interval: Optional[float] = None, **series_kw: Any) -> "TimelineFigure":
+            interval: Optional[float] = None,
+            emphasis: Optional[PieEmphasis] = None,
+            min_angle: Optional[int] = None,
+            min_show_label_angle: Optional[int] = None,
+            selected_offset: Optional[int] = None,
+            clockwise: Optional[bool] = None,
+            avoid_label_overlap: Optional[bool] = None,
+            item_style: Optional[ItemStyle] = None,
+            animation_type: Optional[Literal["expansion", "scale"]] = None,
+            blur: Optional[Blur] = None,
+            select: Optional[Select] = None,
+            selected_mode: Optional[Union[bool, str]] = None,
+            tooltip: Optional[TooltipStyle] = None,
+            **series_kw: Any) -> "TimelineFigure":
         """Add timeline-animated pie / donut chart."""
         self._ensure_mode("pie", "pie")
         df = _validate_df(df, "pie")
@@ -631,6 +693,30 @@ class TimelineFigure:
                 entry.setdefault("itemStyle", {})["borderRadius"] = border_radius
             if rose_type:
                 entry["roseType"] = rose_type
+            if min_angle is not None:
+                entry["minAngle"] = min_angle
+            if min_show_label_angle is not None:
+                entry["minShowLabelAngle"] = min_show_label_angle
+            if selected_offset is not None:
+                entry["selectedOffset"] = selected_offset
+            if clockwise is not None:
+                entry["clockwise"] = clockwise
+            if avoid_label_overlap is not None:
+                entry["avoidLabelOverlap"] = avoid_label_overlap
+            if animation_type is not None:
+                entry["animationType"] = animation_type
+            if item_style is not None:
+                entry.setdefault("itemStyle", {}).update(item_style.to_dict())
+            if emphasis is not None:
+                entry["emphasis"] = emphasis.to_dict()
+            if blur is not None:
+                entry["blur"] = blur.to_dict()
+            if select is not None:
+                entry["select"] = select.to_dict()
+            if selected_mode is not None:
+                entry["selectedMode"] = selected_mode
+            if tooltip is not None:
+                entry["tooltip"] = tooltip.to_dict()
             entry.update(series_kw)
             frame["series"].append(entry)
             frame["meta"].append(_SeriesMeta("pie", names))
@@ -644,7 +730,18 @@ class TimelineFigure:
                 size: Optional[str] = None, size_range: Tuple[int, int] = (5, 30),
                 symbol: str = "circle", opacity: float = 0.7,
                 labels: bool = False,
-                interval: Optional[float] = None, **series_kw: Any) -> "TimelineFigure":
+                interval: Optional[float] = None,
+                emphasis: Optional[ScatterEmphasis] = None,
+                item_style: Optional[ItemStyle] = None,
+                label_style: Optional[LabelStyle] = None,
+                symbol_rotate: Optional[int] = None,
+                show_symbol: Optional[bool] = None,
+                blur: Optional[Blur] = None,
+                select: Optional[Select] = None,
+                selected_mode: Optional[Union[bool, str]] = None,
+                animation: Optional[AnimationConfig] = None,
+                tooltip: Optional[TooltipStyle] = None,
+                **series_kw: Any) -> "TimelineFigure":
         """Add timeline-animated scatter series."""
         self._ensure_cartesian("scatter")
         df = _validate_df(df, "scatter")
@@ -689,6 +786,16 @@ class TimelineFigure:
                 }
                 if labels:
                     entry["label"] = {"show": True, "position": "top"}
+                if symbol_rotate is not None:
+                    entry["symbolRotate"] = symbol_rotate
+                if emphasis is not None:
+                    entry["emphasis"] = emphasis.to_dict()
+                _merge_style_params(
+                    entry, item_style=item_style, label_style=label_style,
+                    show_symbol=show_symbol, blur=blur, select=select,
+                    selected_mode=selected_mode, animation=animation,
+                    tooltip=tooltip,
+                )
                 entry.update(series_kw)
                 frame["series"].append(entry)
                 frame["meta"].append(_SeriesMeta("scatter", ns))
@@ -702,7 +809,14 @@ class TimelineFigure:
              bins: int = 10, density: bool = False,
              bar_color: Optional[str] = None,
              border_radius: int = 2, labels: bool = False,
-             interval: Optional[float] = None, **series_kw: Any) -> "TimelineFigure":
+             interval: Optional[float] = None,
+             emphasis: Optional[Emphasis] = None,
+             item_style: Optional[ItemStyle] = None,
+             label_style: Optional[LabelStyle] = None,
+             animation: Optional[AnimationConfig] = None,
+             selected_mode: Optional[Union[bool, str]] = None,
+             tooltip: Optional[TooltipStyle] = None,
+             **series_kw: Any) -> "TimelineFigure":
         """Add a timeline-animated histogram.
 
         Computes bin edges from the **full dataset** (across all frames) so
@@ -788,6 +902,13 @@ class TimelineFigure:
             }
             if bar_color:
                 entry["itemStyle"]["color"] = bar_color
+            if emphasis is not None:
+                entry["emphasis"] = emphasis.to_dict()
+            _merge_style_params(
+                entry, item_style=item_style, label_style=label_style,
+                selected_mode=selected_mode, animation=animation,
+                tooltip=tooltip,
+            )
             entry.update(series_kw)
             frame["series"].append(entry)
             frame["meta"].append(_SeriesMeta("bar", column))

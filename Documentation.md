@@ -237,6 +237,16 @@ fig.show()
 | `gradient_colors` | `tuple` | `("#83bff6", "#188df0")` | Gradient start/end |
 | `agg` | `str` | `"sum"` | Aggregation: `"sum"`, `"mean"`, `"median"`, `"max"`, `"min"`, `"count"` |
 | `axis` | `int` | `0` | Y-axis index (0 = left, 1 = right) |
+| `item_style` | `ItemStyle` | `None` | Typed item style (border, shadow, color, etc.) |
+| `label_style` | `LabelStyle` | `None` | Typed label configuration |
+| `bar_min_width` | `int / str` | `None` | Minimum bar width |
+| `bar_category_gap` | `str` | `None` | Gap between categories (e.g. `"20%"`) |
+| `color` | `str` | `None` | Series color override |
+| `blur` | `Blur` | `None` | Blur state for non-focused elements |
+| `select` | `Select` | `None` | Select state styling |
+| `selected_mode` | `str / bool` | `None` | Selection mode (`"single"`, `"multiple"`, `True`) |
+| `animation` | `AnimationConfig` | `None` | Animation settings |
+| `tooltip` | `TooltipStyle` | `None` | Per-series tooltip configuration |
 | `emphasis` | `Emphasis` | `None` | Hover effect configuration |
 
 ---
@@ -297,6 +307,17 @@ fig.show()
 | `label_suffix` | `str` | `""` | Text after label value |
 | `agg` | `str` | `"mean"` | Aggregation function |
 | `axis` | `int` | `0` | Y-axis index |
+| `line_style` | `LineStyle` | `None` | Typed line style (dash, cap, shadow, etc.) |
+| `area_style` | `AreaStyle` | `None` | Typed area fill style |
+| `label_style` | `LabelStyle` | `None` | Typed label configuration |
+| `end_label` | `EndLabelStyle` | `None` | Label at end of line |
+| `show_symbol` | `bool` | `None` | Whether to show data point symbols |
+| `color` | `str` | `None` | Series color override |
+| `blur` | `Blur` | `None` | Blur state styling |
+| `select` | `Select` | `None` | Select state styling |
+| `selected_mode` | `str / bool` | `None` | Selection mode |
+| `animation` | `AnimationConfig` | `None` | Animation settings |
+| `tooltip` | `TooltipStyle` | `None` | Per-series tooltip configuration |
 | `emphasis` | `LineEmphasis` | `None` | Hover effect |
 
 ---
@@ -338,6 +359,15 @@ fig.show()
 | `symbol` | `str` | `"circle"` | Symbol type |
 | `opacity` | `float` | `0.7` | Point opacity |
 | `labels` | `bool` | `False` | Show labels |
+| `item_style` | `ItemStyle` | `None` | Typed item style |
+| `label_style` | `LabelStyle` | `None` | Typed label configuration |
+| `symbol_rotate` | `int` | `None` | Symbol rotation in degrees |
+| `show_symbol` | `bool` | `None` | Whether to show symbols |
+| `blur` | `Blur` | `None` | Blur state styling |
+| `select` | `Select` | `None` | Select state styling |
+| `selected_mode` | `str / bool` | `None` | Selection mode |
+| `animation` | `AnimationConfig` | `None` | Animation settings |
+| `tooltip` | `TooltipStyle` | `None` | Per-series tooltip |
 | `emphasis` | `ScatterEmphasis` | `None` | Hover effect |
 
 ---
@@ -383,6 +413,17 @@ fig.show()
 | `label_formatter` | `str` | `"{b}: {c} ({d}%)"` | Label format |
 | `label_font_size` | `int` | `None` | Label size |
 | `rose_type` | `str` | `None` | `"radius"` or `"area"` for rose chart |
+| `min_angle` | `int` | `None` | Minimum slice angle in degrees |
+| `min_show_label_angle` | `int` | `None` | Minimum angle to show label |
+| `selected_offset` | `int` | `None` | Offset when slice is selected |
+| `clockwise` | `bool` | `None` | Clockwise layout |
+| `avoid_label_overlap` | `bool` | `None` | Auto-avoid label overlaps |
+| `item_style` | `ItemStyle` | `None` | Typed item style |
+| `animation_type` | `str` | `None` | `"expansion"` or `"scale"` |
+| `blur` | `Blur` | `None` | Blur state styling |
+| `select` | `Select` | `None` | Select state styling |
+| `selected_mode` | `str / bool` | `None` | Selection mode |
+| `tooltip` | `TooltipStyle` | `None` | Per-series tooltip |
 | `emphasis` | `PieEmphasis` | `None` | Hover effect |
 
 ---
@@ -412,6 +453,11 @@ fig.show()
 | `bar_color` | `str` | `None` | Override bar color |
 | `border_radius` | `int` | `2` | Corner rounding |
 | `labels` | `bool` | `False` | Show value labels |
+| `item_style` | `ItemStyle` | `None` | Typed item style |
+| `label_style` | `LabelStyle` | `None` | Typed label configuration |
+| `animation` | `AnimationConfig` | `None` | Animation settings |
+| `selected_mode` | `str / bool` | `None` | Selection mode |
+| `tooltip` | `TooltipStyle` | `None` | Per-series tooltip |
 
 ---
 
@@ -488,6 +534,15 @@ fig.show()
 | `area_opacity` | `float` | `0.15` | Filled area opacity |
 | `radius` | `int / str` | `150` | Radar radius |
 | `center` | `list` | `None` | Center position |
+| `shape` | `str` | `None` | `"polygon"` or `"circle"` |
+| `split_number` | `int` | `None` | Number of split rings |
+| `axis_name_font_size` | `int` | `None` | Indicator name font size |
+| `axis_name_color` | `str` | `None` | Indicator name color |
+| `split_area_show` | `bool` | `None` | Show split area fill |
+| `axis_line_show` | `bool` | `None` | Show axis lines |
+| `line_style` | `LineStyle` | `None` | Line style for radar series |
+| `color` | `str` | `None` | Series color override |
+| `tooltip` | `TooltipStyle` | `None` | Per-series tooltip |
 | `emphasis` | `RadarEmphasis` | `None` | Hover effect |
 
 ---
@@ -524,6 +579,11 @@ fig.show()
 | `visual_min` | `float` | `None` | Min color value |
 | `visual_max` | `float` | `None` | Max color value |
 | `in_range_colors` | `list[str]` | `None` | Color palette |
+| `label_style` | `LabelStyle` | `None` | Typed label configuration |
+| `item_style` | `ItemStyle` | `None` | Typed item style |
+| `animation` | `AnimationConfig` | `None` | Animation settings |
+| `selected_mode` | `str / bool` | `None` | Selection mode |
+| `tooltip` | `TooltipStyle` | `None` | Per-series tooltip |
 | `emphasis` | `Emphasis` | `None` | Hover effect |
 
 ---
@@ -557,6 +617,15 @@ fig.show()
 | `x` | `str` | *required* | Category column |
 | `y` | `str` | *required* | Numeric value column |
 | `orient` | `"v"` / `"h"` | `"v"` | Orientation |
+| `item_style` | `ItemStyle` | `None` | Typed item style |
+| `label_style` | `LabelStyle` | `None` | Typed label configuration |
+| `labels` | `bool` | `False` | Show value labels |
+| `color` | `str` | `None` | Series color override |
+| `blur` | `Blur` | `None` | Blur state styling |
+| `select` | `Select` | `None` | Select state styling |
+| `selected_mode` | `str / bool` | `None` | Selection mode |
+| `animation` | `AnimationConfig` | `None` | Animation settings |
+| `tooltip` | `TooltipStyle` | `None` | Per-series tooltip |
 | `emphasis` | `Emphasis` | `None` | Hover effect |
 
 ---
@@ -593,6 +662,15 @@ fig.show()
 | `bandwidth` | `float` | `None` | Kernel bandwidth (auto if `None`) |
 | `grid_size` | `int` | `200` | Grid resolution |
 | `show_median` | `bool` | `True` | Include median in legend |
+| `line_style` | `LineStyle` | `None` | Typed line style |
+| `area` | `bool` | `False` | Fill area under curve |
+| `area_style` | `AreaStyle` | `None` | Typed area fill style |
+| `label_style` | `LabelStyle` | `None` | Typed label configuration |
+| `labels` | `bool` | `False` | Show value labels |
+| `connect_nulls` | `bool` | `False` | Connect across null values |
+| `color` | `str` | `None` | Series color override |
+| `animation` | `AnimationConfig` | `None` | Animation settings |
+| `tooltip` | `TooltipStyle` | `None` | Per-series tooltip |
 | `emphasis` | `LineEmphasis` | `None` | Hover effect |
 
 ---
@@ -622,6 +700,13 @@ fig.show()
 | `gap` | `int` | `2` | Gap between segments |
 | `label_position` | `str` | `"inside"` | Label placement |
 | `label_formatter` | `str` | `"{b}: {c}"` | Label format |
+| `orient` | `str` | `None` | `"vertical"` or `"horizontal"` |
+| `funnel_align` | `str` | `None` | `"center"`, `"left"`, `"right"` |
+| `min_size` | `str` | `None` | Minimum funnel width (e.g. `"0%"`) |
+| `max_size` | `str` | `None` | Maximum funnel width (e.g. `"100%"`) |
+| `item_style` | `ItemStyle` | `None` | Typed item style |
+| `label_line` | `LabelLineStyle` | `None` | Label connecting line style |
+| `tooltip` | `TooltipStyle` | `None` | Per-series tooltip |
 | `emphasis` | `FunnelEmphasis` | `None` | Hover effect |
 
 ---
@@ -661,6 +746,14 @@ fig.treemap(df, path=["Region", "Category", "Sector"], value="Market Cap ($B)")
 | `gap_width` | `int` | `2` | Gap between rectangles |
 | `border_width` | `int` | `1` | Border width |
 | `label_formatter` | `str` | `"{b}\n{c}"` | Label format |
+| `drill_down_icon` | `str` | `None` | Icon shown for drill-down |
+| `node_click` | `str` | `None` | Click behavior (`"zoomToNode"`, `"link"`, `False`) |
+| `color_alpha` | `float` | `None` | Color alpha range |
+| `color_saturation` | `float` | `None` | Color saturation range |
+| `visible_min` | `int` | `None` | Min area to display a node |
+| `breadcrumb` | `bool / dict` | `None` | Breadcrumb navigation |
+| `item_style` | `ItemStyle` | `None` | Typed item style |
+| `tooltip` | `TooltipStyle` | `None` | Per-series tooltip |
 | `emphasis` | `TreemapEmphasis` | `None` | Hover effect |
 
 ---
@@ -697,6 +790,13 @@ fig.show()
 | `node_gap` | `int` | `8` | Gap between nodes |
 | `layout` | `str` | `"none"` | `"none"` or `"orthogonal"` |
 | `orient` | `str` | `"horizontal"` | `"horizontal"` or `"vertical"` |
+| `node_align` | `str` | `None` | Node alignment (`"left"`, `"right"`, `"justify"`) |
+| `draggable` | `bool` | `None` | Allow node dragging |
+| `focus_node_adjacency` | `bool` | `None` | Highlight connected on hover |
+| `layout_iterations` | `int` | `None` | Layout iterations count |
+| `item_style` | `ItemStyle` | `None` | Typed item style |
+| `label_style` | `LabelStyle` | `None` | Typed label configuration |
+| `tooltip` | `TooltipStyle` | `None` | Per-series tooltip |
 | `emphasis` | `SankeyEmphasis` | `None` | Hover effect (supports `"adjacency"` focus) |
 
 ---
@@ -747,6 +847,13 @@ fig.show()
 | `up_border` | `str` | `None` | Bullish border (defaults to `up_color`) |
 | `down_border` | `str` | `None` | Bearish border (defaults to `down_color`) |
 | `axis` | `int` | `0` | Y-axis index (`0` = left, `1` = right) |
+| `border_width` | `int` | `None` | Candlestick border width |
+| `opacity` | `float` | `None` | Candlestick opacity |
+| `label_style` | `LabelStyle` | `None` | Typed label configuration |
+| `labels` | `bool` | `False` | Show value labels |
+| `animation` | `AnimationConfig` | `None` | Animation settings |
+| `selected_mode` | `str / bool` | `None` | Selection mode |
+| `tooltip` | `TooltipStyle` | `None` | Per-series tooltip |
 | `emphasis` | `Emphasis` | `None` | Hover effect |
 
 ---
@@ -792,6 +899,11 @@ fig.show()
 | `agg` | `str` | `"sum"` | Aggregation function |
 | `axis` | `int` | `0` | Y-axis index (`0` = left, `1` = right) |
 | `grid` | `int` | `0` | Grid index for multi-grid subplots |
+| `label_style` | `LabelStyle` | `None` | Typed label configuration |
+| `item_style` | `ItemStyle` | `None` | Typed item style |
+| `animation` | `AnimationConfig` | `None` | Animation settings |
+| `selected_mode` | `str / bool` | `None` | Selection mode |
+| `tooltip` | `TooltipStyle` | `None` | Per-series tooltip |
 | `emphasis` | `Emphasis` | `None` | Hover effect |
 
 ---
@@ -995,6 +1107,12 @@ fig.title("Main Title")
 fig.title("Main Title", subtitle="Optional subtitle")
 fig.title("Left-aligned", left="left")
 fig.title("With top offset", top=20)
+
+fig.title("Styled Title",
+          text_color="#333", text_font_weight="bold",
+          link="https://example.com",
+          background_color="#f5f5f5", border_color="#ddd",
+          border_width=1, padding=10)
 ```
 
 ### Axes & Ticks
@@ -1039,6 +1157,11 @@ fig.legend()                                          # Default: top center
 fig.legend(show=False)                                # Hide
 fig.legend(orient="vertical", left="right", top=40)   # Vertical on right
 fig.legend(top=50, left=200)                           # Custom position
+
+fig.legend(text_style_color="#666", text_style_font_size=12,
+           icon="circle", item_gap=15, item_width=20, item_height=14,
+           background_color="#fafafa", border_color="#eee",
+           border_width=1, padding=5, scroll=True)
 ```
 
 ### Tooltip
@@ -1052,6 +1175,11 @@ fig.tooltip(
     trigger="axis", pointer="cross",
     cross_color="#e74c3c", cross_width=2, cross_type="dashed"
 )
+
+fig.tooltip(background_color="rgba(50,50,50,0.9)", border_color="#333",
+            border_width=1, text_color="#fff", text_size=13,
+            padding=10, enterable=True, order="seriesAsc",
+            render_mode="html")
 ```
 
 ### Axis Pointer
@@ -1077,6 +1205,10 @@ fig.datazoom()                                 # Horizontal, full range
 fig.datazoom(start=0, end=80)                  # Show first 80%
 fig.datazoom(orient="vertical")                # Vertical zoom
 fig.datazoom(show_slider=False)                # Scroll-only (no slider bar)
+
+fig.datazoom(zoom_lock=True, throttle=100,
+             fill_color="rgba(47,69,84,0.15)",
+             border_color="#ddd", handle_color="#a7b7cc")
 ```
 
 ### Toolbox
@@ -1087,6 +1219,9 @@ Add interactive tools (download, zoom, reset):
 fig.toolbox()                                 # Download + Restore
 fig.toolbox(download=True, zoom=True)         # Download + Zoom + Restore
 fig.toolbox(download=True, zoom=True, restore=True)
+
+fig.toolbox(data_view=True, magic_type=True,
+            orient="vertical", item_size=18, item_gap=12)
 ```
 
 ### Palette
@@ -1406,13 +1541,13 @@ All emphasis classes support:
 | `item_style` | `ItemStyle` | Fill, border, shadow styling |
 | `label` | `LabelStyle` | Label visibility, format, font |
 
-**ItemStyle properties:** `color`, `border_color`, `border_width`, `border_radius`, `shadow_blur`, `shadow_color`, `shadow_offset_x`, `shadow_offset_y`, `opacity`
+**ItemStyle properties:** `color`, `border_color`, `border_width`, `border_radius`, `border_type`, `shadow_blur`, `shadow_color`, `shadow_offset_x`, `shadow_offset_y`, `opacity`, `decal`
 
-**LabelStyle properties:** `show`, `position`, `formatter`, `font_size`, `font_weight`, `color`
+**LabelStyle properties:** `show`, `position`, `formatter`, `font_size`, `font_weight`, `font_family`, `color`, `rotate`, `offset`, `align`
 
-**LineStyle properties:** `color`, `width`, `type` (`"solid"` / `"dashed"` / `"dotted"`), `shadow_blur`, `opacity`
+**LineStyle properties:** `color`, `width`, `type` (`"solid"` / `"dashed"` / `"dotted"`), `shadow_blur`, `shadow_color`, `shadow_offset_x`, `shadow_offset_y`, `opacity`, `cap`, `join`
 
-**AreaStyle properties:** `color`, `opacity`
+**AreaStyle properties:** `color`, `opacity`, `origin`, `shadow_blur`, `shadow_color`
 
 ---
 
@@ -1653,7 +1788,7 @@ Built-in: `StylePreset.CLINICAL`, `StylePreset.DASHBOARD_DARK`, `StylePreset.KPI
 | `FunnelEmphasis` | Funnel | `label_line` |
 | `TreemapEmphasis` | Treemap | `label_line`, `upper_label` |
 
-Supporting style classes: `ItemStyle`, `LabelStyle`, `LineStyle`, `AreaStyle`, `LabelLineStyle`
+Supporting style classes: `ItemStyle`, `LabelStyle`, `LineStyle`, `AreaStyle`, `LabelLineStyle`, `EndLabelStyle`, `Blur`, `Select`, `TooltipStyle`, `AnimationConfig`
 
 ---
 

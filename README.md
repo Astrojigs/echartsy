@@ -85,41 +85,41 @@ Three lines from DataFrame to interactive chart.
 
 ## Chart Types
 
-echartsy v0.5.3 supports **19 chart types** covering cartesian, standalone, hierarchical, relational, and statistical visualizations.
+echartsy v0.6.0 supports **19 chart types** covering cartesian, standalone, hierarchical, relational, and statistical visualizations.
 
 ### Cartesian Charts
 
 | Method | Description | Key options |
 |:---|:---|:---|
-| `fig.plot()` | Line chart | `smooth`, `area`, `hue` (multi-series), dual-axis via `axis=1` |
-| `fig.bar()` | Vertical bar | `hue` (grouped), `stack`, `gradient`, `labels`, `border_radius` |
+| `fig.plot()` | Line chart | `smooth`, `area`, `hue`, `line_style`, `area_style`, `end_label`, `blur`, `select`, `animation`, `tooltip` |
+| `fig.bar()` | Vertical bar | `hue`, `stack`, `gradient`, `item_style`, `label_style`, `blur`, `select`, `animation`, `tooltip` |
 | `fig.barh()` | Horizontal bar | Same as `bar()`, horizontal orientation |
-| `fig.scatter()` | Scatter plot | `color` and `size` encoding columns |
-| `fig.hist()` | Histogram | `bins`, auto-binned frequency distribution |
-| `fig.boxplot()` | Box plot | Five-number statistical summary |
-| `fig.kde()` | KDE density | Kernel density estimation (requires `scipy`) |
-| `fig.waterfall()` | Waterfall chart | Cumulative deltas with `total`, `connector`, customisable colors |
-| `fig.candlestick()` | Candlestick / OHLC | Configurable bullish/bearish colours, composable with `plot()` + `bar()` |
-| `fig.heatmap()` | Matrix heatmap | Colour-mapped grid with `visual_map` integration |
+| `fig.scatter()` | Scatter plot | `color`, `size`, `item_style`, `symbol_rotate`, `blur`, `select`, `animation`, `tooltip` |
+| `fig.hist()` | Histogram | `bins`, `item_style`, `label_style`, `animation`, `tooltip` |
+| `fig.boxplot()` | Box plot | `item_style`, `label_style`, `labels`, `color`, `blur`, `select`, `animation`, `tooltip` |
+| `fig.kde()` | KDE density | `line_style`, `area_style`, `labels`, `connect_nulls`, `color`, `animation`, `tooltip` |
+| `fig.waterfall()` | Waterfall chart | `total`, `connector`, `label_style`, `item_style`, `animation`, `tooltip` |
+| `fig.candlestick()` | Candlestick / OHLC | `border_width`, `opacity`, `label_style`, `labels`, `animation`, `tooltip` |
+| `fig.heatmap()` | Matrix heatmap | `label_style`, `item_style`, `animation`, `tooltip` |
 
 ### Standalone & Hierarchical Charts
 
 | Method | Description | Key options |
 |:---|:---|:---|
-| `fig.pie()` | Pie / donut | `inner_radius` (donut), rose mode, side-by-side multiples |
-| `fig.radar()` | Radar / spider | Multi-indicator polygon charts |
-| `fig.funnel()` | Funnel | Stage-based conversion funnels |
-| `fig.gauge()` | Gauge / meter | Speedometer style with colour stops |
-| `fig.treemap()` | Treemap | Hierarchical area via `path` columns |
-| `fig.sunburst()` | Sunburst | Hierarchical ring chart (same `path` API as treemap) |
+| `fig.pie()` | Pie / donut | `inner_radius`, `min_angle`, `clockwise`, `item_style`, `blur`, `select`, `tooltip` |
+| `fig.radar()` | Radar / spider | `shape`, `split_number`, `line_style`, `color`, `tooltip` |
+| `fig.funnel()` | Funnel | `orient`, `funnel_align`, `min_size`, `max_size`, `item_style`, `tooltip` |
+| `fig.gauge()` | Gauge / meter | `detail_formatter`, `progress`, `item_style`, `tooltip` |
+| `fig.treemap()` | Treemap | `drill_down_icon`, `node_click`, `breadcrumb`, `item_style`, `tooltip` |
+| `fig.sunburst()` | Sunburst | `node_click`, `label_rotate`, `item_style`, `tooltip` |
 
 ### Relational & Calendar Charts
 
 | Method | Description | Key options |
 |:---|:---|:---|
-| `fig.sankey()` | Sankey diagram | Multi-level flow via `levels` columns |
-| `fig.graph()` | Network graph | Force / circular layout, node categories, edge weights |
-| `fig.calendar_heatmap()` | Calendar heatmap | GitHub-style contribution grid with auto year detection |
+| `fig.sankey()` | Sankey diagram | `node_align`, `draggable`, `item_style`, `label_style`, `tooltip` |
+| `fig.graph()` | Network graph | `repulsion`, `gravity`, `edge_label`, `item_style`, `line_style`, `tooltip` |
+| `fig.calendar_heatmap()` | Calendar heatmap | `split_line_show`, `day_label_show`, `item_style`, `emphasis`, `tooltip` |
 
 ---
 
@@ -452,6 +452,25 @@ Every chart method accepts an optional `emphasis` parameter with a chart-specifi
 | `treemap()` | `TreemapEmphasis` |
 | `graph()` | `GraphEmphasis` |
 
+### Per-Series Style Control
+
+Beyond emphasis, every chart method now accepts typed dataclass parameters for fine-grained visual control:
+
+```python
+from echartsy import ItemStyle, LabelStyle, Blur, Select, AnimationConfig, TooltipStyle
+
+fig.bar(df, x="Month", y="Revenue",
+        item_style=ItemStyle(border_type="dashed", opacity=0.9),
+        label_style=LabelStyle(show=True, rotate=45, font_family="monospace"),
+        blur=Blur(item_style=ItemStyle(opacity=0.2)),
+        select=Select(item_style=ItemStyle(border_width=3)),
+        selected_mode="multiple",
+        animation=AnimationConfig(animation_duration=1500, animation_easing="elasticOut"),
+        tooltip=TooltipStyle(formatter="{b}: {c}"))
+```
+
+Three-tier control: scalar params (e.g. `color="red"`) → dataclass overrides → `**series_kw` raw dict.
+
 ### Adaptive Dark Mode
 
 Charts automatically respond to the user's OS or browser `prefers-color-scheme` setting:
@@ -562,15 +581,30 @@ Same as `Figure` but adds timeline animation. Extra parameters:
 
 | Class | Key fields |
 |:---|:---|
-| `ec.ItemStyle` | `color`, `border_color`, `border_width`, `border_radius`, `shadow_blur`, `shadow_color`, `opacity` |
-| `ec.LabelStyle` | `show`, `position`, `formatter`, `font_size`, `font_weight`, `color` |
-| `ec.LineStyle` | `color`, `width`, `type` (`"solid"` / `"dashed"` / `"dotted"`), `shadow_blur`, `opacity` |
-| `ec.AreaStyle` | `color`, `opacity` |
+| `ec.ItemStyle` | `color`, `border_color`, `border_width`, `border_radius`, `border_type`, `shadow_blur`, `shadow_color`, `shadow_offset_x`, `shadow_offset_y`, `opacity`, `decal` |
+| `ec.LabelStyle` | `show`, `position`, `formatter`, `font_size`, `font_weight`, `font_family`, `color`, `rotate`, `offset`, `align` |
+| `ec.LineStyle` | `color`, `width`, `type`, `shadow_blur`, `shadow_color`, `shadow_offset_x`, `shadow_offset_y`, `opacity`, `cap`, `join` |
+| `ec.AreaStyle` | `color`, `opacity`, `origin`, `shadow_blur`, `shadow_color` |
 | `ec.LabelLineStyle` | `show`, `length`, `length2` |
+| `ec.EndLabelStyle` | `show`, `formatter`, `font_size`, `font_weight`, `color` |
+| `ec.Blur` | `item_style`, `label`, `line_style`, `area_style` |
+| `ec.Select` | `disabled`, `item_style`, `label`, `line_style`, `area_style` |
+| `ec.TooltipStyle` | `show`, `formatter`, `value_formatter`, `background_color`, `border_color`, `border_width`, `text_color`, `text_size` |
+| `ec.AnimationConfig` | `animation`, `animation_duration`, `animation_easing`, `animation_delay` |
 
 ---
 
 ## Changelog (Recent)
+
+### v0.6.0
+
+- **Added:** Full parameter expansion across all 19 chart methods and 6 config methods — typed `ItemStyle`, `LabelStyle`, `LineStyle`, `AreaStyle`, `EndLabelStyle`, `Blur`, `Select`, `TooltipStyle`, and `AnimationConfig` dataclass parameters on every series method.
+- **Added:** Per-series `tooltip`, `blur`, `select`, `selected_mode`, and `animation` support for bar, line, scatter, pie, histogram, boxplot, KDE, candlestick, heatmap, waterfall, radar, sankey, treemap, funnel, gauge, sunburst, graph, and calendar heatmap.
+- **Added:** Extended config methods — `title()` (+8 params), `legend()` (+11 params), `tooltip()` (+9 params), `toolbox()` (+5 params), `datazoom()` (+6 params), `visual_map()` (+6 params).
+- **Added:** Timeline parity — `TimelineFigure.plot()`, `.bar()`, `.scatter()`, `.pie()`, `.hist()` now accept all new style parameters.
+- **Added:** 5 new dataclasses: `EndLabelStyle`, `Blur`, `Select`, `TooltipStyle`, `AnimationConfig`.
+- **Extended:** `ItemStyle` (+`border_type`, `decal`), `LabelStyle` (+`font_family`, `rotate`, `offset`, `align`), `LineStyle` (+`shadow_color`, `shadow_offset_x/y`, `cap`, `join`), `AreaStyle` (+`origin`, `shadow_blur`, `shadow_color`).
+- **Added:** Three-tier control model: scalar params → dataclass overrides → `**series_kw` raw dict.
 
 ### v0.5.3
 

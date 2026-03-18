@@ -41,7 +41,49 @@ from echartsy.emphasis import (
     Emphasis, LineEmphasis, ScatterEmphasis, PieEmphasis,
     RadarEmphasis, SankeyEmphasis, FunnelEmphasis, TreemapEmphasis,
     GraphEmphasis,
+    ItemStyle, LabelStyle, LineStyle, AreaStyle, EndLabelStyle,
+    LabelLineStyle, Blur, Select, TooltipStyle, AnimationConfig,
 )
+
+
+def _merge_style_params(
+    base: dict, *,
+    line_style=None, area_style=None, label_style=None,
+    end_label=None, item_style=None,
+    show_symbol=None, color=None,
+    blur=None, select=None, selected_mode=None,
+    animation=None, tooltip=None,
+) -> None:
+    """Merge dataclass-based style overrides into a series dict (in-place).
+
+    Applied after scalar params and before ``series_kw`` overrides.
+    Scalar shortcuts (color, show_symbol) are applied first so that
+    dataclass params (item_style, etc.) take precedence.
+    """
+    if show_symbol is not None:
+        base["showSymbol"] = show_symbol
+    if color is not None:
+        base.setdefault("itemStyle", {})["color"] = color
+    if selected_mode is not None:
+        base["selectedMode"] = selected_mode
+    if line_style is not None:
+        base.setdefault("lineStyle", {}).update(line_style.to_dict())
+    if area_style is not None:
+        base.setdefault("areaStyle", {}).update(area_style.to_dict())
+    if label_style is not None:
+        base.setdefault("label", {}).update(label_style.to_dict())
+    if end_label is not None:
+        base["endLabel"] = end_label.to_dict()
+    if item_style is not None:
+        base.setdefault("itemStyle", {}).update(item_style.to_dict())
+    if blur is not None:
+        base["blur"] = blur.to_dict()
+    if select is not None:
+        base["select"] = select.to_dict()
+    if animation is not None:
+        base.update(animation.to_dict())
+    if tooltip is not None:
+        base["tooltip"] = tooltip.to_dict()
 
 
 # ═══════════════════════════════════════════════════════════════════════════
@@ -293,6 +335,14 @@ class Figure:
     def title(
         self, text: str, subtitle: Optional[str] = None,
         left: str = "center", top: Optional[Union[str, int]] = None,
+        text_color: Optional[str] = None,
+        text_font_weight: Optional[str] = None,
+        link: Optional[str] = None,
+        sublink: Optional[str] = None,
+        background_color: Optional[str] = None,
+        border_color: Optional[str] = None,
+        border_width: Optional[int] = None,
+        padding: Optional[Union[int, list]] = None,
     ) -> "Figure":
         """Set the chart title (and optional subtitle).
 
@@ -310,6 +360,22 @@ class Figure:
             self._title_cfg["subtextStyle"] = {"fontSize": self._style.subtitle_font_size}
         if top is not None:
             self._title_cfg["top"] = top
+        if text_color is not None:
+            self._title_cfg["textStyle"]["color"] = text_color
+        if text_font_weight is not None:
+            self._title_cfg["textStyle"]["fontWeight"] = text_font_weight
+        if link is not None:
+            self._title_cfg["link"] = link
+        if sublink is not None:
+            self._title_cfg["sublink"] = sublink
+        if background_color is not None:
+            self._title_cfg["backgroundColor"] = background_color
+        if border_color is not None:
+            self._title_cfg["borderColor"] = border_color
+        if border_width is not None:
+            self._title_cfg["borderWidth"] = border_width
+        if padding is not None:
+            self._title_cfg["padding"] = padding
         return self
 
     def xlabel(
@@ -488,6 +554,17 @@ class Figure:
         left: Optional[str] = None,
         top: Optional[Union[str, int]] = None,
         bottom: Optional[Union[str, int]] = None,
+        text_style_color: Optional[str] = None,
+        text_style_font_size: Optional[int] = None,
+        icon: Optional[str] = None,
+        item_gap: Optional[int] = None,
+        item_width: Optional[int] = None,
+        item_height: Optional[int] = None,
+        background_color: Optional[str] = None,
+        border_color: Optional[str] = None,
+        border_width: Optional[int] = None,
+        padding: Optional[Union[int, list]] = None,
+        scroll: Optional[bool] = None,
     ) -> "Figure":
         """Configure legend placement and visibility."""
         cfg: dict = {"show": show}
@@ -498,6 +575,31 @@ class Figure:
             cfg["top"] = top
         if bottom is not None:
             cfg["bottom"] = bottom
+        if text_style_color is not None or text_style_font_size is not None:
+            ts: dict = {}
+            if text_style_color is not None:
+                ts["color"] = text_style_color
+            if text_style_font_size is not None:
+                ts["fontSize"] = text_style_font_size
+            cfg["textStyle"] = ts
+        if icon is not None:
+            cfg["icon"] = icon
+        if item_gap is not None:
+            cfg["itemGap"] = item_gap
+        if item_width is not None:
+            cfg["itemWidth"] = item_width
+        if item_height is not None:
+            cfg["itemHeight"] = item_height
+        if background_color is not None:
+            cfg["backgroundColor"] = background_color
+        if border_color is not None:
+            cfg["borderColor"] = border_color
+        if border_width is not None:
+            cfg["borderWidth"] = border_width
+        if padding is not None:
+            cfg["padding"] = padding
+        if scroll:
+            cfg["type"] = "scroll"
         self._legend_cfg = cfg
         return self
 
@@ -515,6 +617,15 @@ class Figure:
         cross_type: Optional[Literal["solid", "dashed", "dotted"]] = None,
         shadow_color: Optional[str] = None,
         shadow_opacity: Optional[float] = None,
+        background_color: Optional[str] = None,
+        border_color: Optional[str] = None,
+        border_width: Optional[int] = None,
+        text_color: Optional[str] = None,
+        text_size: Optional[int] = None,
+        padding: Optional[Union[int, list]] = None,
+        enterable: Optional[bool] = None,
+        order: Optional[Literal["seriesAsc", "seriesDesc", "valueAsc", "valueDesc"]] = None,
+        render_mode: Optional[Literal["html", "richText"]] = None,
     ) -> "Figure":
         """Configure tooltip behaviour and axis-pointer styling."""
         self._tooltip_cfg["trigger"] = trigger
@@ -527,6 +638,24 @@ class Figure:
         self._tooltip_cfg["axisPointer"] = ap
         if formatter:
             self._tooltip_cfg["formatter"] = formatter
+        if background_color is not None:
+            self._tooltip_cfg["backgroundColor"] = background_color
+        if border_color is not None:
+            self._tooltip_cfg["borderColor"] = border_color
+        if border_width is not None:
+            self._tooltip_cfg["borderWidth"] = border_width
+        if text_color is not None:
+            self._tooltip_cfg.setdefault("textStyle", {})["color"] = text_color
+        if text_size is not None:
+            self._tooltip_cfg.setdefault("textStyle", {})["fontSize"] = text_size
+        if padding is not None:
+            self._tooltip_cfg["padding"] = padding
+        if enterable is not None:
+            self._tooltip_cfg["enterable"] = enterable
+        if order is not None:
+            self._tooltip_cfg["order"] = order
+        if render_mode is not None:
+            self._tooltip_cfg["renderMode"] = render_mode
         return self
 
     def axis_pointer(
@@ -585,6 +714,11 @@ class Figure:
     def toolbox(
         self, download: bool = True, zoom: bool = False,
         restore: bool = True,
+        data_view: Optional[bool] = None,
+        magic_type: Optional[List[str]] = None,
+        orient: Optional[Literal["horizontal", "vertical"]] = None,
+        item_size: Optional[int] = None,
+        item_gap: Optional[int] = None,
     ) -> "Figure":
         """Configure which toolbox features are visible."""
         features: dict = {}
@@ -594,7 +728,18 @@ class Figure:
             features["dataZoom"] = {"show": True}
         if restore:
             features["restore"] = {"show": True}
-        self._toolbox_cfg = {"show": True, "right": 10, "top": 10, "feature": features}
+        if data_view:
+            features["dataView"] = {"show": True}
+        if magic_type is not None:
+            features["magicType"] = {"show": True, "type": magic_type}
+        cfg: dict = {"show": True, "right": 10, "top": 10, "feature": features}
+        if orient is not None:
+            cfg["orient"] = orient
+        if item_size is not None:
+            cfg["itemSize"] = item_size
+        if item_gap is not None:
+            cfg["itemGap"] = item_gap
+        self._toolbox_cfg = cfg
         return self
 
     def datazoom(
@@ -602,6 +747,12 @@ class Figure:
         orient: Literal["horizontal", "vertical"] = "horizontal",
         show_slider: bool = True,
         grids: Optional[List[int]] = None,
+        zoom_lock: Optional[bool] = None,
+        throttle: Optional[int] = None,
+        range_mode: Optional[list] = None,
+        fill_color: Optional[str] = None,
+        border_color: Optional[str] = None,
+        handle_color: Optional[str] = None,
     ) -> "Figure":
         """Add a data-zoom slider for long time-series or many categories.
 
@@ -618,6 +769,20 @@ class Figure:
         if grids and self._n_grids > 1:
             inside["xAxisIndex"] = grids
             slider["xAxisIndex"] = grids
+        if zoom_lock is not None:
+            inside["zoomLock"] = zoom_lock
+            slider["zoomLock"] = zoom_lock
+        if range_mode is not None:
+            inside["rangeMode"] = range_mode
+            slider["rangeMode"] = range_mode
+        if throttle is not None:
+            slider["throttle"] = throttle
+        if fill_color is not None:
+            slider["fillerColor"] = fill_color
+        if border_color is not None:
+            slider["borderColor"] = border_color
+        if handle_color is not None:
+            slider["handleStyle"] = {"color": handle_color}
         zoom: list = [inside]
         if show_slider:
             zoom.append(slider)
@@ -637,6 +802,12 @@ class Figure:
         calculable: bool = True,
         piecewise: bool = False,
         pieces: Optional[List[dict]] = None,
+        dimension: Optional[int] = None,
+        series_index: Optional[Union[int, list]] = None,
+        out_of_range: Optional[dict] = None,
+        realtime: Optional[bool] = None,
+        text: Optional[list] = None,
+        inverse: Optional[bool] = None,
     ) -> "Figure":
         """Expose the ECharts ``visualMap`` component for colour mapping.
 
@@ -676,6 +847,18 @@ class Figure:
             cfg["left"] = "center"
         if colors:
             cfg["inRange"] = {"color": colors}
+        if dimension is not None:
+            cfg["dimension"] = dimension
+        if series_index is not None:
+            cfg["seriesIndex"] = series_index
+        if out_of_range is not None:
+            cfg["outOfRange"] = out_of_range
+        if realtime is not None:
+            cfg["realtime"] = realtime
+        if text is not None:
+            cfg["text"] = text
+        if inverse is not None:
+            cfg["inverse"] = inverse
         self._extra["visualMap"] = cfg
         return self
 
@@ -743,7 +926,19 @@ class Figure:
         labels: bool = False, label_position: str = "top",
         label_prefix: str = "", label_suffix: str = "",
         agg: str = "mean", axis: int = 0, grid: int = 0,
-        emphasis: Optional[LineEmphasis] = None, **series_kw: Any,
+        emphasis: Optional[LineEmphasis] = None,
+        line_style: Optional[LineStyle] = None,
+        area_style: Optional[AreaStyle] = None,
+        label_style: Optional[LabelStyle] = None,
+        end_label: Optional[EndLabelStyle] = None,
+        show_symbol: Optional[bool] = None,
+        color: Optional[str] = None,
+        blur: Optional[Blur] = None,
+        select: Optional[Select] = None,
+        selected_mode: Optional[Union[bool, str]] = None,
+        animation: Optional[AnimationConfig] = None,
+        tooltip: Optional[TooltipStyle] = None,
+        **series_kw: Any,
     ) -> "Figure":
         """Add one or more line series — equivalent to ``plt.plot()``.
 
@@ -806,6 +1001,13 @@ class Figure:
             }
         if emphasis is not None:
             base["emphasis"] = emphasis.to_dict()
+        _merge_style_params(
+            base, line_style=line_style, area_style=area_style,
+            label_style=label_style, end_label=end_label,
+            show_symbol=show_symbol, color=color, blur=blur,
+            select=select, selected_mode=selected_mode,
+            animation=animation, tooltip=tooltip,
+        )
         base.update(series_kw)
 
         groups = dff.groupby(hue) if hue else [(y, dff)]
@@ -834,7 +1036,18 @@ class Figure:
         gradient: bool = False,
         gradient_colors: Tuple[str, str] = ("#83bff6", "#188df0"),
         agg: str = "sum", axis: int = 0, grid: int = 0,
-        emphasis: Optional[Emphasis] = None, **series_kw: Any,
+        emphasis: Optional[Emphasis] = None,
+        item_style: Optional[ItemStyle] = None,
+        label_style: Optional[LabelStyle] = None,
+        bar_min_width: Optional[Union[int, str]] = None,
+        bar_category_gap: Optional[str] = None,
+        color: Optional[str] = None,
+        blur: Optional[Blur] = None,
+        select: Optional[Select] = None,
+        selected_mode: Optional[Union[bool, str]] = None,
+        animation: Optional[AnimationConfig] = None,
+        tooltip: Optional[TooltipStyle] = None,
+        **series_kw: Any,
     ) -> "Figure":
         """Add one or more bar series — equivalent to ``plt.bar()``.
 
@@ -883,11 +1096,11 @@ class Figure:
             self.ylabel_right("")
 
         label_pos = "top" if orient == "v" else "right"
-        item_style: dict = {"borderRadius": border_radius}
+        bar_item_style: dict = {"borderRadius": border_radius}
         if gradient:
             if len(gradient_colors) != 2:
                 raise ValueError("gradient_colors must be a tuple of exactly 2 color strings")
-            item_style["color"] = {
+            bar_item_style["color"] = {
                 "type": "linear", "x": 0, "y": 0, "x2": 0, "y2": 1,
                 "colorStops": [
                     {"offset": 0, "color": gradient_colors[0]},
@@ -904,7 +1117,7 @@ class Figure:
                 "formatter": label_formatter, "fontSize": label_font_size,
                 "color": label_color,
             },
-            "itemStyle": item_style, "yAxisIndex": y_idx,
+            "itemStyle": bar_item_style, "yAxisIndex": y_idx,
         }
         if self._n_grids > 1:
             base["xAxisIndex"] = x_idx
@@ -914,8 +1127,18 @@ class Figure:
             base["barMaxWidth"] = bar_width
         if bar_gap is not None:
             base["barGap"] = bar_gap
+        if bar_min_width is not None:
+            base["barMinWidth"] = bar_min_width
+        if bar_category_gap is not None:
+            base["barCategoryGap"] = bar_category_gap
         if emphasis is not None:
             base["emphasis"] = emphasis.to_dict()
+        _merge_style_params(
+            base, item_style=item_style, label_style=label_style,
+            color=color, blur=blur, select=select,
+            selected_mode=selected_mode, animation=animation,
+            tooltip=tooltip,
+        )
         base.update(series_kw)
 
         groups = dff.groupby(hue) if hue else [(y, dff)]
@@ -955,6 +1178,11 @@ class Figure:
         axis: int = 0,
         grid: int = 0,
         emphasis: Optional[Emphasis] = None,
+        label_style: Optional[LabelStyle] = None,
+        item_style: Optional[ItemStyle] = None,
+        animation: Optional[AnimationConfig] = None,
+        selected_mode: Optional[Union[bool, str]] = None,
+        tooltip: Optional[TooltipStyle] = None,
         **series_kw: Any,
     ) -> "Figure":
         """Add a waterfall chart — cumulative positive/negative deltas.
@@ -1114,6 +1342,16 @@ class Figure:
             pos_series["xAxisIndex"] = x_idx
         if emphasis is not None:
             pos_series["emphasis"] = emphasis.to_dict()
+        if label_style is not None:
+            pos_series.setdefault("label", {}).update(label_style.to_dict())
+        if item_style is not None:
+            pos_series.setdefault("itemStyle", {}).update(item_style.to_dict())
+        if animation is not None:
+            pos_series.update(animation.to_dict())
+        if selected_mode is not None:
+            pos_series["selectedMode"] = selected_mode
+        if tooltip is not None:
+            pos_series["tooltip"] = tooltip.to_dict()
         pos_series.update({k: v for k, v in series_kw.items() if k not in ("name", "data", "stack", "itemStyle", "label")})
         self._series.append(pos_series)
         self._series_meta.append(_SeriesMeta("bar", "Positive", axis, grid_index=grid))
@@ -1147,6 +1385,16 @@ class Figure:
             neg_series["xAxisIndex"] = x_idx
         if emphasis is not None:
             neg_series["emphasis"] = emphasis.to_dict()
+        if label_style is not None:
+            neg_series.setdefault("label", {}).update(label_style.to_dict())
+        if item_style is not None:
+            neg_series.setdefault("itemStyle", {}).update(item_style.to_dict())
+        if animation is not None:
+            neg_series.update(animation.to_dict())
+        if selected_mode is not None:
+            neg_series["selectedMode"] = selected_mode
+        if tooltip is not None:
+            neg_series["tooltip"] = tooltip.to_dict()
         neg_series.update({k: v for k, v in series_kw.items() if k not in ("name", "data", "stack", "itemStyle", "label")})
         self._series.append(neg_series)
         self._series_meta.append(_SeriesMeta("bar", "Negative", axis, grid_index=grid))
@@ -1176,7 +1424,17 @@ class Figure:
         color: Optional[str] = None, size: Optional[str] = None,
         size_range: Tuple[int, int] = (5, 30), symbol: str = "circle",
         opacity: float = 0.7, labels: bool = False, grid: int = 0,
-        emphasis: Optional[ScatterEmphasis] = None, **series_kw: Any,
+        emphasis: Optional[ScatterEmphasis] = None,
+        item_style: Optional[ItemStyle] = None,
+        label_style: Optional[LabelStyle] = None,
+        symbol_rotate: Optional[int] = None,
+        show_symbol: Optional[bool] = None,
+        blur: Optional[Blur] = None,
+        select: Optional[Select] = None,
+        selected_mode: Optional[Union[bool, str]] = None,
+        animation: Optional[AnimationConfig] = None,
+        tooltip: Optional[TooltipStyle] = None,
+        **series_kw: Any,
     ) -> "Figure":
         """Add a scatter series — equivalent to ``plt.scatter()``."""
         self._ensure_cartesian("scatter")
@@ -1226,8 +1484,16 @@ class Figure:
                 entry["symbolSize"] = 8
             if labels:
                 entry["label"] = {"show": True, "position": "top", "formatter": "{@[1]}"}
+            if symbol_rotate is not None:
+                entry["symbolRotate"] = symbol_rotate
             if emphasis is not None:
                 entry["emphasis"] = emphasis.to_dict()
+            _merge_style_params(
+                entry, item_style=item_style, label_style=label_style,
+                show_symbol=show_symbol, blur=blur, select=select,
+                selected_mode=selected_mode, animation=animation,
+                tooltip=tooltip,
+            )
             entry.update(series_kw)
             self._series.append(entry)
             self._series_meta.append(_SeriesMeta("scatter", name_str))
@@ -1251,7 +1517,19 @@ class Figure:
         center_formatter: str = "{b}\n{c}",
         center_font_size: int = 18,
         rose_type: Optional[Literal["radius", "area"]] = None,
-        emphasis: Optional[PieEmphasis] = None, **series_kw: Any,
+        emphasis: Optional[PieEmphasis] = None,
+        min_angle: Optional[int] = None,
+        min_show_label_angle: Optional[int] = None,
+        selected_offset: Optional[int] = None,
+        clockwise: Optional[bool] = None,
+        avoid_label_overlap: Optional[bool] = None,
+        item_style: Optional[ItemStyle] = None,
+        animation_type: Optional[Literal["expansion", "scale"]] = None,
+        blur: Optional[Blur] = None,
+        select: Optional[Select] = None,
+        selected_mode: Optional[Union[bool, str]] = None,
+        tooltip: Optional[TooltipStyle] = None,
+        **series_kw: Any,
     ) -> "Figure":
         """Add a pie (or donut) chart — equivalent to ``plt.pie()``.
 
@@ -1351,6 +1629,28 @@ class Figure:
             "data": data, "avoidLabelOverlap": True,
             "label": lbl, "labelLine": lbl_line, "emphasis": emphasis_dict,
         }
+        if min_angle is not None:
+            entry["minAngle"] = min_angle
+        if min_show_label_angle is not None:
+            entry["minShowLabelAngle"] = min_show_label_angle
+        if selected_offset is not None:
+            entry["selectedOffset"] = selected_offset
+        if clockwise is not None:
+            entry["clockwise"] = clockwise
+        if avoid_label_overlap is not None:
+            entry["avoidLabelOverlap"] = avoid_label_overlap
+        if animation_type is not None:
+            entry["animationType"] = animation_type
+        if item_style is not None:
+            entry.setdefault("itemStyle", {}).update(item_style.to_dict())
+        if blur is not None:
+            entry["blur"] = blur.to_dict()
+        if select is not None:
+            entry["select"] = select.to_dict()
+        if selected_mode is not None:
+            entry["selectedMode"] = selected_mode
+        if tooltip is not None:
+            entry["tooltip"] = tooltip.to_dict()
         if center is not None:
             entry["center"] = center
         if border_radius:
@@ -1397,7 +1697,13 @@ class Figure:
         bins: int = 10, density: bool = False,
         bar_color: Optional[str] = None,
         border_radius: int = 2, labels: bool = False, grid: int = 0,
-        emphasis: Optional[Emphasis] = None, **series_kw: Any,
+        emphasis: Optional[Emphasis] = None,
+        item_style: Optional[ItemStyle] = None,
+        label_style: Optional[LabelStyle] = None,
+        animation: Optional[AnimationConfig] = None,
+        selected_mode: Optional[Union[bool, str]] = None,
+        tooltip: Optional[TooltipStyle] = None,
+        **series_kw: Any,
     ) -> "Figure":
         """Add a histogram — equivalent to ``plt.hist()``."""
         self._ensure_cartesian("hist")
@@ -1426,6 +1732,11 @@ class Figure:
             entry["itemStyle"]["color"] = bar_color
         if emphasis is not None:
             entry["emphasis"] = emphasis.to_dict()
+        _merge_style_params(
+            entry, item_style=item_style, label_style=label_style,
+            selected_mode=selected_mode, animation=animation,
+            tooltip=tooltip,
+        )
         entry.update(series_kw)
 
         self._series.append(entry)
@@ -1449,7 +1760,17 @@ class Figure:
         show_labels: bool = True, area_opacity: float = 0.15,
         radius: Union[int, str] = 150,
         center: Optional[List[str]] = None,
-        emphasis: Optional[RadarEmphasis] = None, **series_kw: Any,
+        emphasis: Optional[RadarEmphasis] = None,
+        shape: Optional[Literal["polygon", "circle"]] = None,
+        split_number: Optional[int] = None,
+        axis_name_font_size: Optional[int] = None,
+        axis_name_color: Optional[str] = None,
+        split_area_show: Optional[bool] = None,
+        axis_line_show: Optional[bool] = None,
+        line_style: Optional[LineStyle] = None,
+        color: Optional[str] = None,
+        tooltip: Optional[TooltipStyle] = None,
+        **series_kw: Any,
     ) -> "Figure":
         """Add a radar chart."""
         self._ensure_mode("radar", "radar")
@@ -1475,17 +1796,39 @@ class Figure:
             "type": "radar", "data": series_data,
             "areaStyle": {"opacity": area_opacity},
         }
+        if line_style is not None:
+            entry["lineStyle"] = line_style.to_dict()
+        if color is not None:
+            entry.setdefault("itemStyle", {})["color"] = color
         if emphasis is not None:
             entry["emphasis"] = emphasis.to_dict()
+        if tooltip is not None:
+            entry["tooltip"] = tooltip.to_dict()
         entry.update(series_kw)
         self._series.append(entry)
         self._series_meta.append(_SeriesMeta("radar", "radar"))
 
-        self._extra["_radar_cfg"] = {
+        radar_cfg: dict = {
             "indicator": list(indicators),
             "radius": radius,
             "center": center or ["50%", "55%"],
         }
+        if shape is not None:
+            radar_cfg["shape"] = shape
+        if split_number is not None:
+            radar_cfg["splitNumber"] = split_number
+        if axis_name_font_size is not None or axis_name_color is not None:
+            ax_name: dict = {}
+            if axis_name_font_size is not None:
+                ax_name["fontSize"] = axis_name_font_size
+            if axis_name_color is not None:
+                ax_name["color"] = axis_name_color
+            radar_cfg["axisName"] = ax_name
+        if split_area_show is not None:
+            radar_cfg["splitArea"] = {"show": split_area_show}
+        if axis_line_show is not None:
+            radar_cfg["axisLine"] = {"show": axis_line_show}
+        self._extra["_radar_cfg"] = radar_cfg
         return self
 
     # ─── KDE ──────────────────────────────────────────────────────────────
@@ -1494,7 +1837,17 @@ class Figure:
         self, df: pd.DataFrame, column: str, *,
         hue: Optional[str] = None, bandwidth: Optional[float] = None,
         grid_size: int = 200, show_median: bool = True,
-        emphasis: Optional[LineEmphasis] = None, **series_kw: Any,
+        emphasis: Optional[LineEmphasis] = None,
+        line_style: Optional[LineStyle] = None,
+        area: bool = False,
+        area_style: Optional[AreaStyle] = None,
+        label_style: Optional[LabelStyle] = None,
+        labels: bool = False,
+        connect_nulls: Optional[bool] = None,
+        color: Optional[str] = None,
+        animation: Optional[AnimationConfig] = None,
+        tooltip: Optional[TooltipStyle] = None,
+        **series_kw: Any,
     ) -> "Figure":
         """Add a KDE (kernel density estimate) curve — like ``sns.kdeplot()``.
 
@@ -1537,8 +1890,19 @@ class Figure:
                 "data": list(zip(xs.tolist(), ys.tolist())),
                 "showSymbol": False,
             }
+            if area:
+                entry["areaStyle"] = {"opacity": 0.15}
+            if labels:
+                entry["label"] = {"show": True}
+            if connect_nulls is not None:
+                entry["connectNulls"] = connect_nulls
             if emphasis is not None:
                 entry["emphasis"] = emphasis.to_dict()
+            _merge_style_params(
+                entry, line_style=line_style, area_style=area_style,
+                label_style=label_style, color=color,
+                animation=animation, tooltip=tooltip,
+            )
             entry.update(series_kw)
             self._series.append(entry)
             self._series_meta.append(_SeriesMeta("line", name))
@@ -1556,7 +1920,13 @@ class Figure:
         visual_min: Optional[float] = None,
         visual_max: Optional[float] = None,
         in_range_colors: Optional[List[str]] = None,
-        emphasis: Optional[Emphasis] = None, **series_kw: Any,
+        emphasis: Optional[Emphasis] = None,
+        label_style: Optional[LabelStyle] = None,
+        item_style: Optional[ItemStyle] = None,
+        animation: Optional[AnimationConfig] = None,
+        selected_mode: Optional[Union[bool, str]] = None,
+        tooltip: Optional[TooltipStyle] = None,
+        **series_kw: Any,
     ) -> "Figure":
         """Add a heatmap — similar to ``sns.heatmap()``."""
         self._ensure_mode("heatmap", "heatmap")
@@ -1612,6 +1982,11 @@ class Figure:
             "label": {"show": label_show, "formatter": label_formatter},
             "emphasis": emphasis_dict,
         }
+        _merge_style_params(
+            entry, label_style=label_style, item_style=item_style,
+            selected_mode=selected_mode, animation=animation,
+            tooltip=tooltip,
+        )
         entry.update(series_kw)
         self._series.append(entry)
         self._series_meta.append(_SeriesMeta("heatmap", value))
@@ -1625,7 +2000,15 @@ class Figure:
         node_width: Union[int, str] = 20, node_gap: int = 8,
         layout: Literal["none", "orthogonal"] = "none",
         orient: Literal["horizontal", "vertical"] = "horizontal",
-        emphasis: Optional[Union[SankeyEmphasis, dict]] = None, **series_kw: Any,
+        emphasis: Optional[Union[SankeyEmphasis, dict]] = None,
+        node_align: Optional[Literal["justify", "left", "right"]] = None,
+        draggable: Optional[bool] = None,
+        focus_node_adjacency: Optional[bool] = None,
+        layout_iterations: Optional[int] = None,
+        item_style: Optional[ItemStyle] = None,
+        label_style: Optional[LabelStyle] = None,
+        tooltip: Optional[TooltipStyle] = None,
+        **series_kw: Any,
     ) -> "Figure":
         """Add an N-stage Sankey diagram."""
         self._ensure_mode("sankey", "sankey")
@@ -1653,6 +2036,20 @@ class Figure:
             "data": nodes, "links": links,
             "nodeWidth": node_width, "nodeGap": node_gap,
         }
+        if node_align is not None:
+            entry["nodeAlign"] = node_align
+        if draggable is not None:
+            entry["draggable"] = draggable
+        if focus_node_adjacency is not None:
+            entry["focusNodeAdjacency"] = focus_node_adjacency
+        if layout_iterations is not None:
+            entry["layoutIterations"] = layout_iterations
+        if item_style is not None:
+            entry["itemStyle"] = item_style.to_dict()
+        if label_style is not None:
+            entry.setdefault("label", {}).update(label_style.to_dict())
+        if tooltip is not None:
+            entry["tooltip"] = tooltip.to_dict()
         if emphasis is not None:
             if isinstance(emphasis, dict):
                 import warnings as _w
@@ -1678,7 +2075,16 @@ class Figure:
         value: Optional[str] = None, *,
         leaf_depth: Optional[int] = 2, roam: bool = True,
         gap_width: int = 2, border_width: int = 1,
-        label_formatter: str = "{b}\n{c}", emphasis: Optional[TreemapEmphasis] = None, **series_kw: Any,
+        label_formatter: str = "{b}\n{c}", emphasis: Optional[TreemapEmphasis] = None,
+        drill_down_icon: Optional[str] = None,
+        node_click: Optional[Literal["zoomToNode", "link", False]] = None,
+        color_alpha: Optional[list] = None,
+        color_saturation: Optional[list] = None,
+        visible_min: Optional[int] = None,
+        breadcrumb: Optional[bool] = None,
+        item_style: Optional[ItemStyle] = None,
+        tooltip: Optional[TooltipStyle] = None,
+        **series_kw: Any,
     ) -> "Figure":
         """Add a treemap chart."""
         self._ensure_mode("treemap", "treemap")
@@ -1729,6 +2135,22 @@ class Figure:
             "label": {"show": True, "formatter": label_formatter},
             "breadcrumb": {"show": True}, "levels": default_levels,
         }
+        if drill_down_icon is not None:
+            entry["drillDownIcon"] = drill_down_icon
+        if node_click is not None:
+            entry["nodeClick"] = node_click
+        if color_alpha is not None:
+            entry["colorAlpha"] = color_alpha
+        if color_saturation is not None:
+            entry["colorSaturation"] = color_saturation
+        if visible_min is not None:
+            entry["visibleMin"] = visible_min
+        if breadcrumb is not None:
+            entry["breadcrumb"] = {"show": breadcrumb}
+        if item_style is not None:
+            entry.setdefault("itemStyle", {}).update(item_style.to_dict())
+        if tooltip is not None:
+            entry["tooltip"] = tooltip.to_dict()
         if emphasis is not None:
             entry["emphasis"] = emphasis.to_dict()
         entry.update(series_kw)
@@ -1743,7 +2165,15 @@ class Figure:
         self, df: pd.DataFrame, names: str, values: str, *,
         sort_order: Literal["descending", "ascending", "none"] = "descending",
         gap: int = 2, label_position: str = "inside",
-        label_formatter: str = "{b}: {c}", emphasis: Optional[FunnelEmphasis] = None, **series_kw: Any,
+        label_formatter: str = "{b}: {c}", emphasis: Optional[FunnelEmphasis] = None,
+        orient: Optional[Literal["vertical", "horizontal"]] = None,
+        funnel_align: Optional[Literal["center", "left", "right"]] = None,
+        min_size: Optional[str] = None,
+        max_size: Optional[str] = None,
+        item_style: Optional[ItemStyle] = None,
+        label_line: Optional[LabelLineStyle] = None,
+        tooltip: Optional[TooltipStyle] = None,
+        **series_kw: Any,
     ) -> "Figure":
         """Add a funnel chart."""
         self._ensure_mode("funnel", "funnel")
@@ -1764,6 +2194,20 @@ class Figure:
             "gap": gap,
             "label": {"show": True, "position": label_position, "formatter": label_formatter},
         }
+        if orient is not None:
+            entry["orient"] = orient
+        if funnel_align is not None:
+            entry["funnelAlign"] = funnel_align
+        if min_size is not None:
+            entry["minSize"] = min_size
+        if max_size is not None:
+            entry["maxSize"] = max_size
+        if item_style is not None:
+            entry.setdefault("itemStyle", {}).update(item_style.to_dict())
+        if label_line is not None:
+            entry["labelLine"] = label_line.to_dict()
+        if tooltip is not None:
+            entry["tooltip"] = tooltip.to_dict()
         if emphasis is not None:
             entry["emphasis"] = emphasis.to_dict()
         entry.update(series_kw)
@@ -1778,7 +2222,17 @@ class Figure:
     def boxplot(
         self, df: pd.DataFrame, x: str, y: str, *,
         orient: Literal["v", "h"] = "v", grid: int = 0,
-        emphasis: Optional[Emphasis] = None, **series_kw: Any,
+        emphasis: Optional[Emphasis] = None,
+        item_style: Optional[ItemStyle] = None,
+        label_style: Optional[LabelStyle] = None,
+        labels: bool = False,
+        color: Optional[str] = None,
+        blur: Optional[Blur] = None,
+        select: Optional[Select] = None,
+        selected_mode: Optional[Union[bool, str]] = None,
+        animation: Optional[AnimationConfig] = None,
+        tooltip: Optional[TooltipStyle] = None,
+        **series_kw: Any,
     ) -> "Figure":
         """Add a box-and-whisker plot — equivalent to ``plt.boxplot()``."""
         self._ensure_cartesian("boxplot")
@@ -1806,8 +2260,16 @@ class Figure:
                 ])
 
         entry: dict = {"type": "boxplot", "data": box_data, "name": y}
+        if labels:
+            entry["label"] = {"show": True}
         if emphasis is not None:
             entry["emphasis"] = emphasis.to_dict()
+        _merge_style_params(
+            entry, item_style=item_style, label_style=label_style,
+            color=color, blur=blur, select=select,
+            selected_mode=selected_mode, animation=animation,
+            tooltip=tooltip,
+        )
         entry.update(series_kw)
         self._series.append(entry)
         self._series_meta.append(_SeriesMeta("boxplot", y))
@@ -1825,6 +2287,13 @@ class Figure:
         down_border: Optional[str] = None,
         axis: int = 0, grid: int = 0,
         emphasis: Optional[Emphasis] = None,
+        border_width: Optional[int] = None,
+        opacity: Optional[float] = None,
+        label_style: Optional[LabelStyle] = None,
+        labels: bool = False,
+        animation: Optional[AnimationConfig] = None,
+        selected_mode: Optional[Union[bool, str]] = None,
+        tooltip: Optional[TooltipStyle] = None,
         **series_kw: Any,
     ) -> "Figure":
         """Add a candlestick (OHLC) series — used for financial / stock charts.
@@ -1897,8 +2366,19 @@ class Figure:
         }
         if self._n_grids > 1:
             entry["xAxisIndex"] = x_idx
+        if border_width is not None:
+            entry["itemStyle"]["borderWidth"] = border_width
+        if opacity is not None:
+            entry["itemStyle"]["opacity"] = opacity
+        if labels:
+            entry["label"] = {"show": True}
         if emphasis is not None:
             entry["emphasis"] = emphasis.to_dict()
+        _merge_style_params(
+            entry, label_style=label_style,
+            selected_mode=selected_mode, animation=animation,
+            tooltip=tooltip,
+        )
         entry.update(series_kw)
         self._series.append(entry)
         self._series_meta.append(_SeriesMeta("candlestick", entry["name"], axis, grid_index=grid))
@@ -1914,7 +2394,17 @@ class Figure:
         split_number: int = 10, pointer: bool = True,
         axis_line_colors: Optional[List[Tuple[float, str]]] = None,
         radius: str = "75%",
-        emphasis: Optional[Emphasis] = None, **series_kw: Any,
+        emphasis: Optional[Emphasis] = None,
+        detail_formatter: Optional[str] = None,
+        detail_font_size: Optional[int] = None,
+        detail_color: Optional[str] = None,
+        axis_tick_show: Optional[bool] = None,
+        axis_label_show: Optional[bool] = None,
+        progress: Optional[bool] = None,
+        progress_color: Optional[str] = None,
+        item_style: Optional[ItemStyle] = None,
+        tooltip: Optional[TooltipStyle] = None,
+        **series_kw: Any,
     ) -> "Figure":
         """Add a gauge / meter chart (speedometer style).
 
@@ -1954,9 +2444,27 @@ class Figure:
             entry["axisLine"] = {
                 "lineStyle": {
                     "width": 30,
-                    "color": [[stop, color] for stop, color in axis_line_colors],
+                    "color": [[stop, clr] for stop, clr in axis_line_colors],
                 }
             }
+        if detail_formatter is not None:
+            entry["detail"]["formatter"] = detail_formatter
+        if detail_font_size is not None:
+            entry["detail"]["fontSize"] = detail_font_size
+        if detail_color is not None:
+            entry["detail"]["color"] = detail_color
+        if axis_tick_show is not None:
+            entry.setdefault("axisTick", {})["show"] = axis_tick_show
+        if axis_label_show is not None:
+            entry.setdefault("axisLabel", {})["show"] = axis_label_show
+        if progress is not None:
+            entry.setdefault("progress", {})["show"] = progress
+        if progress_color is not None:
+            entry.setdefault("progress", {}).setdefault("itemStyle", {})["color"] = progress_color
+        if item_style is not None:
+            entry.setdefault("itemStyle", {}).update(item_style.to_dict())
+        if tooltip is not None:
+            entry["tooltip"] = tooltip.to_dict()
         if emphasis is not None:
             entry["emphasis"] = emphasis.to_dict()
         entry.update(series_kw)
@@ -1973,7 +2481,15 @@ class Figure:
         value: Optional[str] = None, *,
         inner_radius: str = "15%",
         sort: Optional[Literal["desc", "asc"]] = "desc",
-        emphasis: Optional[Emphasis] = None, **series_kw: Any,
+        emphasis: Optional[Emphasis] = None,
+        outer_radius: Optional[str] = None,
+        node_click: Optional[Literal["rootToNode", "link", False]] = None,
+        selected_mode: Optional[Union[bool, str]] = None,
+        label_rotate: Optional[Union[str, int]] = None,
+        animation_type: Optional[Literal["expansion", "scale"]] = None,
+        item_style: Optional[ItemStyle] = None,
+        tooltip: Optional[TooltipStyle] = None,
+        **series_kw: Any,
     ) -> "Figure":
         """Add a sunburst (hierarchical pie) chart.
 
@@ -2031,11 +2547,23 @@ class Figure:
         entry: dict = {
             "type": "sunburst",
             "data": data,
-            "radius": [inner_radius, "90%"],
+            "radius": [inner_radius, outer_radius or "90%"],
             "label": {"rotate": "radial"},
         }
         if sort is not None:
             entry["sort"] = sort
+        if node_click is not None:
+            entry["nodeClick"] = node_click
+        if selected_mode is not None:
+            entry["selectedMode"] = selected_mode
+        if label_rotate is not None:
+            entry["label"]["rotate"] = label_rotate
+        if animation_type is not None:
+            entry["animationType"] = animation_type
+        if item_style is not None:
+            entry.setdefault("itemStyle", {}).update(item_style.to_dict())
+        if tooltip is not None:
+            entry["tooltip"] = tooltip.to_dict()
         if emphasis is not None:
             entry["emphasis"] = emphasis.to_dict()
         entry.update(series_kw)
@@ -2056,6 +2584,17 @@ class Figure:
         layout: Literal["force", "circular", "none"] = "force",
         roam: bool = True, symbol_size: int = 20,
         emphasis: Optional[Union[GraphEmphasis, Emphasis]] = None,
+        repulsion: Optional[int] = None,
+        gravity: Optional[float] = None,
+        edge_length: Optional[Union[int, list]] = None,
+        friction: Optional[float] = None,
+        edge_label: Optional[dict] = None,
+        edge_symbol: Optional[list] = None,
+        node_scale_ratio: Optional[float] = None,
+        label_style: Optional[LabelStyle] = None,
+        item_style: Optional[ItemStyle] = None,
+        line_style: Optional[LineStyle] = None,
+        tooltip: Optional[TooltipStyle] = None,
         **series_kw: Any,
     ) -> "Figure":
         """Add a graph / network chart.
@@ -2117,9 +2656,32 @@ class Figure:
             "label": {"show": True, "position": "right"},
         }
         if layout == "force":
-            entry["force"] = {"repulsion": 100, "edgeLength": [50, 200]}
+            force_cfg: dict = {"repulsion": 100, "edgeLength": [50, 200]}
+            if repulsion is not None:
+                force_cfg["repulsion"] = repulsion
+            if gravity is not None:
+                force_cfg["gravity"] = gravity
+            if edge_length is not None:
+                force_cfg["edgeLength"] = edge_length
+            if friction is not None:
+                force_cfg["friction"] = friction
+            entry["force"] = force_cfg
         if categories:
             entry["categories"] = categories
+        if edge_label is not None:
+            entry["edgeLabel"] = edge_label
+        if edge_symbol is not None:
+            entry["edgeSymbol"] = edge_symbol
+        if node_scale_ratio is not None:
+            entry["nodeScaleRatio"] = node_scale_ratio
+        if label_style is not None:
+            entry.setdefault("label", {}).update(label_style.to_dict())
+        if item_style is not None:
+            entry.setdefault("itemStyle", {}).update(item_style.to_dict())
+        if line_style is not None:
+            entry["lineStyle"] = line_style.to_dict()
+        if tooltip is not None:
+            entry["tooltip"] = tooltip.to_dict()
         if emphasis is not None:
             entry["emphasis"] = emphasis.to_dict()
         entry.update(series_kw)
@@ -2141,6 +2703,13 @@ class Figure:
         visual_min: Optional[float] = None,
         visual_max: Optional[float] = None,
         in_range_colors: Optional[List[str]] = None,
+        split_line_show: Optional[bool] = None,
+        split_line_color: Optional[str] = None,
+        day_label_show: Optional[bool] = None,
+        month_label_show: Optional[bool] = None,
+        item_style: Optional[ItemStyle] = None,
+        emphasis: Optional[Emphasis] = None,
+        tooltip: Optional[TooltipStyle] = None,
         **series_kw: Any,
     ) -> "Figure":
         """Add a calendar heatmap (GitHub-style contribution grid).
@@ -2181,13 +2750,25 @@ class Figure:
         vmax = visual_max if visual_max is not None else float(dff[value].max())
         colors = in_range_colors or ["#ebedf0", "#9be9a8", "#40c463", "#30a14e", "#216e39"]
 
-        self._extra["calendar"] = {
+        cal_cfg: dict = {
             "range": str(year),
             "cellSize": cell_size or ["auto", 14],
             "orient": orient,
             "left": 30, "right": 30, "top": 60, "bottom": 30,
             "itemStyle": {"borderWidth": 0.5, "borderColor": "#fff"},
         }
+        if split_line_show is not None or split_line_color is not None:
+            sl: dict = {}
+            if split_line_show is not None:
+                sl["show"] = split_line_show
+            if split_line_color is not None:
+                sl["lineStyle"] = {"color": split_line_color}
+            cal_cfg["splitLine"] = sl
+        if day_label_show is not None:
+            cal_cfg["dayLabel"] = {"show": day_label_show}
+        if month_label_show is not None:
+            cal_cfg["monthLabel"] = {"show": month_label_show}
+        self._extra["calendar"] = cal_cfg
         self._extra["visualMap"] = {
             "min": vmin, "max": vmax, "calculable": True,
             "orient": "horizontal", "left": "center", "bottom": "2%",
@@ -2199,6 +2780,12 @@ class Figure:
             "coordinateSystem": "calendar",
             "data": data,
         }
+        if item_style is not None:
+            entry.setdefault("itemStyle", {}).update(item_style.to_dict())
+        if emphasis is not None:
+            entry["emphasis"] = emphasis.to_dict()
+        if tooltip is not None:
+            entry["tooltip"] = tooltip.to_dict()
         entry.update(series_kw)
 
         self._series.append(entry)

@@ -2109,6 +2109,8 @@ class Figure:
         color_saturation: Optional[list] = None,
         visible_min: Optional[int] = None,
         breadcrumb: Optional[bool] = None,
+        upper_label: bool = False,
+        upper_label_height: int = 30,
         item_style: Optional[ItemStyle] = None,
         tooltip: Optional[TooltipStyle] = None,
         **series_kw: Any,
@@ -2150,11 +2152,27 @@ class Figure:
 
         data = _build(root)
 
-        default_levels = [
-            {"itemStyle": {"borderColor": "#fff", "borderWidth": border_width, "gapWidth": gap_width}},
-            {"itemStyle": {"borderColor": "#eee", "borderWidth": border_width, "gapWidth": gap_width}},
-            {"itemStyle": {"borderColor": "#ddd", "borderWidth": border_width, "gapWidth": gap_width}},
-        ]
+        if upper_label:
+            default_levels = [
+                {
+                    "itemStyle": {"borderColor": "#777", "borderWidth": 0, "gapWidth": 1},
+                    "upperLabel": {"show": False},
+                },
+                {
+                    "itemStyle": {"borderColor": "#555", "borderWidth": 5, "gapWidth": 1},
+                    "emphasis": {"itemStyle": {"borderColor": "#ddd"}},
+                },
+                {
+                    "colorSaturation": [0.35, 0.5],
+                    "itemStyle": {"borderWidth": 5, "gapWidth": 1, "borderColorSaturation": 0.6},
+                },
+            ]
+        else:
+            default_levels = [
+                {"itemStyle": {"borderColor": "#fff", "borderWidth": border_width, "gapWidth": gap_width}},
+                {"itemStyle": {"borderColor": "#eee", "borderWidth": border_width, "gapWidth": gap_width}},
+                {"itemStyle": {"borderColor": "#ddd", "borderWidth": border_width, "gapWidth": gap_width}},
+            ]
 
         entry: dict = {
             "type": "treemap", "data": data,
@@ -2162,6 +2180,10 @@ class Figure:
             "label": {"show": True, "formatter": label_formatter},
             "breadcrumb": {"show": True}, "levels": default_levels,
         }
+        if upper_label:
+            entry["upperLabel"] = {
+                "show": True, "height": upper_label_height,
+            }
         if drill_down_icon is not None:
             entry["drillDownIcon"] = drill_down_icon
         if node_click is not None:

@@ -85,7 +85,7 @@ Three lines from DataFrame to interactive chart.
 
 ## Chart Types
 
-echartsy v0.6.3 supports **19 chart types** covering cartesian, standalone, hierarchical, relational, and statistical visualizations.
+echartsy v0.6.4 supports **19 chart types** covering cartesian, standalone, hierarchical, relational, and statistical visualizations.
 
 ### Cartesian Charts
 
@@ -593,6 +593,9 @@ Same as `Figure` but adds timeline animation. Extra parameters:
 ---
 
 ## Changelog (Recent)
+
+### v0.6.4
+- **Added:** `upper_label` and `upper_label_height` parameters on `treemap()` — enables parent category labels as header bars on treemap nodes (mirrors ECharts `upperLabel` feature)
 
 ### v0.6.3
 - **Extended:** TimelineFigure API parity — added 34 missing parameters across `plot()`, `bar()`, `pie()`, `title()`, `legend()`, `tooltip()`, `xlim()`, `ylim()`

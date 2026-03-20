@@ -42,6 +42,10 @@ fig.show()
   - [Sankey Diagram](#sankey-diagram)
   - [Candlestick Chart](#candlestick-chart)
   - [Waterfall Chart](#waterfall-chart)
+  - [Gauge Chart](#gauge-chart)
+  - [Sunburst Chart](#sunburst-chart)
+  - [Graph / Network Chart](#graph--network-chart)
+  - [Calendar Heatmap](#calendar-heatmap)
 - [Composite Charts](#composite-charts)
   - [Dual Axis (Bar + Line)](#dual-axis-bar--line)
   - [Bar + Pie Overlay](#bar--pie-overlay)
@@ -237,6 +241,7 @@ fig.show()
 | `gradient_colors` | `tuple` | `("#83bff6", "#188df0")` | Gradient start/end |
 | `agg` | `str` | `"sum"` | Aggregation: `"sum"`, `"mean"`, `"median"`, `"max"`, `"min"`, `"count"` |
 | `axis` | `int` | `0` | Y-axis index (0 = left, 1 = right) |
+| `grid` | `int` | `0` | Grid index for multi-grid subplots |
 | `item_style` | `ItemStyle` | `None` | Typed item style (border, shadow, color, etc.) |
 | `label_style` | `LabelStyle` | `None` | Typed label configuration |
 | `bar_min_width` | `int / str` | `None` | Minimum bar width |
@@ -307,6 +312,7 @@ fig.show()
 | `label_suffix` | `str` | `""` | Text after label value |
 | `agg` | `str` | `"mean"` | Aggregation function |
 | `axis` | `int` | `0` | Y-axis index |
+| `grid` | `int` | `0` | Grid index for multi-grid subplots |
 | `line_style` | `LineStyle` | `None` | Typed line style (dash, cap, shadow, etc.) |
 | `area_style` | `AreaStyle` | `None` | Typed area fill style |
 | `label_style` | `LabelStyle` | `None` | Typed label configuration |
@@ -359,6 +365,7 @@ fig.show()
 | `symbol` | `str` | `"circle"` | Symbol type |
 | `opacity` | `float` | `0.7` | Point opacity |
 | `labels` | `bool` | `False` | Show labels |
+| `grid` | `int` | `0` | Grid index for multi-grid subplots |
 | `item_style` | `ItemStyle` | `None` | Typed item style |
 | `label_style` | `LabelStyle` | `None` | Typed label configuration |
 | `symbol_rotate` | `int` | `None` | Symbol rotation in degrees |
@@ -413,6 +420,9 @@ fig.show()
 | `label_outside` | `bool` | `True` | Labels outside slices |
 | `label_formatter` | `str` | `"{b}: {c} ({d}%)"` | Label format |
 | `label_font_size` | `int` | `None` | Label size |
+| `center_on_hover` | `bool` | `False` | Show label at center on hover (donut charts) |
+| `center_formatter` | `str` | `"{b}\n{c}"` | Center label format string |
+| `center_font_size` | `int` | `18` | Center label font size |
 | `rose_type` | `str` | `None` | `"radius"` or `"area"` for rose chart |
 | `min_angle` | `int` | `None` | Minimum slice angle in degrees |
 | `min_show_label_angle` | `int` | `None` | Minimum angle to show label |
@@ -421,6 +431,7 @@ fig.show()
 | `avoid_label_overlap` | `bool` | `None` | Auto-avoid label overlaps |
 | `item_style` | `ItemStyle` | `None` | Typed item style |
 | `animation_type` | `str` | `None` | `"expansion"` or `"scale"` |
+| `animation` | `AnimationConfig` | `None` | Animation settings |
 | `blur` | `Blur` | `None` | Blur state styling |
 | `select` | `Select` | `None` | Select state styling |
 | `selected_mode` | `str / bool` | `None` | Selection mode |
@@ -453,12 +464,14 @@ fig.show()
 | `density` | `bool` | `False` | Normalize to probability density |
 | `bar_color` | `str` | `None` | Override bar color |
 | `border_radius` | `int` | `2` | Corner rounding |
+| `grid` | `int` | `0` | Grid index for multi-grid subplots |
 | `labels` | `bool` | `False` | Show value labels |
 | `item_style` | `ItemStyle` | `None` | Typed item style |
 | `label_style` | `LabelStyle` | `None` | Typed label configuration |
 | `animation` | `AnimationConfig` | `None` | Animation settings |
 | `selected_mode` | `str / bool` | `None` | Selection mode |
 | `tooltip` | `TooltipStyle` | `None` | Per-series tooltip |
+| `emphasis` | `Emphasis` | `None` | Hover effect |
 
 ---
 
@@ -618,6 +631,7 @@ fig.show()
 | `x` | `str` | *required* | Category column |
 | `y` | `str` | *required* | Numeric value column |
 | `orient` | `"v"` / `"h"` | `"v"` | Orientation |
+| `grid` | `int` | `0` | Grid index for multi-grid subplots |
 | `item_style` | `ItemStyle` | `None` | Typed item style |
 | `label_style` | `LabelStyle` | `None` | Typed label configuration |
 | `labels` | `bool` | `False` | Show value labels |
@@ -848,6 +862,7 @@ fig.show()
 | `up_border` | `str` | `None` | Bullish border (defaults to `up_color`) |
 | `down_border` | `str` | `None` | Bearish border (defaults to `down_color`) |
 | `axis` | `int` | `0` | Y-axis index (`0` = left, `1` = right) |
+| `grid` | `int` | `0` | Grid index for multi-grid subplots |
 | `border_width` | `int` | `None` | Candlestick border width |
 | `opacity` | `float` | `None` | Candlestick opacity |
 | `label_style` | `LabelStyle` | `None` | Typed label configuration |
@@ -906,6 +921,166 @@ fig.show()
 | `selected_mode` | `str / bool` | `None` | Selection mode |
 | `tooltip` | `TooltipStyle` | `None` | Per-series tooltip |
 | `emphasis` | `Emphasis` | `None` | Hover effect |
+
+---
+
+### Gauge Chart
+
+```python
+fig = ec.figure()
+fig.gauge(75, name="Score", min_val=0, max_val=100)
+fig.title("Performance Gauge")
+fig.show()
+```
+
+**Parameters:**
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `value` | `float` | *required* | The gauge value |
+| `name` | `str` | `""` | Label shown below the pointer |
+| `min_val` | `float` | `0` | Data range minimum |
+| `max_val` | `float` | `100` | Data range maximum |
+| `start_angle` | `int` | `225` | Arc start angle (degrees) |
+| `end_angle` | `int` | `-45` | Arc end angle (degrees) |
+| `split_number` | `int` | `10` | Number of tick divisions |
+| `pointer` | `bool` | `True` | Show the pointer needle |
+| `axis_line_colors` | `list` | `None` | Colour stops, e.g. `[(0.3, "#67e0e3"), (0.7, "#37a2da"), (1, "#fd666d")]` |
+| `radius` | `str` | `"75%"` | Gauge radius |
+| `detail_formatter` | `str` | `None` | Format string for the detail label (e.g. `"{value}%"`) |
+| `detail_font_size` | `int` | `None` | Detail label font size |
+| `detail_color` | `str` | `None` | Detail label color |
+| `axis_tick_show` | `bool` | `None` | Show axis ticks |
+| `axis_label_show` | `bool` | `None` | Show axis labels |
+| `progress` | `bool` | `None` | Show progress arc |
+| `progress_color` | `str` | `None` | Progress arc color |
+| `item_style` | `ItemStyle` | `None` | Typed item style |
+| `tooltip` | `TooltipStyle` | `None` | Per-series tooltip |
+| `emphasis` | `Emphasis` | `None` | Hover effect |
+
+---
+
+### Sunburst Chart
+
+```python
+df = pd.DataFrame({
+    "Region": ["Americas", "Americas", "Europe", "Europe", "Asia", "Asia"],
+    "Country": ["USA", "Brazil", "UK", "Germany", "China", "Japan"],
+    "Revenue": [500, 200, 300, 250, 400, 350],
+})
+
+fig = ec.figure()
+fig.sunburst(df, path=["Region", "Country"], value="Revenue")
+fig.title("Revenue by Region")
+fig.show()
+```
+
+**Parameters:**
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `df` | `DataFrame` | *required* | Source data |
+| `path` | `list[str]` | *required* | Hierarchy columns from root to leaf |
+| `value` | `str` | `None` | Numeric size column (counts if `None`) |
+| `inner_radius` | `str` | `"15%"` | Inner ring radius |
+| `sort` | `str` | `"desc"` | Slice sort order (`"desc"`, `"asc"`, or `None`) |
+| `outer_radius` | `str` | `None` | Outer ring radius |
+| `node_click` | `str / False` | `None` | Click behaviour (`"rootToNode"`, `"link"`, or `False`) |
+| `selected_mode` | `str / bool` | `None` | Selection mode |
+| `label_rotate` | `str / int` | `None` | Label rotation (`"radial"`, `"tangential"`, or degrees) |
+| `animation_type` | `str` | `None` | `"expansion"` or `"scale"` |
+| `item_style` | `ItemStyle` | `None` | Typed item style |
+| `tooltip` | `TooltipStyle` | `None` | Per-series tooltip |
+| `emphasis` | `Emphasis` | `None` | Hover effect |
+
+---
+
+### Graph / Network Chart
+
+```python
+nodes = pd.DataFrame({
+    "name": ["Alice", "Bob", "Carol", "Dave"],
+    "value": [10, 8, 6, 4],
+})
+edges = pd.DataFrame({
+    "source": ["Alice", "Alice", "Bob", "Carol"],
+    "target": ["Bob", "Carol", "Dave", "Dave"],
+})
+
+fig = ec.figure(height="500px")
+fig.graph(nodes, edges, layout="force", repulsion=500)
+fig.title("Social Network")
+fig.show()
+```
+
+**Parameters:**
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `nodes_df` | `DataFrame` | *required* | Node data with at least a name column |
+| `edges_df` | `DataFrame` | *required* | Edge data with source and target columns |
+| `source` | `str` | `"source"` | Source column in edges DataFrame |
+| `target` | `str` | `"target"` | Target column in edges DataFrame |
+| `value` | `str` | `None` | Edge weight column |
+| `node_name` | `str` | `"name"` | Node label column |
+| `node_value` | `str` | `None` | Node size column |
+| `node_category` | `str` | `None` | Grouping column for legend categories |
+| `layout` | `str` | `"force"` | Layout algorithm (`"force"`, `"circular"`, `"none"`) |
+| `roam` | `bool` | `True` | Allow pan/zoom |
+| `symbol_size` | `int` | `20` | Default node size |
+| `repulsion` | `int` | `None` | Force layout repulsion strength |
+| `gravity` | `float` | `None` | Force layout gravity |
+| `edge_length` | `int / list` | `None` | Desired edge length |
+| `friction` | `float` | `None` | Force layout friction |
+| `edge_label` | `dict` | `None` | Edge label configuration |
+| `edge_symbol` | `list` | `None` | Edge endpoint symbols (e.g. `["none", "arrow"]`) |
+| `node_scale_ratio` | `float` | `None` | Node size scaling ratio |
+| `label_style` | `LabelStyle` | `None` | Typed label configuration |
+| `item_style` | `ItemStyle` | `None` | Typed item style |
+| `line_style` | `LineStyle` | `None` | Typed line/edge style |
+| `tooltip` | `TooltipStyle` | `None` | Per-series tooltip |
+| `emphasis` | `GraphEmphasis` | `None` | Hover effect |
+
+---
+
+### Calendar Heatmap
+
+```python
+import pandas as pd
+import numpy as np
+
+dates = pd.date_range("2024-01-01", "2024-12-31", freq="D")
+df = pd.DataFrame({
+    "date": dates,
+    "commits": np.random.poisson(3, len(dates)),
+})
+
+fig = ec.figure(height="250px")
+fig.calendar_heatmap(df, date="date", value="commits", year=2024)
+fig.title("GitHub Contributions")
+fig.show()
+```
+
+**Parameters:**
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `df` | `DataFrame` | *required* | Source data |
+| `date` | `str` | *required* | Date column (parseable by `pd.to_datetime`) |
+| `value` | `str` | *required* | Numeric value column |
+| `year` | `int` | `None` | Calendar year (auto-detected if `None`) |
+| `cell_size` | `list` | `None` | Cell dimensions (e.g. `["auto", 14]`) |
+| `orient` | `str` | `"horizontal"` | Orientation (`"horizontal"` or `"vertical"`) |
+| `visual_min` | `float` | `None` | Colour scale minimum |
+| `visual_max` | `float` | `None` | Colour scale maximum |
+| `in_range_colors` | `list[str]` | `None` | Gradient colour stops |
+| `split_line_show` | `bool` | `None` | Show month split lines |
+| `split_line_color` | `str` | `None` | Split line colour |
+| `day_label_show` | `bool` | `None` | Show day-of-week labels |
+| `month_label_show` | `bool` | `None` | Show month labels |
+| `item_style` | `ItemStyle` | `None` | Typed item style |
+| `emphasis` | `Emphasis` | `None` | Hover effect |
+| `tooltip` | `TooltipStyle` | `None` | Per-series tooltip |
 
 ---
 

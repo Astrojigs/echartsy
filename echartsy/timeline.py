@@ -289,7 +289,15 @@ class TimelineFigure:
     # ═══════════════════════════════════════════════════════════════════════
 
     def title(self, text: str, subtitle: Optional[str] = None,
-              left: str = "center", top: Optional[Union[str, int]] = None) -> "TimelineFigure":
+              left: str = "center", top: Optional[Union[str, int]] = None,
+              text_color: Optional[str] = None,
+              text_font_weight: Optional[str] = None,
+              link: Optional[str] = None,
+              sublink: Optional[str] = None,
+              background_color: Optional[str] = None,
+              border_color: Optional[str] = None,
+              border_width: Optional[int] = None,
+              padding: Optional[Union[int, list]] = None) -> "TimelineFigure":
         self._title_cfg = {
             "text": text, "left": left,
             "textStyle": {"fontSize": self._style.title_font_size, "fontFamily": self._style.font_family},
@@ -299,6 +307,22 @@ class TimelineFigure:
             self._title_cfg["subtextStyle"] = {"fontSize": self._style.subtitle_font_size}
         if top is not None:
             self._title_cfg["top"] = top
+        if text_color is not None:
+            self._title_cfg["textStyle"]["color"] = text_color
+        if text_font_weight is not None:
+            self._title_cfg["textStyle"]["fontWeight"] = text_font_weight
+        if link is not None:
+            self._title_cfg["link"] = link
+        if sublink is not None:
+            self._title_cfg["sublink"] = sublink
+        if background_color is not None:
+            self._title_cfg["backgroundColor"] = background_color
+        if border_color is not None:
+            self._title_cfg["borderColor"] = border_color
+        if border_width is not None:
+            self._title_cfg["borderWidth"] = border_width
+        if padding is not None:
+            self._title_cfg["padding"] = padding
         return self
 
     def xlabel(self, name: str, rotate: Optional[int] = None,
@@ -335,10 +359,49 @@ class TimelineFigure:
         return self
 
     def legend(self, show: bool = True, orient: Optional[str] = None,
-               left: Optional[str] = None, top: Optional[Union[str, int]] = None) -> "TimelineFigure":
+               left: Optional[str] = None, top: Optional[Union[str, int]] = None,
+               bottom: Optional[Union[str, int]] = None,
+               text_style_color: Optional[str] = None,
+               text_style_font_size: Optional[int] = None,
+               icon: Optional[str] = None,
+               item_gap: Optional[int] = None,
+               item_width: Optional[int] = None,
+               item_height: Optional[int] = None,
+               background_color: Optional[str] = None,
+               border_color: Optional[str] = None,
+               border_width: Optional[int] = None,
+               padding: Optional[Union[int, list]] = None,
+               scroll: Optional[bool] = None) -> "TimelineFigure":
         cfg: dict = {"show": show, "orient": orient or self._style.legend_orient}
         if left is not None: cfg["left"] = left
         if top is not None: cfg["top"] = top
+        if bottom is not None:
+            cfg["bottom"] = bottom
+        if text_style_color is not None or text_style_font_size is not None:
+            ts: dict = {}
+            if text_style_color is not None:
+                ts["color"] = text_style_color
+            if text_style_font_size is not None:
+                ts["fontSize"] = text_style_font_size
+            cfg["textStyle"] = ts
+        if icon is not None:
+            cfg["icon"] = icon
+        if item_gap is not None:
+            cfg["itemGap"] = item_gap
+        if item_width is not None:
+            cfg["itemWidth"] = item_width
+        if item_height is not None:
+            cfg["itemHeight"] = item_height
+        if background_color is not None:
+            cfg["backgroundColor"] = background_color
+        if border_color is not None:
+            cfg["borderColor"] = border_color
+        if border_width is not None:
+            cfg["borderWidth"] = border_width
+        if padding is not None:
+            cfg["padding"] = padding
+        if scroll:
+            cfg["type"] = "scroll"
         self._legend_cfg = cfg
         return self
 
@@ -356,6 +419,15 @@ class TimelineFigure:
         cross_type: Optional[Literal["solid", "dashed", "dotted"]] = None,
         shadow_color: Optional[str] = None,
         shadow_opacity: Optional[float] = None,
+        background_color: Optional[str] = None,
+        border_color: Optional[str] = None,
+        border_width: Optional[int] = None,
+        text_color: Optional[str] = None,
+        text_size: Optional[int] = None,
+        padding: Optional[Union[int, list]] = None,
+        enterable: Optional[bool] = None,
+        order: Optional[Literal["seriesAsc", "seriesDesc", "valueAsc", "valueDesc"]] = None,
+        render_mode: Optional[Literal["html", "richText"]] = None,
     ) -> "TimelineFigure":
         """Configure tooltip behaviour and axis-pointer styling."""
         self._tooltip_cfg["trigger"] = trigger
@@ -368,6 +440,24 @@ class TimelineFigure:
         self._tooltip_cfg["axisPointer"] = ap
         if formatter:
             self._tooltip_cfg["formatter"] = formatter
+        if background_color is not None:
+            self._tooltip_cfg["backgroundColor"] = background_color
+        if border_color is not None:
+            self._tooltip_cfg["borderColor"] = border_color
+        if border_width is not None:
+            self._tooltip_cfg["borderWidth"] = border_width
+        if text_color is not None:
+            self._tooltip_cfg.setdefault("textStyle", {})["color"] = text_color
+        if text_size is not None:
+            self._tooltip_cfg.setdefault("textStyle", {})["fontSize"] = text_size
+        if padding is not None:
+            self._tooltip_cfg["padding"] = padding
+        if enterable is not None:
+            self._tooltip_cfg["enterable"] = enterable
+        if order is not None:
+            self._tooltip_cfg["order"] = order
+        if render_mode is not None:
+            self._tooltip_cfg["renderMode"] = render_mode
         for fd in self._frames.values():
             fd["tooltip"] = copy.deepcopy(self._tooltip_cfg)
         return self
@@ -440,17 +530,21 @@ class TimelineFigure:
         }
         return self
 
-    def xlim(self, min_val: Optional[float] = None, max_val: Optional[float] = None) -> "TimelineFigure":
-        """Set explicit x-axis bounds (value-type axes only)."""
+    def xlim(self, min_val: Optional[float] = None, max_val: Optional[float] = None,
+             scale: Optional[Literal["value", "log"]] = None) -> "TimelineFigure":
+        """Set explicit x-axis bounds and/or scale type."""
         if min_val is not None:
             self._x_axis_template["min"] = min_val
         if max_val is not None:
             self._x_axis_template["max"] = max_val
+        if scale is not None:
+            self._x_axis_template["type"] = scale
         return self
 
     def ylim(self, min_val: Optional[float] = None,
-             max_val: Optional[float] = None, axis: int = 0) -> "TimelineFigure":
-        """Set y-axis bounds."""
+             max_val: Optional[float] = None, axis: int = 0,
+             scale: Optional[Literal["value", "log"]] = None) -> "TimelineFigure":
+        """Set y-axis bounds and/or scale type."""
         if axis < 0:
             raise ValueError("axis index must be non-negative")
         if axis >= len(self._y_axes_template):
@@ -462,6 +556,8 @@ class TimelineFigure:
             self._y_axes_template[axis]["min"] = min_val
         if max_val is not None:
             self._y_axes_template[axis]["max"] = max_val
+        if scale is not None:
+            self._y_axes_template[axis]["type"] = scale
         return self
 
     def extra(self, **kwargs: Any) -> "TimelineFigure":
@@ -478,6 +574,7 @@ class TimelineFigure:
              connect_nulls: bool = False, line_width: int = 2,
              symbol_size: int = 6, symbol: str = "circle",
              labels: bool = False, label_position: str = "top",
+             label_prefix: str = "", label_suffix: str = "",
              agg: str = "mean", axis: int = 0,
              interval: Optional[float] = None,
              emphasis: Optional[LineEmphasis] = None,
@@ -518,7 +615,11 @@ class TimelineFigure:
             "lineStyle": {"width": line_width}, "yAxisIndex": axis,
         }
         if area: base["areaStyle"] = {"opacity": area_opacity}
-        if labels: base["label"] = {"show": True, "position": label_position}
+        if labels:
+            base["label"] = {
+                "show": True, "position": label_position,
+                "formatter": f"{label_prefix}{{c}}{label_suffix}",
+            }
         if emphasis is not None:
             base["emphasis"] = emphasis.to_dict()
         _merge_style_params(
@@ -552,6 +653,7 @@ class TimelineFigure:
             hue: Optional[str] = None, stack: bool = False,
             orient: Literal["v", "h"] = "v",
             bar_width: Optional[Union[int, str]] = None,
+            bar_gap: Optional[str] = None,
             border_radius: int = 4, labels: bool = False,
             label_formatter: str = "{c}", label_font_size: int = 12,
             label_color: str = "#333",
@@ -614,6 +716,7 @@ class TimelineFigure:
         }
         if stack: base["stack"] = "total"
         if bar_width is not None: base["barWidth"] = bar_width
+        if bar_gap is not None: base["barGap"] = bar_gap
         if bar_min_width is not None: base["barMinWidth"] = bar_min_width
         if bar_category_gap is not None: base["barCategoryGap"] = bar_category_gap
         if emphasis is not None:
@@ -651,6 +754,7 @@ class TimelineFigure:
             rose_type: Optional[Literal["radius", "area"]] = None,
             start_angle: int = 90, border_radius: int = 6,
             show_labels: bool = True, label_formatter: str = "{b}: {d}%",
+            label_font_size: Optional[int] = None,
             center: Optional[List[str]] = None,
             interval: Optional[float] = None,
             emphasis: Optional[PieEmphasis] = None,
@@ -664,6 +768,7 @@ class TimelineFigure:
             blur: Optional[Blur] = None,
             select: Optional[Select] = None,
             selected_mode: Optional[Union[bool, str]] = None,
+            animation: Optional[AnimationConfig] = None,
             tooltip: Optional[TooltipStyle] = None,
             **series_kw: Any) -> "TimelineFigure":
         """Add timeline-animated pie / donut chart."""
@@ -703,6 +808,8 @@ class TimelineFigure:
                 entry["clockwise"] = clockwise
             if avoid_label_overlap is not None:
                 entry["avoidLabelOverlap"] = avoid_label_overlap
+            if label_font_size is not None:
+                entry["label"]["fontSize"] = label_font_size
             if animation_type is not None:
                 entry["animationType"] = animation_type
             if item_style is not None:
@@ -715,6 +822,10 @@ class TimelineFigure:
                 entry["select"] = select.to_dict()
             if selected_mode is not None:
                 entry["selectedMode"] = selected_mode
+            if animation is not None:
+                anim_cfg = animation.to_dict()
+                for k, v in anim_cfg.items():
+                    entry[k] = v
             if tooltip is not None:
                 entry["tooltip"] = tooltip.to_dict()
             entry.update(series_kw)

@@ -127,6 +127,14 @@ class LabelStyle:
         Label offset ``[x, y]`` in pixels.
     align : Optional[str]
         Horizontal text alignment (e.g., "left", "center", "right").
+    vertical_align : Optional[str]
+        Vertical text alignment (e.g., "top", "middle", "bottom").
+    padding : Optional[Union[int, list]]
+        Padding in pixels, or ``[top, right, bottom, left]``.
+    overflow : Optional[Literal["truncate", "break", "breakAll"]]
+        Text overflow strategy.
+    ellipsis : Optional[bool]
+        Whether to show ellipsis when text overflows.
     """
 
     show: Optional[bool] = None
@@ -139,6 +147,10 @@ class LabelStyle:
     rotate: Optional[int] = None
     offset: Optional[list] = None
     align: Optional[str] = None
+    vertical_align: Optional[str] = None
+    padding: Optional[Union[int, list]] = None
+    overflow: Optional[Literal["truncate", "break", "breakAll"]] = None
+    ellipsis: Optional[bool] = None
 
     def to_dict(self) -> dict:
         """Convert to ECharts camelCase dictionary, omitting None values."""

@@ -761,15 +761,27 @@ fig.treemap(df, path=["Region", "Category", "Sector"], value="Market Cap ($B)")
 | `gap_width` | `int` | `2` | Gap between rectangles |
 | `border_width` | `int` | `1` | Border width |
 | `label_formatter` | `str` | `"{b}\n{c}"` | Label format |
+| `label_style` | `LabelStyle` | `None` | Full label styling (merged with formatter) |
+| `upper_label` | `bool` | `False` | Enable parent category header labels |
+| `upper_label_height` | `int` | `30` | Height of upper label bar (px) |
+| `upper_label_style` | `LabelStyle` | `None` | Full upper label styling |
+| `sort` | `str` | `None` | Sort order (`"desc"`, `"asc"`) |
+| `square_ratio` | `float` | `None` | Expected square ratio for layout |
+| `children_visible_min` | `int` | `None` | Min area to show children |
+| `visible_min` | `int` | `None` | Min area to display a node |
+| `visual_min` | `float` | `None` | Min value for visual mapping |
+| `visual_max` | `float` | `None` | Max value for visual mapping |
+| `zoom_to_node_ratio` | `float` | `None` | Zoom scale when clicking a node |
 | `drill_down_icon` | `str` | `None` | Icon shown for drill-down |
 | `node_click` | `str` | `None` | Click behavior (`"zoomToNode"`, `"link"`, `False`) |
-| `color_alpha` | `float` | `None` | Color alpha range |
-| `color_saturation` | `float` | `None` | Color saturation range |
-| `visible_min` | `int` | `None` | Min area to display a node |
 | `breadcrumb` | `bool / dict` | `None` | Breadcrumb navigation |
+| `color_alpha` | `list` | `None` | Color alpha range |
+| `color_saturation` | `list` | `None` | Color saturation range |
+| `color_mapping_by` | `str` | `None` | Color mapping strategy (`"index"`, `"value"`, `"id"`) |
+| `emphasis` | `TreemapEmphasis` | `None` | Hover effect |
 | `item_style` | `ItemStyle` | `None` | Typed item style |
 | `tooltip` | `TooltipStyle` | `None` | Per-series tooltip |
-| `emphasis` | `TreemapEmphasis` | `None` | Hover effect |
+| `levels` | `list` | `None` | Custom level configs (overrides defaults) |
 
 ---
 

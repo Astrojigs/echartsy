@@ -2102,17 +2102,34 @@ class Figure:
         value: Optional[str] = None, *,
         leaf_depth: Optional[int] = 2, roam: bool = True,
         gap_width: int = 2, border_width: int = 1,
-        label_formatter: str = "{b}\n{c}", emphasis: Optional[TreemapEmphasis] = None,
-        drill_down_icon: Optional[str] = None,
-        node_click: Optional[Literal["zoomToNode", "link", False]] = None,
-        color_alpha: Optional[list] = None,
-        color_saturation: Optional[list] = None,
-        visible_min: Optional[int] = None,
-        breadcrumb: Optional[bool] = None,
+        # --- Labels ---
+        label_formatter: str = "{b}\n{c}",
+        label_style: Optional[LabelStyle] = None,
         upper_label: bool = False,
         upper_label_height: int = 30,
+        upper_label_style: Optional[LabelStyle] = None,
+        # --- Layout ---
+        sort: Optional[Literal["desc", "asc"]] = None,
+        square_ratio: Optional[float] = None,
+        # --- Visibility ---
+        children_visible_min: Optional[int] = None,
+        visible_min: Optional[int] = None,
+        visual_min: Optional[float] = None,
+        visual_max: Optional[float] = None,
+        # --- Interaction ---
+        zoom_to_node_ratio: Optional[float] = None,
+        drill_down_icon: Optional[str] = None,
+        node_click: Optional[Literal["zoomToNode", "link", False]] = None,
+        breadcrumb: Optional[bool] = None,
+        # --- Color ---
+        color_alpha: Optional[list] = None,
+        color_saturation: Optional[list] = None,
+        color_mapping_by: Optional[Literal["index", "value", "id"]] = None,
+        # --- Style objects ---
+        emphasis: Optional[TreemapEmphasis] = None,
         item_style: Optional[ItemStyle] = None,
         tooltip: Optional[TooltipStyle] = None,
+        levels: Optional[list] = None,
         **series_kw: Any,
     ) -> "Figure":
         """Add a treemap chart."""
@@ -2152,8 +2169,10 @@ class Figure:
 
         data = _build(root)
 
-        if upper_label:
-            default_levels = [
+        if levels is not None:
+            resolved_levels = levels
+        elif upper_label:
+            resolved_levels = [
                 {
                     "itemStyle": {"borderColor": "#777", "borderWidth": 0, "gapWidth": 1},
                     "upperLabel": {"show": False},
@@ -2168,22 +2187,27 @@ class Figure:
                 },
             ]
         else:
-            default_levels = [
+            resolved_levels = [
                 {"itemStyle": {"borderColor": "#fff", "borderWidth": border_width, "gapWidth": gap_width}},
                 {"itemStyle": {"borderColor": "#eee", "borderWidth": border_width, "gapWidth": gap_width}},
                 {"itemStyle": {"borderColor": "#ddd", "borderWidth": border_width, "gapWidth": gap_width}},
             ]
 
+        label_dict: dict = {"show": True, "formatter": label_formatter}
+        if label_style is not None:
+            label_dict.update(label_style.to_dict())
+
         entry: dict = {
             "type": "treemap", "data": data,
             "leafDepth": leaf_depth, "roam": roam,
-            "label": {"show": True, "formatter": label_formatter},
-            "breadcrumb": {"show": True}, "levels": default_levels,
+            "label": label_dict,
+            "breadcrumb": {"show": True}, "levels": resolved_levels,
         }
         if upper_label:
-            entry["upperLabel"] = {
-                "show": True, "height": upper_label_height,
-            }
+            upper_dict: dict = {"show": True, "height": upper_label_height}
+            if upper_label_style is not None:
+                upper_dict.update(upper_label_style.to_dict())
+            entry["upperLabel"] = upper_dict
         if drill_down_icon is not None:
             entry["drillDownIcon"] = drill_down_icon
         if node_click is not None:
@@ -2194,6 +2218,20 @@ class Figure:
             entry["colorSaturation"] = color_saturation
         if visible_min is not None:
             entry["visibleMin"] = visible_min
+        if sort is not None:
+            entry["sort"] = sort
+        if square_ratio is not None:
+            entry["squareRatio"] = square_ratio
+        if children_visible_min is not None:
+            entry["childrenVisibleMin"] = children_visible_min
+        if visual_min is not None:
+            entry["visualMin"] = visual_min
+        if visual_max is not None:
+            entry["visualMax"] = visual_max
+        if zoom_to_node_ratio is not None:
+            entry["zoomToNodeRatio"] = zoom_to_node_ratio
+        if color_mapping_by is not None:
+            entry["colorMappingBy"] = color_mapping_by
         if breadcrumb is not None:
             entry["breadcrumb"] = {"show": breadcrumb}
         if item_style is not None:
